@@ -60,8 +60,13 @@ class PlotXY;
 #include "plotsymbol.h"
 
 
-
+#if defined(__WXGTK__)
+class wxGenericDragImage;
+typedef wxGenericDragImage  wxDragBase;
+#else
 class wxDragImage;
+typedef wxDragImage wxDragBase;
+#endif
 
 enum DragMode {
     TEST_DRAG_NONE,
@@ -159,8 +164,8 @@ public:
 	agw::BoxLayer*       m_currentlyHighlighted;
 	agw::BoxLayer* findLayer(const wxPoint& pos);
 
-    wxDragImage*    m_dragImage;
-    bool                   m_fullScreen;
+    wxDragBase*    m_dragImage;
+    bool           m_fullScreen;
 
 };
 

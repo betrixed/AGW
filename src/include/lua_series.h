@@ -1,7 +1,7 @@
 #ifndef _H_LUA_SERIES_
 #define _H_LUA_SERIES_
 
-#include "FromLua.h"
+#include "fromlua.h"
 #include "series.hpp"
 #include <boost/date_time/gregorian/gregorian_types.hpp>
 

@@ -120,7 +120,7 @@ bool TestWindowApp::OnInit()
 
     mainWindow->Show(true);
 
-    //GetSplash(true);
+    GetSplash(true);
 
 
     wxWakeUpIdle();

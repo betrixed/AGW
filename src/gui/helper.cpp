@@ -31,6 +31,19 @@ using namespace agw;
     }
 }
 
+void ensureExtension(wxString& path, const wxString& ext)
+{
+    wxFileName fn;
+
+    fn.Assign(path);
+
+    if (fn.GetExt() != ext)
+    {
+        fn.SetExt(ext);
+        path = fn.GetFullPath();
+    }
+}
+
 void initComboBox(wxComboBox* box, wxArrayString& data)
 {
   size_t i;

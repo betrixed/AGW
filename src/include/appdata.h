@@ -31,11 +31,26 @@ extern const wxString STD_PLOT_FILES;
 
 // Singleton application data and management object, to be passed around by pointer or reference
     class AppData {
+        // data about OS and user
+
+        std::string       OSDescription_;
+        wxOperatingSystemId  OSId_;
+
+        int               vMajor_, vMinor_, vMicro_;
+        bool              isLittleEndian_;
+        bool              is64Bit_;
+        std::string       userName_;
+        std::string       userId_;
+        std::string       host_;
+        std::string       homeDir_;
+
+        // file system paths
+
         wxString          appPath_;
         #if defined(__WXGTK__)
         wxString          prefix_;
         #endif
-        
+
         wxString          userDataDir_;  // where to put database and reference files.
         wxString          startWorkDir_;  // where we started
         wxString          appDataDir_;   // read-only data
@@ -60,7 +75,8 @@ extern const wxString STD_PLOT_FILES;
         std::string getUserConfigPath();
 
         void createCountryTable();
-
+        void setupUnixPaths();
+        void setupWindowsPaths();
 
         static AppData* gAppData;
 
@@ -94,6 +110,8 @@ extern const wxString STD_PLOT_FILES;
         {
             return lastPlotDir_;
         }
+
+        void  readOSInfo();
 
         std::string getDBPath() const { return mydbpath_; }
 

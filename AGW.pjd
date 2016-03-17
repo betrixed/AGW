@@ -10,7 +10,7 @@
     <bool name="archive_image_files">1</bool>
     <bool name="archive_xrc_files">1</bool>
     <string name="author">""</string>
-    <string name="configuration">"VC++ Project Debug"</string>
+    <string name="configuration">"GCC Linux Reease"</string>
     <string name="copyright_string">"Michael Rynn"</string>
     <string name="cpp_function_declaration_comment">"	/// %BODY%
 "</string>
@@ -90,7 +90,7 @@
     <string name="resource_file_implementation">"app_resources.cpp"</string>
     <string name="resource_prefix">""</string>
     <string name="resource_xrc_cpp">""</string>
-    <string name="source_encoding">"iso-8859-1"</string>
+    <string name="source_encoding">"utf-8"</string>
     <string name="target_wx_version">"3.1.0"</string>
     <long name="text_file_type">0</long>
     <string name="title">""</string>
@@ -370,7 +370,7 @@
           <string name="Compiler location">"%AUTO%"</string>
           <string name="Compiler name">"GCC"</string>
           <string name="Debug flags">"%AUTO%"</string>
-          <bool name="dirty">1</bool>
+          <bool name="dirty">0</bool>
           <bool name="Enable makefile generation">1</bool>
           <string name="Executable name">"%EXECUTABLE%"</string>
           <string name="Extra compile flags">"-std=c++11"</string>
@@ -449,20 +449,20 @@
           <string name="Compiler location">"%AUTO%"</string>
           <string name="Compiler name">"GCC"</string>
           <string name="Debug flags">"%AUTO%"</string>
-          <bool name="dirty">1</bool>
+          <bool name="dirty">0</bool>
           <bool name="Enable makefile generation">1</bool>
           <string name="Executable name">"%EXECUTABLE%"</string>
-          <string name="Extra compile flags">"-std=gnu++11 %AUTO%"</string>
+          <string name="Extra compile flags">"-std=gnu++14 %AUTO%"</string>
           <string name="Extra dependencies">"%AUTO%"</string>
           <string name="filename">""</string>
           <string name="GUI mode">"GUI"</string>
           <string name="Icns location">"%AUTO%"</string>
           <string name="icon-name">""</string>
-          <string name="Include path">"%AUTO% -I./include -I../LuaBoost/src/include"</string>
+          <string name="Include path">"%AUTO% -I./src/include -I./src/msw-include"</string>
           <string name="Info.plist location">"%AUTO%"</string>
           <long name="is-transient">0</long>
           <string name="Libiconv path">"%AUTO%"</string>
-          <string name="Libraries">"%AUTO% -lspatialite -lsqlite3 -lshp -lboost_date_time"</string>
+          <string name="Libraries">"%AUTO% -lspatialite -lsqlite3 -lshp -lboost_date_time -llua"</string>
           <string name="Library path">"%AUTO%"</string>
           <string name="Linker command">"%AUTO%"</string>
           <string name="Linker flags">"%AUTO%"</string>
@@ -528,7 +528,7 @@
           <string name="Compiler location">"%AUTO%"</string>
           <string name="Compiler name">"GCC"</string>
           <string name="Debug flags">"%AUTO%"</string>
-          <bool name="dirty">1</bool>
+          <bool name="dirty">0</bool>
           <bool name="Enable makefile generation">1</bool>
           <string name="Executable name">"%EXECUTABLE%"</string>
           <string name="Extra compile flags">"-std=gnu++14 %AUTO%"</string>
@@ -580,6 +580,85 @@
           <string name="Use wxAUI">"Yes"</string>
           <string name="Use wxHTML">"Yes"</string>
           <string name="Use wxMediaCtrl">"No"</string>
+          <string name="Use wxPropertyGrid">"Yes"</string>
+          <string name="Use wxRegEx">"builtin"</string>
+          <string name="Use wxRibbonControl">"Yes"</string>
+          <string name="Use wxRichTextCtrl">"Yes"</string>
+          <string name="Use wxSTC">"Yes"</string>
+          <string name="Use XRC">"Yes"</string>
+          <string name="Warnings">"%AUTO%"</string>
+          <string name="Working path">"%AUTO%"</string>
+          <string name="wxWidgets build command">"%AUTO%"</string>
+          <string name="wxWidgets build path">"%AUTO%"</string>
+          <string name="wxWidgets clean command">"%AUTO%"</string>
+          <string name="wxWidgets location">"%AUTO%"</string>
+          <string name="wxWidgets makefile">"%AUTO%"</string>
+          <string name="wxWidgets version">"%WXVERSION%"</string>
+        </document>
+        <document>
+          <string name="Build mode">"Release"</string>
+          <string name="C command">"%AUTO%"</string>
+          <string name="C++ command">"%AUTO%"</string>
+          <string name="CFG">""</string>
+          <string name="Command for wx-config">"%AUTO%"</string>
+          <string name="Compiler bin path">"%AUTO%"</string>
+          <string name="Compiler include path">"%AUTO%"</string>
+          <string name="Compiler lib path">"%AUTO%"</string>
+          <string name="Compiler location">"%AUTO%"</string>
+          <string name="Compiler name">"GCC"</string>
+          <string name="Debug flags">"%AUTO%"</string>
+          <bool name="dirty">0</bool>
+          <bool name="Enable makefile generation">1</bool>
+          <string name="Executable name">"%EXECUTABLE%"</string>
+          <string name="Extra compile flags">"-std=gnu++14 %AUTO%"</string>
+          <string name="Extra dependencies">"%AUTO%"</string>
+          <string name="filename">""</string>
+          <string name="GUI mode">"GUI"</string>
+          <string name="Icns location">"%AUTO%"</string>
+          <string name="icon-name">""</string>
+          <string name="Include path">"%AUTO% -I./src/include -I./src/msw-include"</string>
+          <string name="Info.plist location">"%AUTO%"</string>
+          <long name="is-transient">0</long>
+          <string name="Libiconv path">"%AUTO%"</string>
+          <string name="Libraries">"%AUTO% -lspatialite -lsqlite3 -lshp -lboost_date_time -llua"</string>
+          <string name="Library path">"%AUTO%"</string>
+          <string name="Linker command">"%AUTO%"</string>
+          <string name="Linker flags">"%AUTO%"</string>
+          <long name="locked">0</long>
+          <string name="Make command">"%AUTO%"</string>
+          <long name="makefile-last-written">0</long>
+          <string name="Minimum OS version">"%AUTO%"</string>
+          <string name="Modularity">"Monolithic"</string>
+          <string name="Objects path">"%AUTO%"</string>
+          <string name="Optimizations">"%AUTO%"</string>
+          <string name="Output path">"%AUTO%"</string>
+          <long name="owns-file">1</long>
+          <string name="PATH variable">"%AUTO%"</string>
+          <string name="Preprocessor flags">"%AUTO%"</string>
+          <string name="Processor type">"64-bit i686"</string>
+          <string name="Program arguments">""</string>
+          <string name="Project makefile">"%AUTO%"</string>
+          <string name="Resource compiler">"%AUTO%"</string>
+          <string name="Resource flags">""</string>
+          <string name="Resource path">"%AUTO%"</string>
+          <string name="Runtime linking">"Dynamic"</string>
+          <string name="SDK path">"%AUTO%"</string>
+          <string name="Shared mode">"Shared"</string>
+          <bool name="Suppress source rules">0</bool>
+          <string name="template-name">"GCC"</string>
+          <string name="title">"GCC Linux Reease"</string>
+          <long name="title-mode">0</long>
+          <string name="Toolkit">"wxGTK+2"</string>
+          <string name="type">"gcc-config-data-document"</string>
+          <string name="Unicode mode">"Unicode"</string>
+          <string name="Use exceptions">"Yes"</string>
+          <string name="Use installed wxWidgets">"No"</string>
+          <string name="Use ODBC">"No"</string>
+          <string name="Use OpenGL">"No"</string>
+          <string name="Use wx-config">"Yes"</string>
+          <string name="Use wxAUI">"Yes"</string>
+          <string name="Use wxHTML">"Yes"</string>
+          <string name="Use wxMediaCtrl">"Yes"</string>
           <string name="Use wxPropertyGrid">"Yes"</string>
           <string name="Use wxRegEx">"builtin"</string>
           <string name="Use wxRibbonControl">"Yes"</string>
@@ -1192,13 +1271,13 @@
               <bool name="proxy-Fit to content">1</bool>
               <string name="proxy-Font">""</string>
               <string name="proxy-Foreground colour">""</string>
-              <string name="proxy-Header filename">"include/luaedit.h"</string>
+              <string name="proxy-Header filename">"src/include/luaedit.h"</string>
               <long name="proxy-Height">-1</long>
               <string name="proxy-Help text">""</string>
               <bool name="proxy-Hidden">0</bool>
               <string name="proxy-Id name">"ID_NEW_LUA_EDIT"</string>
               <long name="proxy-Id value">10057</long>
-              <string name="proxy-Implementation filename">"src/luaedit.cpp"</string>
+              <string name="proxy-Implementation filename">"src/gui/luaedit.cpp"</string>
               <string name="proxy-Member variable name">""</string>
               <string name="proxy-Name">""</string>
               <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
@@ -1719,7 +1798,7 @@
           <document>
             <string name="title">"appdata.h"</string>
             <string name="type">"source-editor-document"</string>
-            <string name="filename">"include/appdata.h"</string>
+            <string name="filename">"src/include/appdata.h"</string>
             <string name="icon-name">"source-editor"</string>
             <long name="is-transient">0</long>
             <long name="owns-file">0</long>
@@ -21885,16 +21964,16 @@
                         <string name="proxy-Data variable">""</string>
                         <bool name="proxy-Enabled">1</bool>
                         <string name="proxy-Event sources">""</string>
-                        <bool name="proxy-External implementation">0</bool>
+                        <bool name="proxy-External implementation">1</bool>
                         <string name="proxy-Font">""</string>
                         <string name="proxy-Foreground colour">""</string>
-                        <string name="proxy-Header filename">"include/linestylecombo.h"</string>
+                        <string name="proxy-Header filename">"src/include/linestylecombo.h"</string>
                         <long name="proxy-Height">-1</long>
                         <string name="proxy-Help text">""</string>
                         <bool name="proxy-Hidden">0</bool>
                         <string name="proxy-Id name">"ID_OWNERDRAWNCOMBOCTRL"</string>
                         <long name="proxy-Id value">10012</long>
-                        <string name="proxy-Implementation filename">"src/linestylecombo.cpp"</string>
+                        <string name="proxy-Implementation filename">"src/gui/linestylecombo.cpp"</string>
                         <string name="proxy-Initial value">"Solid"</string>
                         <string name="proxy-Member variable name">"mLineStyle"</string>
                         <string name="proxy-Name">""</string>
@@ -22748,13 +22827,13 @@
             <bool name="proxy-External implementation">0</bool>
             <string name="proxy-Font">""</string>
             <string name="proxy-Foreground colour">""</string>
-            <string name="proxy-Header filename">"include/seriesgrid.h"</string>
+            <string name="proxy-Header filename">"src/include/seriesgrid.h"</string>
             <long name="proxy-Height">150</long>
             <string name="proxy-Help text">""</string>
             <bool name="proxy-Hidden">0</bool>
             <string name="proxy-Id name">"ID_SERIES_GRID"</string>
             <long name="proxy-Id value">10001</long>
-            <string name="proxy-Implementation filename">"src/seriesgrid.cpp"</string>
+            <string name="proxy-Implementation filename">"src/gui/seriesgrid.cpp"</string>
             <string name="proxy-Member variable name">"mGrid"</string>
             <string name="proxy-Name">""</string>
             <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
@@ -23789,13 +23868,13 @@
             <bool name="proxy-Fit to content">1</bool>
             <string name="proxy-Font">""</string>
             <string name="proxy-Foreground colour">""</string>
-            <string name="proxy-Header filename">"include/mapwindow.h"</string>
+            <string name="proxy-Header filename">"src/include/mapwindow.h"</string>
             <long name="proxy-Height">300</long>
             <string name="proxy-Help text">""</string>
             <bool name="proxy-Hidden">0</bool>
             <string name="proxy-Id name">"ID_SCROLLEDWINDOW"</string>
             <long name="proxy-Id value">10001</long>
-            <string name="proxy-Implementation filename">"src/mapwindow.cpp"</string>
+            <string name="proxy-Implementation filename">"src/gui/mapwindow.cpp"</string>
             <string name="proxy-Member variable name">"mMap"</string>
             <string name="proxy-Name">""</string>
             <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
@@ -23933,7 +24012,7 @@
           <long name="owns-file">0</long>
           <long name="title-mode">1</long>
           <long name="locked">0</long>
-          <string name="created">"10/10/2015"</string>
+          <string name="created">"17/3/2016"</string>
           <string name="language">""</string>
         </document>
         <document>
@@ -23961,7 +24040,7 @@
           <string name="language">""</string>
         </document>
         <document>
-          <string name="title">"Cpp"</string>
+          <string name="title">"gui"</string>
           <string name="type">"html-folder-document"</string>
           <string name="filename">""</string>
           <string name="icon-name">"folder"</string>
@@ -23969,278 +24048,285 @@
           <long name="owns-file">1</long>
           <long name="title-mode">0</long>
           <long name="locked">0</long>
-          <string name="created">"29/12/2015"</string>
+          <string name="created">"17/3/2016"</string>
           <document>
             <string name="title">"appdata.cpp"</string>
             <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/appdata.cpp"</string>
+            <string name="filename">"src/gui/appdata.cpp"</string>
             <string name="icon-name">"source-editor"</string>
             <long name="is-transient">0</long>
             <long name="owns-file">0</long>
             <long name="title-mode">1</long>
             <long name="locked">0</long>
-            <string name="created">"20/1/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"appdata.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"include/appdata.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"database.cpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/database.cpp"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"autoaxis.cpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/autoaxis.cpp"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"datalayer.cpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/datalayer.cpp"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"14/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"geometry.cpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/geometry.cpp"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"14/2/2016"</string>
+            <string name="created">"17/3/2016"</string>
             <string name="language">""</string>
           </document>
           <document>
             <string name="title">"helper.cpp"</string>
             <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/helper.cpp"</string>
+            <string name="filename">"src/gui/helper.cpp"</string>
             <string name="icon-name">"source-editor"</string>
             <long name="is-transient">0</long>
             <long name="owns-file">0</long>
             <long name="title-mode">1</long>
             <long name="locked">0</long>
-            <string name="created">"14/2/2016"</string>
+            <string name="created">"17/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+          <document>
+            <string name="title">"linestylecombo.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/gui/linestylecombo.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"17/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+        </document>
+        <document>
+          <string name="title">"data"</string>
+          <string name="type">"html-folder-document"</string>
+          <string name="filename">""</string>
+          <string name="icon-name">"folder"</string>
+          <long name="is-transient">1</long>
+          <long name="owns-file">1</long>
+          <long name="title-mode">0</long>
+          <long name="locked">0</long>
+          <string name="created">"17/3/2016"</string>
+          <document>
+            <string name="title">"app_lua.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/data/app_lua.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"17/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+          <document>
+            <string name="title">"autoaxis.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/data/autoaxis.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"17/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+          <document>
+            <string name="title">"database.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/data/database.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"17/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+          <document>
+            <string name="title">"datalayer.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/data/datalayer.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"17/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+          <document>
+            <string name="title">"fromlua.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/data/fromlua.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"17/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+          <document>
+            <string name="title">"geometry.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/data/geometry.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"17/3/2016"</string>
             <string name="language">""</string>
           </document>
           <document>
             <string name="title">"jsoncpp.cpp"</string>
             <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/jsoncpp.cpp"</string>
+            <string name="filename">"src/data/jsoncpp.cpp"</string>
             <string name="icon-name">"source-editor"</string>
             <long name="is-transient">0</long>
             <long name="owns-file">0</long>
             <long name="title-mode">1</long>
             <long name="locked">0</long>
-            <string name="created">"14/2/2016"</string>
+            <string name="created">"17/3/2016"</string>
             <string name="language">""</string>
           </document>
           <document>
             <string name="title">"legend.cpp"</string>
             <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/legend.cpp"</string>
+            <string name="filename">"src/data/legend.cpp"</string>
             <string name="icon-name">"source-editor"</string>
             <long name="is-transient">0</long>
             <long name="owns-file">0</long>
             <long name="title-mode">1</long>
             <long name="locked">0</long>
-            <string name="created">"14/2/2016"</string>
+            <string name="created">"17/3/2016"</string>
             <string name="language">""</string>
           </document>
           <document>
             <string name="title">"linearscale.cpp"</string>
             <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/linearscale.cpp"</string>
+            <string name="filename">"src/data/linearscale.cpp"</string>
             <string name="icon-name">"source-editor"</string>
             <long name="is-transient">0</long>
             <long name="owns-file">0</long>
             <long name="title-mode">1</long>
             <long name="locked">0</long>
-            <string name="created">"14/2/2016"</string>
+            <string name="created">"17/3/2016"</string>
             <string name="language">""</string>
           </document>
           <document>
-            <string name="title">"plotlayer.cpp"</string>
+            <string name="title">"lsqlite3.c"</string>
             <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/plotlayer.cpp"</string>
+            <string name="filename">"src/data/lsqlite3.c"</string>
             <string name="icon-name">"source-editor"</string>
             <long name="is-transient">0</long>
             <long name="owns-file">0</long>
             <long name="title-mode">1</long>
             <long name="locked">0</long>
-            <string name="created">"14/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"plottable.cpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/plottable.cpp"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"14/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"plotxy.cpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/plotxy.cpp"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"series.cpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/series.cpp"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"sqlitedb.cpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/sqlitedb.cpp"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"stationtable.cpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/stationtable.cpp"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"14/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"textlayer.cpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/textlayer.cpp"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"14/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"wxCSV.cpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/wxCSV.cpp"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="language">""</string>
-          </document>
-        </document>
-        <document>
-          <string name="title">"Lua"</string>
-          <string name="type">"html-folder-document"</string>
-          <string name="filename">""</string>
-          <string name="icon-name">"folder"</string>
-          <long name="is-transient">1</long>
-          <long name="owns-file">1</long>
-          <long name="title-mode">0</long>
-          <long name="locked">0</long>
-          <string name="created">"20/2/2016"</string>
-          <document>
-            <string name="title">"FromLua.cpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../LuaBoost/src/FromLua.cpp"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
+            <string name="created">"17/3/2016"</string>
             <string name="language">""</string>
           </document>
           <document>
             <string name="title">"lua_series.cpp"</string>
             <string name="type">"source-editor-document"</string>
-            <string name="filename">"../LuaBoost/src/lua_series.cpp"</string>
+            <string name="filename">"src/data/lua_series.cpp"</string>
             <string name="icon-name">"source-editor"</string>
             <long name="is-transient">0</long>
             <long name="owns-file">0</long>
             <long name="title-mode">1</long>
             <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
+            <string name="created">"17/3/2016"</string>
             <string name="language">""</string>
           </document>
           <document>
-            <string name="title">"luaedit.cpp"</string>
+            <string name="title">"plotlayer.cpp"</string>
             <string name="type">"source-editor-document"</string>
-            <string name="filename">"src/luaedit.cpp"</string>
+            <string name="filename">"src/data/plotlayer.cpp"</string>
             <string name="icon-name">"source-editor"</string>
             <long name="is-transient">0</long>
             <long name="owns-file">0</long>
             <long name="title-mode">1</long>
             <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
+            <string name="created">"17/3/2016"</string>
             <string name="language">""</string>
           </document>
           <document>
-            <string name="title">"luaedit.h"</string>
+            <string name="title">"plotlua.cpp"</string>
             <string name="type">"source-editor-document"</string>
-            <string name="filename">"include/luaedit.h"</string>
+            <string name="filename">"src/data/plotlua.cpp"</string>
             <string name="icon-name">"source-editor"</string>
             <long name="is-transient">0</long>
             <long name="owns-file">0</long>
             <long name="title-mode">1</long>
             <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
+            <string name="created">"17/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+          <document>
+            <string name="title">"plottable.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/data/plottable.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"17/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+          <document>
+            <string name="title">"series.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/data/series.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"17/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+          <document>
+            <string name="title">"sqlitedb.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/data/sqlitedb.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"17/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+          <document>
+            <string name="title">"stationtable.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/data/stationtable.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"17/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+          <document>
+            <string name="title">"textlayer.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/data/textlayer.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"17/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+          <document>
+            <string name="title">"wxCSV.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/data/wxCSV.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"17/3/2016"</string>
             <string name="language">""</string>
           </document>
         </document>
         <document>
-          <string name="title">"luac"</string>
+          <string name="title">"include"</string>
           <string name="type">"html-folder-document"</string>
           <string name="filename">""</string>
           <string name="icon-name">"folder"</string>
@@ -24248,829 +24334,7 @@
           <long name="owns-file">1</long>
           <long name="title-mode">0</long>
           <long name="locked">0</long>
-          <string name="created">"20/2/2016"</string>
-          <document>
-            <string name="title">"lapi.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lapi.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lapi.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lapi.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lauxlib.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lauxlib.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lauxlib.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lauxlib.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lbaselib.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lbaselib.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lbitlib.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lbitlib.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lcode.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lcode.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lcode.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lcode.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lcorolib.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lcorolib.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lctype.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lctype.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lctype.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lctype.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"ldblib.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/ldblib.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"ldebug.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/ldebug.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"ldebug.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/ldebug.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"ldo.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/ldo.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"ldo.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/ldo.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"ldump.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/ldump.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lfunc.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lfunc.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lfunc.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lfunc.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lgc.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lgc.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lgc.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lgc.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"linit.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/linit.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"liolib.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/liolib.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"llex.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/llex.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"llex.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/llex.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"llimits.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/llimits.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lmathlib.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lmathlib.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lmem.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lmem.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lmem.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lmem.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"loadlib.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/loadlib.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lobject.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lobject.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lobject.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lobject.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lopcodes.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lopcodes.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lopcodes.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lopcodes.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"loslib.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/loslib.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lparser.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lparser.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lparser.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lparser.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lprefix.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lprefix.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lstate.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lstate.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lstate.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lstate.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lstring.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lstring.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lstring.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lstring.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lstrlib.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lstrlib.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"ltable.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/ltable.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"ltable.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/ltable.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"ltablib.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/ltablib.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"ltm.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/ltm.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"ltm.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/ltm.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lua.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lua.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lua.hpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lua.hpp"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"luaconf.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/luaconf.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lualib.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lualib.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lundump.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lundump.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lundump.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lundump.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lutf8lib.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lutf8lib.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lvm.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lvm.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lvm.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lvm.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lzio.c"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lzio.c"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"lzio.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../luasrc/lzio.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"20/2/2016"</string>
-            <string name="language">""</string>
-          </document>
-        </document>
-        <document>
-          <string name="title">"Include"</string>
-          <string name="type">"html-folder-document"</string>
-          <string name="filename">""</string>
-          <string name="icon-name">"folder"</string>
-          <long name="is-transient">1</long>
-          <long name="owns-file">1</long>
-          <long name="title-mode">0</long>
-          <long name="locked">0</long>
-          <string name="created">"20/2/2016"</string>
-          <document>
-            <string name="title">"FromLua.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"../LuaBoost/include/FromLua.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"5/3/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"database.hpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">""</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"plotxy.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">""</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"series.hpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">""</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"sqlitedb.hpp"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">""</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"agw.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"include\agw.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"5/3/2016"</string>
-            <string name="language">""</string>
-          </document>
-        </document>
-        <document>
-          <string name="title">"sqlite3"</string>
-          <string name="type">"html-folder-document"</string>
-          <string name="filename">""</string>
-          <string name="icon-name">"folder"</string>
-          <long name="is-transient">1</long>
-          <long name="owns-file">1</long>
-          <long name="title-mode">0</long>
-          <long name="locked">0</long>
-          <string name="created">"5/3/2016"</string>
-          <document>
-            <string name="title">"sqlite3.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"sqlite3-amalgam/sqlite3.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"5/3/2016"</string>
-            <string name="language">""</string>
-          </document>
-          <document>
-            <string name="title">"sqlite3ext.h"</string>
-            <string name="type">"source-editor-document"</string>
-            <string name="filename">"sqlite3-amalgam/sqlite3ext.h"</string>
-            <string name="icon-name">"source-editor"</string>
-            <long name="is-transient">0</long>
-            <long name="owns-file">0</long>
-            <long name="title-mode">1</long>
-            <long name="locked">0</long>
-            <string name="created">"5/3/2016"</string>
-            <string name="language">""</string>
-          </document>
+          <string name="created">"17/3/2016"</string>
         </document>
       </document>
       <document>
@@ -25082,6 +24346,17 @@
         <long name="owns-file">1</long>
         <long name="title-mode">0</long>
         <long name="locked">1</long>
+        <document>
+          <string name="title">"agw_icon.png"</string>
+          <string name="type">"image-document"</string>
+          <string name="filename">"share/agw/images/agw_icon.png"</string>
+          <string name="icon-name">"image"</string>
+          <long name="is-transient">0</long>
+          <long name="owns-file">0</long>
+          <long name="title-mode">0</long>
+          <long name="locked">0</long>
+          <long name="zoom-level">100</long>
+        </document>
       </document>
     </document>
   </documents>

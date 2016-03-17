@@ -31,15 +31,45 @@ void DataLayer::renderDC(wxDC& dc, PixelWorld& px)
     // draw lines first
     wxPenStyle linepen = indexToPenStyle(lineStyle_);
 
-    if ((lineWidth_ > 0) && (linepen != wxPENSTYLE_TRANSPARENT))
+    wxRect clip(px.left_,px.top_, px.xspan_, px.yspan_);
+
     {
-        wxPen linePen(lineColor_, lineWidth_, linepen);
+        wxDCClipper(dc, clip);
 
-        auto savePen = dc.GetPen();
-        dc.SetPen(linePen);
+        if ((lineWidth_ > 0) && (linepen != wxPENSTYLE_TRANSPARENT))
+        {
+            wxPen linePen(lineColor_, lineWidth_, linepen);
 
-        int xprev = 0;
-        int yprev = 0;
+            auto savePen = dc.GetPen();
+            dc.SetPen(linePen);
+
+            int xprev = 0;
+            int yprev = 0;
+            for(size_t i = 0; i < xdata.size(); i++)
+            {
+                auto x = xdata[i];
+                auto y = ydata[i];
+                if (std::isnan(x) || std::isnan(y))
+                    continue;
+                auto xpt = (int)( (x-xoffset)* xscale ) + px.left_;
+                auto ypt = (int)( (y-yoffset)* yscale ) + px.top_;
+
+                if (i > 0)
+                {
+                    dc.DrawLine(xprev,yprev,xpt,ypt);
+                }
+                xprev = xpt;
+                yprev = ypt;
+            }
+
+            dc.SetPen(savePen);
+        }
+
+        auto sdraw = SymbolDraw::MakeSymbolDraw((PlotShape)symbolShape_, radius, dc);
+        wxPen sympen(this->symbolBorder_, 1, wxPENSTYLE_SOLID);
+
+        dc.SetPen(sympen);
+        auto errors = errorbar_;
         for(size_t i = 0; i < xdata.size(); i++)
         {
             auto x = xdata[i];
@@ -49,43 +79,18 @@ void DataLayer::renderDC(wxDC& dc, PixelWorld& px)
             auto xpt = (int)( (x-xoffset)* xscale ) + px.left_;
             auto ypt = (int)( (y-yoffset)* yscale ) + px.top_;
 
-            if (i > 0)
+            sdraw->draw(xpt,ypt);
+
+            if (errors != nullptr)
             {
-                dc.DrawLine(xprev,yprev,xpt,ypt);
+                auto errorSize = (*errors)[i];
+                auto ept = (int)( errorSize*yscale);
+                dc.DrawLine(xpt,ypt-ept,xpt,ypt+ept);
+                dc.DrawLine(xpt-radius,ypt-ept,xpt+radius, ypt-ept);
+                dc.DrawLine(xpt-radius,ypt+ept,xpt+radius, ypt+ept);
             }
-            xprev = xpt;
-            yprev = ypt;
-        }
-
-        dc.SetPen(savePen);
-    }
-
-    auto sdraw = SymbolDraw::MakeSymbolDraw((PlotShape)symbolShape_, radius, dc);
-    wxPen sympen(this->symbolBorder_, 1, wxPENSTYLE_SOLID);
-
-    dc.SetPen(sympen);
-    auto errors = errorbar_;
-    for(size_t i = 0; i < xdata.size(); i++)
-    {
-        auto x = xdata[i];
-        auto y = ydata[i];
-        if (std::isnan(x) || std::isnan(y))
-            continue;
-        auto xpt = (int)( (x-xoffset)* xscale ) + px.left_;
-        auto ypt = (int)( (y-yoffset)* yscale ) + px.top_;
-
-        sdraw->draw(xpt,ypt);
-
-        if (errors != nullptr)
-        {
-            auto errorSize = (*errors)[i];
-            auto ept = (int)( errorSize*yscale);
-            dc.DrawLine(xpt,ypt-ept,xpt,ypt+ept);
-            dc.DrawLine(xpt-radius,ypt-ept,xpt+radius, ypt-ept);
-            dc.DrawLine(xpt-radius,ypt+ept,xpt+radius, ypt+ept);
         }
     }
-
     dc.SetBrush(savefill);
     dc.SetPen(savepen);
 }

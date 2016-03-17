@@ -24,7 +24,7 @@
 
 ////@begin includes
 #include "wx/imaglist.h"
-
+#include "../include/linestylecombo.h"
 ////@end includes
 #include "plotxy.h"
 #include "datalayerdlg.h"
@@ -229,9 +229,10 @@ void DataLayerDlg::CreateControls()
     mLineStyleStrings.Add(_("Long Dash"));
     mLineStyleStrings.Add(_("Short Dash"));
     mLineStyleStrings.Add(_("Dot Dash"));
-    mLineStyle = new LineStyleCombo( itemPanel22, ID_OWNERDRAWNCOMBOCTRL, _("Solid"), wxDefaultPosition, wxDefaultSize, mLineStyleStrings, 0 );
+    mLineStyle = new LineStyleCombo( itemPanel22, LineStyleCombo::ID_OWNERDRAWNCOMBOCTRL, _("Solid"), wxDefaultPosition, wxDefaultSize, mLineStyleStrings, 0 );
     mLineStyle->SetStringSelection(_("Solid"));
     itemFlexGridSizer24->Add(mLineStyle, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
     wxStaticText* itemStaticText27 = new wxStaticText( itemPanel22, wxID_STATIC, _("Thickness"), wxDefaultPosition, wxDefaultSize, 0 );
     itemFlexGridSizer24->Add(itemStaticText27, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 

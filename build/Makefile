@@ -22,8 +22,8 @@ DATA_OBJ=$(patsubst ../src/data/%.cpp, %.o, $(DATA_SRC))
 
 VPATH = ../src/gui:../src/data
 
-agw.exe:agw.o $(GUI_OBJ) $(DATA_OBJ) $(LC_OBJ)
-	$(CXX) -o agw agw.o $(GUI_OBJ) $(DATA_OBJ) $(LC_OBJ) $(LDFLAGS)
+agw_exe:agw.o $(GUI_OBJ) $(DATA_OBJ) $(LC_OBJ)
+	$(CXX) -o agw_exe agw.o $(GUI_OBJ) $(DATA_OBJ) $(LC_OBJ) $(LDFLAGS)
 
 agw.o:../AGW-0.2.rc
 	$(RESXX) $< -o $@ 

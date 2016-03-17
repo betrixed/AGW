@@ -1503,7 +1503,7 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
                play->ydata_ = ydata;
                play->xdata_ = xdata;
                play->label_ = yearStr;
-
+               play->legendText_  = yearStr;
                years.push_back(yearplot);
             }
 
@@ -1518,22 +1518,18 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
         return;
     }
 
-    if (ct > 0)
+    if (years.size() > 0)
     {
-        auto mainf = (MainFrame*)this->GetParent();
-        PlotFrame* frame = new PlotFrame(mainf);
-        frame->Show();
+        PlotLuaPtr pl = std::make_shared<PlotLua>();
 
-        PlotXY* plot = new PlotXY(frame);
-        frame->setPlot(plot);
+        pl->world_.xScale_.units(SeriesUnit::DATE_MONTH_NUM);
 
-        auto it = years.begin();
-        auto fin = years.end();
-
-        for( ; it != fin; it++)
+        for( uint ct = 0; ct < years.size(); ct++)
         {
-            plot->AddData(*it);
+            PlotPtr pp = years[ct];
+            pl->addLayer(pp);
         }
+        pl->showPlot(pl, true);
     }
 }
 

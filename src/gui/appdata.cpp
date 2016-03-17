@@ -14,6 +14,7 @@
 #include <wx/filedlg.h>
 #include <wx/wfstream.h>
 #include <wx/stdpaths.h>
+#include <wx/utils.h>
 
 #include "appdata.h"
 #include "testwindowapp.h"
@@ -86,6 +87,37 @@ void AppData::exit()
     db_.close();
     spatialite_shutdown();
     SqliteDB::appShutdown();
+}
+
+
+void AppData::readOSInfo()
+{
+    OSDescription_ = wxGetOsDescription().ToStdString();;
+
+    OSId_ = wxGetOsVersion(&vMajor_, &vMinor_);
+
+    is64Bit_ = wxIsPlatform64Bit();
+
+    isLittleEndian_ = true; //assumed //wxIsPlotformLittleEndian();
+
+    userName_ = wxGetUserName().ToStdString();
+    if (userName_.size() == 0)
+        userName_ = "?";
+    userId_ = wxGetUserId().ToStdString();
+
+    homeDir_ = wxGetHomeDir().ToStdString();
+
+    host_ = wxGetFullHostName().ToStdString();
+    wxLogMessage("Checking Environment . . ." );
+    wxLogMessage("Compiled with %s",wxVERSION_STRING);
+
+    wxLogMessage("OS is %s", OSDescription_.c_str());
+    wxLogMessage("User name is %s", userName_.c_str());
+    wxLogMessage("User Id is %s", userId_.c_str());
+    wxLogMessage("Home Dir is %s", homeDir_.c_str());
+    wxLogMessage("Host name is %s", host_.c_str());
+
+
 }
 
 bool getJSONArrayString(wxArrayString& data, Json::Value& jarr)
@@ -445,7 +477,14 @@ CountryMapPtr AppData::getCountryMap()
     return this->countryMap_;
 }
 
+/*!
+    \brief This should be called after creating AppData object.
 
+    Establish the wxWidgets application object, and the main window.
+    Get information about the execution environment, configuration, user,
+    and current database location.
+
+*/
 void AppData::initPaths(TestWindowApp *app, MainFrame* mf)
 {
     mf->ap_ = this;
@@ -454,6 +493,30 @@ void AppData::initPaths(TestWindowApp *app, MainFrame* mf)
     this->theApp = app;
     this->mFrame = mf;
 
+    readOSInfo();
+
+
+    switch(OSId_)
+    {
+    case wxOS_UNIX_LINUX:
+    case wxOS_UNIX_FREEBSD:
+    case wxOS_UNIX_OPENBSD:
+    case wxOS_UNIX_NETBSD:
+    case wxOS_MAC_OSX_DARWIN:
+        setupUnixPaths();
+        break;
+    default:
+        setupWindowsPaths();
+        break;
+    }
+
+
+    mf->log_->Show(false);
+
+}
+
+void AppData::setupUnixPaths()
+{
     auto stdpaths = wxStandardPaths::Get();
     appPath_ = stdpaths.GetExecutablePath();
     wxLogMessage("Executing %s", appPath_.c_str());
@@ -461,10 +524,21 @@ void AppData::initPaths(TestWindowApp *app, MainFrame* mf)
     prefix_= stdpaths.GetInstallPrefix();
     wxLogMessage("Prefix path %s", prefix_.c_str());
 #endif
-    
+
     userDataDir_ = stdpaths.GetUserDataDir();
     appDataDir_ = stdpaths.GetDataDir();
     startWorkDir_ = wxGetCwd();
+
+    wxFileName dataPath;
+
+    dataPath.AssignDir(homeDir_);
+
+    dataPath.AppendDir(".local");
+    dataPath.AppendDir("share");
+    dataPath.AppendDir("AGW");
+
+
+    userDataDir_ = dataPath.GetFullPath();
 
     wxLogMessage("User data dir %s", userDataDir_.c_str());
     wxLogMessage("App data dir %s", appDataDir_.c_str());
@@ -479,9 +553,10 @@ void AppData::initPaths(TestWindowApp *app, MainFrame* mf)
          wxLogMessage("Make directory : %s",appDataDir_.c_str() );
          wxMkDir(appDataDir_, 0777);
     }
+}
 
-    mf->log_->Show(false);
-
+void AppData::setupWindowsPaths()
+{
 }
 
 void AppData::registerView(SeriesFrame* sf)

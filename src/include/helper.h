@@ -9,6 +9,7 @@
 #include <string>
 #include <wx/window.h>
 #include <wx/log.h>
+#include <wx/filename.h>
 
 #include <memory>
 
@@ -24,6 +25,7 @@ bool getComboIndex(wxWindow* host, int ID, int& value);
 bool getSpinCtrl(wxWindow* host, int ID, int& value);
 bool getEditCtrl(wxWindow* host, int ID, std::string& value);
 
+void ensureExtension(wxString& path, const wxString& ext);
 
 class wxComboBox;
 class wxListBox;

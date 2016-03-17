@@ -3,7 +3,7 @@
 // Purpose:
 // Author:      Michael Rynn
 // Modified by:
-// Created:     Wed 27 Jan 2016 12:24:45 AEDT
+// Created:     Thu 17 Mar 2016 08:16:46 AEDT
 // RCS-ID:
 // Copyright:   Michael Rynn
 // Licence:
@@ -23,13 +23,11 @@
 ////@begin includes
 ////@end includes
 
-#include "linestylecombo.h"
+#include "../include/linestylecombo.h"
 
 ////@begin XPM images
 ////@end XPM images
 
-#include "datalayerdlg.h"
-#include "helper.h"
 
 /*
  * LineStyleCombo type definition
@@ -60,7 +58,7 @@ LineStyleCombo::LineStyleCombo()
     Init();
 }
 
-LineStyleCombo::LineStyleCombo(wxWindow* parent, wxWindowID id, const wxString& value, const wxPoint& pos, const wxSize& size, const wxArrayString& choices, long style, const wxValidator& validator)
+LineStyleCombo::LineStyleCombo(wxWindow* parent, wxWindowID id, const wxString& value, const wxPoint& pos, const wxSize& size,const wxArrayString& choices, long style, const wxValidator& validator)
 {
     Init();
     Create(parent, id, value, pos, size, choices, style, validator);
@@ -100,8 +98,6 @@ void LineStyleCombo::Init()
 {
 ////@begin LineStyleCombo member initialisation
 ////@end LineStyleCombo member initialisation
-
-
 }
 
 
@@ -117,39 +113,26 @@ void LineStyleCombo::CreateControls()
 
 
 /*
+ * wxEVT_COMMAND_COMBOBOX_SELECTED event handler for ID_OWNERDRAWNCOMBOCTRL
+ */
+
+void LineStyleCombo::OnOwnerdrawncomboctrlSelected( wxCommandEvent& event )
+{
+////@begin wxEVT_COMMAND_COMBOBOX_SELECTED event handler for ID_OWNERDRAWNCOMBOCTRL in LineStyleCombo.
+    // Before editing this code, remove the block markers.
+    event.Skip();
+////@end wxEVT_COMMAND_COMBOBOX_SELECTED event handler for ID_OWNERDRAWNCOMBOCTRL in LineStyleCombo.
+}
+
+
+/*
  * Draws the given item
  */
 
 void LineStyleCombo::OnDrawItem(wxDC& dc, const wxRect& rect, int item, int flags) const
 {
-    if ( item == wxNOT_FOUND )
-            return;
-
-        wxRect r(rect);
-        r.Deflate(3);
-        r.height -= 2;
-
-        wxPenStyle penStyle = indexToPenStyle(item);
-
-
-        wxPen pen( dc.GetTextForeground(), 3, penStyle );
-
-        // Get text colour as pen colour
-        dc.SetPen( pen );
-
-        if ( !(flags & wxODCB_PAINTING_CONTROL) )
-        {
-            dc.DrawText(GetString( item ),
-                        r.x + 3,
-                        (r.y + 0) + ( (r.height/2) - dc.GetCharHeight() )/2
-                       );
-
-            dc.DrawLine( r.x+5, r.y+((r.height/4)*3), r.x+r.width - 5, r.y+((r.height/4)*3) );
-        }
-        else
-        {
-            dc.DrawLine( r.x+5, r.y+r.height/2, r.x+r.width - 5, r.y+r.height/2 );
-        }
+    // TODO: implement me
+    wxOwnerDrawnComboBox::OnDrawItem(dc, rect, item, flags);
 }
 
 /*
@@ -158,30 +141,8 @@ void LineStyleCombo::OnDrawItem(wxDC& dc, const wxRect& rect, int item, int flag
 
 void LineStyleCombo::OnDrawBackground(wxDC& dc, const wxRect& rect, int item, int flags) const
 {
-            // combo control itself, use the default rendering.
-        if ( (flags & (wxODCB_PAINTING_CONTROL|wxODCB_PAINTING_SELECTED)) ||
-             (item & 1) == 0 )
-        {
-            wxOwnerDrawnComboBox::OnDrawBackground(dc,rect,item,flags);
-            return;        if ( (flags & (wxODCB_PAINTING_CONTROL|wxODCB_PAINTING_SELECTED)) ||
-             (item & 1) == 0 )
-        {
-            wxOwnerDrawnComboBox::OnDrawBackground(dc,rect,item,flags);
-            return;
-        }
-
-        // Otherwise, draw every other background with different colour.
-        wxColour bgCol(240,240,250);
-        dc.SetBrush(wxBrush(bgCol));
-        dc.SetPen(wxPen(bgCol));
-        dc.DrawRectangle(rect);
-        }
-
-        // Otherwise, draw every other background with different colour.
-        wxColour bgCol(240,240,250);
-        dc.SetBrush(wxBrush(bgCol));
-        dc.SetPen(wxPen(bgCol));
-        dc.DrawRectangle(rect);
+    // TODO: implement me
+    wxOwnerDrawnComboBox::OnDrawBackground(dc, rect, item, flags);
 }
 
 /*
@@ -190,9 +151,8 @@ void LineStyleCombo::OnDrawBackground(wxDC& dc, const wxRect& rect, int item, in
 
 wxCoord LineStyleCombo::OnMeasureItem(size_t WXUNUSED(item)) const
 {
-
-    return 36;
-
+    // TODO: implement me
+    return -1;
 }
 
 /*
@@ -204,19 +164,3 @@ wxCoord LineStyleCombo::OnMeasureItemWidth(size_t WXUNUSED(item)) const
     // TODO: implement me
     return -1;
 }
-
-
-/*
- * wxEVT_COMMAND_COMBOBOX_SELECTED event handler for ID_OWNERDRAWNCOMBOCTRL
- */
-
-void LineStyleCombo::OnOwnerdrawncomboctrlSelected( wxCommandEvent& event )
-{
-    event.Skip(false);
-    DataLayerDlg* dlg = getParentByID<DataLayerDlg>(this,DataLayerDlg::ID_DATALAYERDLG);
-    if (dlg)
-    {
-        dlg->mDisplay->Refresh();
-    }
-}
-

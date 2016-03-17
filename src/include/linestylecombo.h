@@ -34,7 +34,6 @@ class LineStyleCombo;
  */
 
 ////@begin control identifiers
-#define ID_OWNERDRAWNCOMBOCTRL 10012
 #define SYMBOL_LINESTYLECOMBO_STYLE 0
 #define SYMBOL_LINESTYLECOMBO_IDNAME ID_OWNERDRAWNCOMBOCTRL
 #define SYMBOL_LINESTYLECOMBO_SIZE wxDefaultSize
@@ -93,6 +92,10 @@ public:
     virtual wxCoord OnMeasureItemWidth(size_t item) const;
 
 ////@begin LineStyleCombo member variables
+    /// Control identifiers
+    enum {
+        ID_OWNERDRAWNCOMBOCTRL = 10012
+    };
 ////@end LineStyleCombo member variables
 
 

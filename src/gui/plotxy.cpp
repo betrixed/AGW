@@ -41,7 +41,11 @@
 
 #include "plotlua.h"
 
-class MyDragImage: public wxDragImage
+#ifdef __WXGTK__
+   // typedef wxGenericDragImage  wxDragImage
+#endif // __WXGTK__
+
+class MyDragImage: public wxDragBase
 {
 public:
     MyDragImage(PlotXY* canvas): m_canvas(canvas) {}
@@ -417,7 +421,7 @@ void PlotXY::OnMouse( wxMouseEvent& event )
             Update();
 
             wxBitmap* drag = m_dragLayer->makeImage();
-            m_dragImage = new MyDragImage(this, *drag, wxCursor(wxCURSOR_HAND));
+            m_dragImage = (wxDragBase*) new MyDragImage(this, *drag, wxCursor(wxCURSOR_HAND));
             /*switch (m_draggedShape->GetDragMethod())
             {
                 case SHAPE_DRAG_BITMAP:

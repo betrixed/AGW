@@ -47,10 +47,23 @@ LinearScale::LinearScale(ScaleCoord co, ScaleFlow flow) : scale_(1.0), offset_(0
 void LinearScale::drawBottomXAxis(wxDC& dc, PixelWorld& px)
 {
     double dtick;
-    double firstTick = dataMin_;
+    double firstTick;
+
+    if (units_ == DATE_MONTH_NUM)
+    {
+        firstTick = 1.0;
+        axisDiv_= 0;
+        wxLogMessage("Months %g %g", dataMin_, dataMax_);
+        wxLogMessage("Scale %g %g", scale_, offset_);
+    }
+    else {
+        firstTick = dataMin_;
+    }
     modf(firstTick/axisTicks_,&dtick);
     if (dtick == -0.0)
         dtick = 0.0;
+
+
     double tick = dtick * axisTicks_;
     wxString label;
     wxCoord txw, txh; // retrieve Text extents
@@ -98,13 +111,16 @@ void LinearScale::drawBottomXAxis(wxDC& dc, PixelWorld& px)
                 dc.SetPen(savePen);
             }
 
-
             // into textaxispos
             if (units_ == DATE_MONTH_NUM)
             {
-                auto monthno = (wxDateTime::Month) ((int) tick);
+                int checkMonth = (int) tick;
+                if (checkMonth >= 1 && checkMonth <= 12)
+                {
+                    auto monthno = (wxDateTime::Month) (checkMonth-1);
 
-                label.Printf(wxT("%s"),wxDateTime::GetMonthName(monthno,wxDateTime::NameFlags::Name_Abbr));
+                    label.Printf(wxT("%s"),wxDateTime::GetMonthName(monthno,wxDateTime::NameFlags::Name_Abbr));
+                }
             }
             else
                 label.Printf(wxT("%g"),tick);
@@ -326,7 +342,7 @@ void LinearScale::renderDC(wxDC& dc, PixelWorld& px)
     }
     else if (coord_ == XCOORD)
     {
-        if ((units_==DATE_JULIAN_MOD) || (units_ == DATE_YEAR_MONTH))
+        if ((units_==DATE_JULIAN_MOD) || (units_ == DATE_YEAR_MONTH) )
         {
             drawBottomDateAxis(dc,px);
         }

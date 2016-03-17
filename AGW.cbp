@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="AGW" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/agw" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option projectLinkerOptionsRelation="2" />
+				<Compiler>
+					<Add option="-std=c++14" />
+					<Add option="-g" />
+					<Add directory="src/include" />
+					<Add directory="src/msw-include" />
+				</Compiler>
+				<Linker>
+					<Add library="sqlite3" />
+					<Add library="lua" />
+					<Add library="boost_date_time" />
+					<Add library="shp" />
+					<Add library="spatialite" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/agw" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option projectLinkerOptionsRelation="2" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-std=c++14" />
+					<Add directory="src/include" />
+					<Add directory="src/msw-include" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="sqlite3" />
+					<Add library="lua" />
+					<Add library="boost_date_time" />
+					<Add library="shp" />
+					<Add library="spatialite" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="`wx-config --cflags`" />
+			<Add option="-Winvalid-pch" />
+			<Add option="-include wx_pch.h" />
+			<Add option="-DWX_PRECOMP" />
+			<Add option="-Wall" />
+		</Compiler>
+		<Linker>
+			<Add option="`wx-config --libs`" />
+		</Linker>
+		<Unit filename="src/data/app_lua.cpp" />
+		<Unit filename="src/data/autoaxis.cpp" />
+		<Unit filename="src/data/database.cpp" />
+		<Unit filename="src/data/datalayer.cpp" />
+		<Unit filename="src/data/fromlua.cpp" />
+		<Unit filename="src/data/geometry.cpp" />
+		<Unit filename="src/data/jsoncpp.cpp" />
+		<Unit filename="src/data/legend.cpp" />
+		<Unit filename="src/data/linearscale.cpp" />
+		<Unit filename="src/data/lsqlite3.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler  $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/data/lua_series.cpp" />
+		<Unit filename="src/data/plotlayer.cpp" />
+		<Unit filename="src/data/plotlua.cpp" />
+		<Unit filename="src/data/plottable.cpp" />
+		<Unit filename="src/data/series.cpp" />
+		<Unit filename="src/data/sqlitedb.cpp" />
+		<Unit filename="src/data/stationtable.cpp" />
+		<Unit filename="src/data/textlayer.cpp" />
+		<Unit filename="src/data/wxCSV.cpp" />
+		<Unit filename="src/gui/appdata.cpp" />
+		<Unit filename="src/gui/countrylistdlg.cpp" />
+		<Unit filename="src/gui/datalayerdlg.cpp" />
+		<Unit filename="src/gui/helper.cpp" />
+		<Unit filename="src/gui/largeplot.cpp" />
+		<Unit filename="src/gui/linestylecombo.cpp" />
+		<Unit filename="src/gui/loadshapedlg.cpp" />
+		<Unit filename="src/gui/luaedit.cpp" />
+		<Unit filename="src/gui/mainframe.cpp" />
+		<Unit filename="src/gui/mapframe.cpp" />
+		<Unit filename="src/gui/mapwindow.cpp" />
+		<Unit filename="src/gui/monthaverage.cpp" />
+		<Unit filename="src/gui/plotframe.cpp" />
+		<Unit filename="src/gui/plotoptions.cpp" />
+		<Unit filename="src/gui/plotproperty.cpp" />
+		<Unit filename="src/gui/plotxy.cpp" />
+		<Unit filename="src/gui/selectseries.cpp" />
+		<Unit filename="src/gui/seriesframe.cpp" />
+		<Unit filename="src/gui/seriesgrid.cpp" />
+		<Unit filename="src/gui/stationquery.cpp" />
+		<Unit filename="src/gui/stationsets.cpp" />
+		<Unit filename="src/gui/testwindowapp.cpp" />
+		<Unit filename="src/gui/vegedlg.cpp" />
+		<Unit filename="src/include/agw.h" />
+		<Unit filename="src/include/appdata.h" />
+		<Unit filename="src/include/countrylistdlg.h" />
+		<Unit filename="src/include/database.hpp" />
+		<Unit filename="src/include/datalayerdlg.h" />
+		<Unit filename="src/include/fromlua.h" />
+		<Unit filename="src/include/geometry.h" />
+		<Unit filename="src/include/helper.h" />
+		<Unit filename="src/include/largeplot.h" />
+		<Unit filename="src/include/libshape.hpp" />
+		<Unit filename="src/include/linearscale.h" />
+		<Unit filename="src/include/linestylecombo.h" />
+		<Unit filename="src/include/loadshapedlg.h" />
+		<Unit filename="src/include/lua_series.h" />
+		<Unit filename="src/include/luaedit.h" />
+		<Unit filename="src/include/mainframe.h" />
+		<Unit filename="src/include/mapframe.h" />
+		<Unit filename="src/include/mapwindow.h" />
+		<Unit filename="src/include/monthaverage.h" />
+		<Unit filename="src/include/msgexception.h" />
+		<Unit filename="src/include/newsubset.h" />
+		<Unit filename="src/include/plotframe.h" />
+		<Unit filename="src/include/plotlayer.h" />
+		<Unit filename="src/include/plotlua.h" />
+		<Unit filename="src/include/plotoptions.h" />
+		<Unit filename="src/include/plotproperty.h" />
+		<Unit filename="src/include/plotptr.h" />
+		<Unit filename="src/include/plotsymbol.h" />
+		<Unit filename="src/include/plottable.h" />
+		<Unit filename="src/include/plotxy.h" />
+		<Unit filename="src/include/selectseries.h" />
+		<Unit filename="src/include/series.hpp" />
+		<Unit filename="src/include/series_helper.h" />
+		<Unit filename="src/include/seriesframe.h" />
+		<Unit filename="src/include/seriesgrid.h" />
+		<Unit filename="src/include/sqlitedb.hpp" />
+		<Unit filename="src/include/stationquery.h" />
+		<Unit filename="src/include/stationsets.h" />
+		<Unit filename="src/include/stationtable.h" />
+		<Unit filename="src/include/testwindowapp.h" />
+		<Unit filename="src/include/vegedlg.h" />
+		<Unit filename="src/include/wxCSV.hpp" />
+		<Unit filename="wx_pch.h">
+			<Option compile="1" />
+			<Option weight="0" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

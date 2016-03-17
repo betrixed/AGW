@@ -28,6 +28,7 @@
 #include <wx/filedlg.h>
 ////@begin XPM images
 ////@end XPM images
+#include <wx/filename.h>
 
 #include "plotxy.h"
 #include "appdata.h"
@@ -39,6 +40,7 @@
 #include "datalayerdlg.h"
 #include "plottable.h"
 #include "plotlua.h"
+#include "helper.h"
 
 using namespace agw;
 /*
@@ -189,9 +191,14 @@ void PlotFrame::OnSaveMenuClick( wxCommandEvent& event )
         return;
 
     wxString path = savedlg.GetPath();
+
+    ensureExtension(path,"plot");
+
     theApp->lastPlotDir(path);
 
     thePlot->SaveToFile(path);
+
+    wxLogMessage("Saved file to %s", path.c_str());
 }
 
 
@@ -318,6 +325,7 @@ void PlotFrame::AdjustFixed(bool toContent)
 void  PlotFrame::setPlot(PlotXY* p)
 {
     thePlot = p;
+    AdjustFixed(true);
 }
 
 
@@ -333,6 +341,9 @@ void PlotFrame::OnExportPngClick( wxCommandEvent& event )
     if (SaveAsDlg.ShowModal() == wxID_OK)
     {
         wxString path = SaveAsDlg.GetPath();
+
+        ensureExtension(path,"png");
+
         thePlot->ExportToPNG(path);
     }
 }
