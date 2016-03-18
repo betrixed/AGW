@@ -64,6 +64,7 @@ class wxMenu;
 
 
 class AppData;
+class LuaEdit;
 class wxProgressDialog;
 
 class IdleTimer;
@@ -97,6 +98,9 @@ public:
 
     /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_NEW_SCRIPT
     void OnNewScriptClick( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for wxID_OPEN
+    void OnOpenClick( wxCommandEvent& event );
 
     /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_RUN_LUA
     void OnRunLuaClick( wxCommandEvent& event );
@@ -213,6 +217,9 @@ public:
 
     Database&      getDB();
 
+    LuaEdit*  createLuaEdit(const std::string& tabname);
+
+
     wxLogWindow*    log_;
     AppData*        ap_;
 protected:
@@ -224,8 +231,8 @@ protected:
     ImportThread*        mThread_;
 
     std::unique_ptr<wxStreamToTextRedirector> logOut_;
-    std::unique_ptr<wxStreamToTextRedirector> logError_;   
-    
+    std::unique_ptr<wxStreamToTextRedirector> logError_;
+
     friend class ImportThread;
 
     void ModalProgressDlg(const wxString& title, const wxString &msg);

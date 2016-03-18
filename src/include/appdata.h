@@ -60,6 +60,8 @@ extern const wxString STD_PLOT_FILES;
         Json::Value       root_;        // shared JSON configuration data
         Json::Value        user_;        // JSON user configuration
         wxString          lastPlotDir_;        // remember plots location
+        wxString          lastScriptDir_;
+
         std::vector<DataView>   views_;
         std::string       mydbpath_;
         bool              ready_;
@@ -96,8 +98,11 @@ extern const wxString STD_PLOT_FILES;
         void openDB();
         void callOpenDB();
         void exit();
+        void openScriptFile();
+        void readScript(const std::string& path);
         void openPlotFile();
         bool getPlotFile(std::string& ipath);
+        bool getScriptFile(std::string& ipath);
         void readPlot(const std::string& path);
         void loadShapeFile();
         bool getReady() const { return ready_; }
@@ -110,12 +115,17 @@ extern const wxString STD_PLOT_FILES;
         {
             return lastPlotDir_;
         }
+        const wxString& lastScriptDir() const
+        {
+            return lastScriptDir_;
+        }
 
         void  readOSInfo();
 
         std::string getDBPath() const { return mydbpath_; }
 
         void lastPlotDir(const wxString& lastDir);
+        void lastScriptDir(const wxString& lastDir);
         MainFrame* mainFrame() { return mFrame;}
 // lua interface
     static void setup_require(lua_State *L);

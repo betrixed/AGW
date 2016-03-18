@@ -15,6 +15,7 @@
 #include <wx/wfstream.h>
 #include <wx/stdpaths.h>
 #include <wx/utils.h>
+#include <wx/txtstrm.h>
 
 #include "appdata.h"
 #include "testwindowapp.h"
@@ -31,10 +32,11 @@
 #include "plotxy.h"
 #include "plotframe.h"
 #include "series.hpp"
-
+#include "luaedit.h"
 #include "json/json.h"
 
 const wxString  STD_PLOT_FILES(_("Plot files (*.plot;*.PLOT)|*.plot;*.PLOT"));
+const wxString  STD_SCRIPT_FILES(_("Script files (*.lua;*.LUA)|*.lua;*.LUA"));
 
 #include "plotlua.h"
 #include <spatialite.h>
@@ -187,6 +189,27 @@ void AppData::readConfig()
     jsonrdr.parse(injson, root_);
 
 }
+void AppData::readScript(const std::string& path)
+{
+    wxFileInputStream input(path);
+    wxTextInputStream text(input, wxT("\x09"), wxConvUTF8 );
+
+    wxFileName fn;
+
+    fn.Assign(path);
+    std::string tabname = fn.GetName().ToStdString();
+
+    LuaEdit* led = this->mainFrame()->createLuaEdit(tabname);
+    auto ctrl = led->luaEdit_;
+
+    while(input.IsOk() && !input.Eof() )
+    {
+      wxString line=text.ReadLine();
+      line << "\n";
+      ctrl->AppendText(line);
+
+    }
+}
 
 void AppData::readPlot(const std::string& path)
 {
@@ -205,7 +228,11 @@ void AppData::lastPlotDir(const wxString& path)
     wxFileName check(path);
     lastPlotDir_ = check.GetPath();
 }
-
+void AppData::lastScriptDir(const wxString& path)
+{
+    wxFileName check(path);
+    lastScriptDir_ = check.GetPath();
+}
 void AppData::openPlotFile()
 {
     std::string ipath;
@@ -213,6 +240,34 @@ void AppData::openPlotFile()
     if (!getPlotFile(ipath))
         return;
     readPlot(ipath);
+}
+
+void AppData::openScriptFile()
+{
+    std::string ipath;
+    //ipath = "/home/michael/dev/AGW/AGW/test.plot";
+    if (!getScriptFile(ipath))
+        return;
+    readScript(ipath);
+}
+bool AppData::getScriptFile(std::string& ipath)
+{
+    wxString lastFolder = lastScriptDir();
+
+    wxFileDialog* dlg = new wxFileDialog(this->mFrame, _("Open Script File"), lastFolder, wxEmptyString,
+                       STD_SCRIPT_FILES, wxFD_OPEN|wxFD_FILE_MUST_EXIST);
+    if (dlg->ShowModal() == wxID_CANCEL)
+        return false;     // the user changed idea...
+
+    wxString path = dlg->GetPath();
+
+    this->lastScriptDir(path);
+
+    ipath = path.ToStdString();
+
+    dlg->Destroy();
+    return true;
+
 }
 
 bool AppData::getPlotFile(std::string& ipath)

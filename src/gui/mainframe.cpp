@@ -24,7 +24,7 @@
 
 ////@begin includes
 #include "wx/imaglist.h"
-#include "luaedit.h"
+#include "../include/luaedit.h"
 ////@end includes
 
 #include "mainframe.h"
@@ -80,6 +80,7 @@ BEGIN_EVENT_TABLE( MainFrame, wxDocParentFrame )
 ////@begin MainFrame event table entries
     EVT_WINDOW_DESTROY( MainFrame::OnDestroy )
     EVT_MENU( ID_NEW_SCRIPT, MainFrame::OnNewScriptClick )
+    EVT_MENU( wxID_OPEN, MainFrame::OnOpenClick )
     EVT_MENU( ID_RUN_LUA, MainFrame::OnRunLuaClick )
     EVT_MENU( wxID_EXIT, MainFrame::OnExitClick )
     EVT_MENU( ID_VIEW_SERIES, MainFrame::OnViewSeriesClick )
@@ -457,14 +458,15 @@ void MainFrame::CreateControls()
     wxMenuBar* menuBar = new wxMenuBar;
     wxMenu* itemMenu11 = new wxMenu;
     itemMenu11->Append(ID_NEW_SCRIPT, _("&New Script"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu11->Append(wxID_OPEN, _("&Open"), wxEmptyString, wxITEM_NORMAL);
     itemMenu11->Append(ID_RUN_LUA, _("&Run"), wxEmptyString, wxITEM_NORMAL);
     itemMenu11->AppendSeparator();
     itemMenu11->Append(wxID_EXIT, _("E&xit"), wxEmptyString, wxITEM_NORMAL);
     itemMenu11->Append(ID_VIEW_SERIES, _("View Series"), wxEmptyString, wxITEM_NORMAL);
-    wxMenu* itemMenu17 = new wxMenu;
-    itemMenu17->Append(ID_MENUITEM, _("&Aussie CSV"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu17->Append(ID_BASELINE, _("Generate baseline"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu11->Append(ID_IMPORT_MENU, _("Setup"), itemMenu17);
+    wxMenu* itemMenu18 = new wxMenu;
+    itemMenu18->Append(ID_MENUITEM, _("&Aussie CSV"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu18->Append(ID_BASELINE, _("Generate baseline"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu11->Append(ID_IMPORT_MENU, _("Setup"), itemMenu18);
     menuBar->Append(itemMenu11, _("&File"));
     mImport = new wxMenu;
     mImport->Append(ID_IMPORT_GISS, _("GISS Month Data"), wxEmptyString, wxITEM_NORMAL);
@@ -472,20 +474,20 @@ void MainFrame::CreateControls()
     mImport->AppendSeparator();
     mImport->Append(ID_IMPORT_SHAPE_FILE, _("Shape File (.SHP)"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(mImport, _("Import"));
-    wxMenu* itemMenu25 = new wxMenu;
-    itemMenu25->Append(ID_FIND_STATION, _("Find Station"), wxEmptyString, wxITEM_NORMAL);
-    menuBar->Append(itemMenu25, _("Search"));
-    wxMenu* itemMenu27 = new wxMenu;
-    itemMenu27->Append(ID_SETS, _("Station subsets"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu27->Append(ID_LOG_VIEW, _("Log"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu27->Append(ID_LUA_COMMAND, _("Lua Command"), wxEmptyString, wxITEM_NORMAL);
-    menuBar->Append(itemMenu27, _("Window"));
+    wxMenu* itemMenu26 = new wxMenu;
+    itemMenu26->Append(ID_FIND_STATION, _("Find Station"), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu26, _("Search"));
+    wxMenu* itemMenu28 = new wxMenu;
+    itemMenu28->Append(ID_SETS, _("Station subsets"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu28->Append(ID_LOG_VIEW, _("Log"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu28->Append(ID_LUA_COMMAND, _("Lua Command"), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu28, _("Window"));
     mHelp = new wxMenu;
     mHelp->Append(ID_ABOUT, _("About"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(mHelp, _("Help"));
-    wxMenu* itemMenu33 = new wxMenu;
-    itemMenu33->Append(ID_OPEN_PLOTFILE, _("Open Plot "), wxEmptyString, wxITEM_NORMAL);
-    menuBar->Append(itemMenu33, _("Plot"));
+    wxMenu* itemMenu34 = new wxMenu;
+    itemMenu34->Append(ID_OPEN_PLOTFILE, _("Open Plot "), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu34, _("Plot"));
     itemDocParentFrame1->SetMenuBar(menuBar);
 
     book_ = new wxAuiNotebook( itemDocParentFrame1, ID_AUINOTEBOOK, wxDefaultPosition, wxDefaultSize, wxAUI_NB_DEFAULT_STYLE|wxAUI_NB_TOP );
@@ -519,7 +521,7 @@ void MainFrame::CreateControls()
     log_ = new wxLogWindow(nullptr, "Log Window", true,false);
     auto frame = log_->GetFrame();
     frame->SetClientSize(wxSize(400,500));
-    
+
     logOut_ = std::unique_ptr<wxStreamToTextRedirector>(new wxStreamToTextRedirector(mLuaLog , &std::cout));
     logError_ = std::unique_ptr<wxStreamToTextRedirector>(new wxStreamToTextRedirector(mLuaLog , &std::cerr));
 }
@@ -1322,7 +1324,7 @@ void MainFrame::OnNewScriptClick( wxCommandEvent& event )
 ////@begin wxEVT_COMMAND_MENU_SELECTED event handler for ID_NEW_SCRIPT in MainFrame.
     // Before editing this code, remove the block markers.
     event.Skip();
-////@end wxEVT_COMMAND_MENU_SELECTED event handler for ID_NEW_SCRIPT in MainFrame. 
+////@end wxEVT_COMMAND_MENU_SELECTED event handler for ID_NEW_SCRIPT in MainFrame.
 }
 
 
@@ -1332,14 +1334,14 @@ void MainFrame::OnNewScriptClick( wxCommandEvent& event )
 
 void MainFrame::OnRunLuaClick( wxCommandEvent& event )
 {
-    event.Skip(); 
+    event.Skip();
     // get current tab for Lua Edit
     wxWindow* w = book_->GetCurrentPage();
     LuaEdit* edit = dynamic_cast<LuaEdit*>(w);
     if (edit != nullptr)
     {
         std::string text = edit->luaEdit_->GetValue().ToStdString();
-        
+
         if (text.size() > 0)
         {
             ap_->runLuaScript(text);
@@ -1347,3 +1349,21 @@ void MainFrame::OnRunLuaClick( wxCommandEvent& event )
     }
 }
 
+
+/*
+ * wxEVT_COMMAND_MENU_SELECTED event handler for wxID_OPEN
+ */
+
+void MainFrame::OnOpenClick( wxCommandEvent& event )
+{
+    event.Skip();
+    ap_->openScriptFile();
+}
+
+LuaEdit* MainFrame::createLuaEdit(const std::string& tabname)
+{
+    LuaEdit* led = new LuaEdit( book_, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    led->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
+    book_->AddPage(led, tabname, false);
+    return led;
+}

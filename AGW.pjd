@@ -626,7 +626,7 @@
           <string name="Linker flags">"%AUTO%"</string>
           <long name="locked">0</long>
           <string name="Make command">"%AUTO%"</string>
-          <long name="makefile-last-written">0</long>
+          <long name="makefile-last-written">-8519680</long>
           <string name="Minimum OS version">"%AUTO%"</string>
           <string name="Modularity">"Monolithic"</string>
           <string name="Objects path">"%AUTO%"</string>
@@ -1366,6 +1366,28 @@
                 <string name="proxy-Label">"&amp;New Script"</string>
                 <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
                 <string name="title">"&amp;New Script: ID_NEW_SCRIPT"</string>
+                <long name="title-mode">0</long>
+                <string name="type">"dialog-control-document"</string>
+              </document>
+              <document>
+                <string name="proxy-type">"wbMenuItemProxy"</string>
+                <string name="event-handler-0">"wxEVT_COMMAND_MENU_SELECTED|OnOpenClick|NONE||MainFrame"</string>
+                <string name="filename">""</string>
+                <string name="icon-name">"menuitem"</string>
+                <long name="is-transient">0</long>
+                <long name="locked">0</long>
+                <long name="owns-file">1</long>
+                <string name="proxy-Bitmap">""</string>
+                <string name="proxy-Bitmap unchecked">""</string>
+                <bool name="proxy-Checked">0</bool>
+                <bool name="proxy-Enabled">1</bool>
+                <string name="proxy-Help text">""</string>
+                <string name="proxy-Id name">"wxID_OPEN"</string>
+                <long name="proxy-Id value">5000</long>
+                <string name="proxy-Kind">"Normal"</string>
+                <string name="proxy-Label">"&amp;Open"</string>
+                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
+                <string name="title">"&amp;Open: wxID_OPEN"</string>
                 <long name="title-mode">0</long>
                 <string name="type">"dialog-control-document"</string>
               </document>

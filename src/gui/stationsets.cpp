@@ -1500,6 +1500,8 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
                ydata->setLabel(yearStr);
 
                ydata->setSize(12);
+               for (int i = 0; i < 12; i++)
+                    ydata->set(i, nanFloat);
                play->ydata_ = ydata;
                play->xdata_ = xdata;
                play->label_ = yearStr;

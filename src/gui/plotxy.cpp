@@ -305,9 +305,15 @@ void PlotXY::ExportToPNG(const wxString& filepath)
     wxMemoryDC temp_dc;
 
     temp_dc.SelectObject(bits);
+    auto oldFont = temp_dc.GetFont();
+
+    temp_dc.SetFont(this->GetFont());
+
 
     temp_dc.Clear();
     this->OnDraw(temp_dc);
+
+    temp_dc.SetFont(oldFont);
 
     bits.SaveFile(filepath,  wxBITMAP_TYPE_PNG);
 }

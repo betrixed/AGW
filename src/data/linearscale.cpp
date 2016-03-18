@@ -121,6 +121,8 @@ void LinearScale::drawBottomXAxis(wxDC& dc, PixelWorld& px)
 
                     label.Printf(wxT("%s"),wxDateTime::GetMonthName(monthno,wxDateTime::NameFlags::Name_Abbr));
                 }
+                else
+                    label.Clear();
             }
             else
                 label.Printf(wxT("%g"),tick);
