@@ -51,6 +51,22 @@ static const struct luaL_Reg dateLib_method [] = {
   {nullptr, nullptr}
 };
 
+static const struct luaL_Reg statLib_funct [] = {
+    {"new" , NormalStats::NewStats},
+    {nullptr, nullptr}
+};
+
+static const struct luaL_Reg statLib_method [] = {
+  {"__tostring", NormalStats::toString},
+  {"size", NormalStats::lSize},
+  {"min", NormalStats::lMin},
+  {"max", NormalStats::lMax},
+  {"avg", NormalStats::lAvg},
+  {"stddev", NormalStats::lStddev},
+  {"calc", NormalStats::lCalc},
+  {nullptr, nullptr}
+};
+
 #include "series.hpp"
 #include <wx/log.h>
 
@@ -97,28 +113,28 @@ SeriesPtr* SeriesRay::pushSeries(lua_State* L)
     // expect methods table already on stack
 void SeriesRay::createmeta (lua_State *L) {
 }
-
+/*
 static void stackDump (lua_State *L) {
       int i;
       int top = lua_gettop(L);
       std::cout << "STACK " << std::endl;
-      for (i = 1; i <= top; i++) {  /* repeat for each level */
+      for (i = 1; i <= top; i++) {  // repeat for each level 
         int t = lua_type(L, i);
         switch (t) {
 
-          case LUA_TSTRING:  /* strings */
+          case LUA_TSTRING:  // strings 
             std::cout << i << ": " <<  lua_tostring(L, i);
             break;
 
-          case LUA_TBOOLEAN:  /* booleans */
+          case LUA_TBOOLEAN:  // booleans 
             std::cout << i << ": " <<  (lua_toboolean(L, i) ? "true" : "false");
             break;
 
-          case LUA_TNUMBER:  /* numbers */
+          case LUA_TNUMBER:  // numbers
             std::cout << i << ": " <<  lua_tonumber(L, i);
             break;
 
-          default:  /* other values */
+          default:  // other values 
             std::cout << i << ": " <<  lua_typename(L, t);
             break;
 
@@ -127,6 +143,7 @@ static void stackDump (lua_State *L) {
       }
       std::cout << "END" << std::endl;
     }
+*/
 
 void SeriesRay::setup_require(lua_State *L)
 {
@@ -503,4 +520,126 @@ void SeriesDate::setup_require(lua_State *L)
 {
     luaL_requiref(L, DATE_LIB, SeriesDate::init_lib, 1);
     lua_pop(L, 1);  /* remove lib */
+}
+
+#define STATS_LIB "stats"
+NormalStats* checkNormalStats (lua_State *L, int index ) {
+  luaL_checktype(L, index, LUA_TUSERDATA);
+  void *ud = luaL_checkudata(L, index, STATS_LIB);
+  luaL_argcheck(L, ud != nullptr, 1, STATS_LIB " expected");
+  return (NormalStats*) ud;
+}
+
+int NormalStats::toString (lua_State* L) {
+      NormalStats *mem = checkNormalStats(L,1);
+      lua_pushfstring(L, "stats(%d)", (*mem).toString().c_str());
+      return 1;
+}
+
+void*
+pushNormalStats(lua_State* L)
+{
+    size_t nbytes = sizeof(NormalStats);
+    void *a = lua_newuserdata(L, nbytes);
+    luaL_setmetatable(L, STATS_LIB);
+    return a;
+
+ }
+ int NormalStats::NewStats(lua_State* L)
+ {
+    int stacktop = lua_gettop(L);
+    NormalStats* mem = (NormalStats*)pushNormalStats(L);
+    if (stacktop >= 1)
+    {
+        //require Series argument
+        SeriesPtr* sp = SeriesRay::checkSeries(L,1);
+        (*mem).calc(*(sp->get()));
+    }
+    return 1;
+
+ }
+
+ NormalStats* validStats(lua_State* L)
+ {
+    NormalStats* mem = checkNormalStats(L,1);
+    luaL_argcheck(L, mem->valid_, 1, STATS_LIB " not valid");
+    return mem;
+ }
+ int
+ NormalStats::lMin(lua_State* L)
+ {
+    NormalStats* mem = validStats(L);
+    lua_pushnumber(L, mem->minval_);
+    return 1;
+ }
+
+ int
+ NormalStats::lMax(lua_State* L)
+ {
+    NormalStats* mem = validStats(L);
+    lua_pushnumber(L, mem->maxval_);
+    return 1;
+ }
+ int
+ NormalStats::lSize(lua_State* L)
+ {
+    NormalStats* mem = validStats(L);
+    lua_pushinteger(L, mem->n_);
+    return 1;
+ }
+ int
+ NormalStats::lAvg(lua_State* L)
+ {
+    NormalStats* mem = validStats(L);
+    lua_pushnumber(L, mem->mean_);
+    return 1;
+
+ }
+ int
+ NormalStats::lStddev(lua_State* L)
+ {
+    NormalStats* mem = validStats(L);
+    lua_pushnumber(L, mem->stddev_);
+    return 1;
+ }
+ int
+ NormalStats::lCalc(lua_State* L)
+ {
+    NormalStats* mem = checkNormalStats(L,1);
+    SeriesPtr* sp = SeriesRay::checkSeries(L,2);
+    (*mem).calc(*(sp->get()));
+    lua_settop(L,1);
+    return 1;
+ }
+
+void NormalStats::setup_require(lua_State *L)
+{
+    luaL_requiref(L, STATS_LIB, NormalStats::init_lib, 1);
+    lua_pop(L, 1);  /* remove lib */
+}
+// the methods table is returned anonymously.
+int NormalStats::init_lib(lua_State* L)
+{
+    // top of stack contains argument SERIES_LIB
+    luaL_newlibtable(L, statLib_funct);  //stacktop+1 == function table
+
+    luaL_setfuncs(L, statLib_funct, 0);  // setup the functions
+
+
+    luaL_newmetatable(L, STATS_LIB);     // stacktop+2 == meta-methods table, attached to Series Objects
+
+    // leaves function table on stack
+    luaL_setfuncs(L, statLib_method, 0);  /* add methods to new metatable, no closure */
+
+
+    lua_pushstring(L, "__index"); // stacktop+3 (-1)        = "__index"
+
+    lua_pushvalue(L, -2);         // stacktop+4 = metatable, 3 __index  (4 - 2 + 1
+
+    lua_settable(L,  -3);  // set table at 2 metatable.__index = metatable (at 3) Pop 3 & 4
+
+    lua_pop(L, 1);  /* pop stacktop+2, leaving function table on stacktop+1 */
+
+
+    return 1;
 }

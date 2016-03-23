@@ -7,6 +7,8 @@
 #include "json/json.h"
 #include <list>
 #include "fromlua.h"
+#include <unordered_map>
+#include "series.hpp"
 
 class TestWindowApp;
 class MainFrame;
@@ -19,6 +21,8 @@ class DataView {
     PlotFrame* pf;
     SeriesFrame* sf;
 };
+
+#include <wx/platinfo.h>
 
 class CountryLayer;
 typedef std::shared_ptr<CountryLayer>  CountryMapPtr;
@@ -59,8 +63,11 @@ extern const wxString STD_PLOT_FILES;
         MainFrame*        mFrame;       // GUI main window
         Json::Value       root_;        // shared JSON configuration data
         Json::Value        user_;        // JSON user configuration
+
         wxString          lastPlotDir_;        // remember plots location
         wxString          lastScriptDir_;
+
+        std::unordered_map<std::string, agw::SeriesPtr>   global_;
 
         std::vector<DataView>   views_;
         std::string       mydbpath_;
@@ -92,6 +99,8 @@ extern const wxString STD_PLOT_FILES;
 
         CountryMapPtr getCountryMap();
 
+        agw::SeriesPtr  getGlobal(const char* s);
+
         const wxString& appDataDir() { return appDataDir_; }
         Database& getDB();
         void initPaths(TestWindowApp *app, MainFrame* mf);
@@ -104,13 +113,18 @@ extern const wxString STD_PLOT_FILES;
         bool getPlotFile(std::string& ipath);
         bool getScriptFile(std::string& ipath);
         void readPlot(const std::string& path);
+
+        bool getPlotFileSave(wxString& ipath);
+        bool getLuaFileSave(wxString& ipath);
+
+
         void loadShapeFile();
         bool getReady() const { return ready_; }
         void registerView(SeriesFrame* sf);
         void registerView(PlotFrame* pf);
 
         void runLuaScript(const std::string& script);
-
+        void saveLuaScript(const wxString& script, const wxString& path);
         const wxString& lastPlotDir() const
         {
             return lastPlotDir_;
@@ -131,6 +145,7 @@ extern const wxString STD_PLOT_FILES;
     static void setup_require(lua_State *L);
     static int init_lib(lua_State* L);
     static int dbpath(lua_State* L);
+    static int global(lua_State* L);
 
     };
 #define APP_LUA "app"

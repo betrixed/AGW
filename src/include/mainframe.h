@@ -96,11 +96,20 @@ public:
     /// wxEVT_DESTROY event handler for ID_MAINFRAME
     void OnDestroy( wxWindowDestroyEvent& event );
 
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_RUN
+    void OnRunClick( wxCommandEvent& event );
+
     /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_NEW_SCRIPT
     void OnNewScriptClick( wxCommandEvent& event );
 
     /// wxEVT_COMMAND_MENU_SELECTED event handler for wxID_OPEN
     void OnOpenClick( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for wxID_SAVE
+    void OnSaveClick( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for wxID_SAVEAS
+    void OnSaveasClick( wxCommandEvent& event );
 
     /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_RUN_LUA
     void OnRunLuaClick( wxCommandEvent& event );
@@ -218,7 +227,7 @@ public:
     Database&      getDB();
 
     LuaEdit*  createLuaEdit(const std::string& tabname);
-
+    void doLuaSaveAs();
 
     wxLogWindow*    log_;
     AppData*        ap_;

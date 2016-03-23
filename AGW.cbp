@@ -19,7 +19,6 @@
 				</Compiler>
 				<Linker>
 					<Add library="sqlite3" />
-					<Add library="lua" />
 					<Add library="boost_date_time" />
 					<Add library="shp" />
 					<Add library="spatialite" />
@@ -48,11 +47,11 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-Wall" />
 			<Add option="`wx-config --cflags`" />
 			<Add option="-Winvalid-pch" />
 			<Add option="-include wx_pch.h" />
 			<Add option="-DWX_PRECOMP" />
-			<Add option="-Wall" />
 		</Compiler>
 		<Linker>
 			<Add option="`wx-config --libs`" />
@@ -144,6 +143,138 @@
 		<Unit filename="src/include/testwindowapp.h" />
 		<Unit filename="src/include/vegedlg.h" />
 		<Unit filename="src/include/wxCSV.hpp" />
+		<Unit filename="src/lua-5.3.2/src/lapi.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lauxlib.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lbaselib.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lbitlib.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lcode.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lcorolib.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lctype.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/ldblib.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/ldebug.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/ldo.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/ldump.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lfunc.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lgc.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/linit.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/liolib.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/llex.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lmathlib.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lmem.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/loadlib.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lobject.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lopcodes.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/loslib.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lparser.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lstate.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lstring.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lstrlib.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/ltable.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/ltablib.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/ltm.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lundump.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lutf8lib.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lvm.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
+		<Unit filename="src/lua-5.3.2/src/lzio.c">
+			<Option compilerVar="CC" />
+			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />
+		</Unit>
 		<Unit filename="wx_pch.h">
 			<Option compile="1" />
 			<Option weight="0" />

@@ -28,6 +28,7 @@
 #include "stationtable.h"
 #include "database.hpp"
 #include "plotsymbol.h"
+#include <cfloat>
 
 #include <wx/statusbr.h>
 ////@begin XPM images
@@ -298,8 +299,8 @@ const GissLocation* MapWindow::findStation(const wxPoint& p)
     auto it = data.begin();
     auto fin = data.end();
 
-    double minDistance;
-    const GissLocation* minloc;
+    double minDistance = FLT_MAX;
+    const GissLocation* minloc = nullptr;
 
     for(int ct = 0; it != fin; it++, ct++)
     {

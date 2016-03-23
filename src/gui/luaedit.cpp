@@ -23,7 +23,8 @@
 ////@begin includes
 ////@end includes
 
-#include "../include/luaedit.h"
+#include "luaedit.h"
+#include <wx/filename.h>
 
 ////@begin XPM images
 ////@end XPM images
@@ -193,4 +194,14 @@ wxIcon LuaEdit::GetIconResource( const wxString& name )
     wxUnusedVar(name);
     return wxNullIcon;
 ////@end LuaEdit icon retrieval
+}
+
+void LuaEdit::SetFilePath(const wxString& path)
+{
+    savePath_ = path;
+    wxFileName fn;
+    
+    fn.Assign(path);
+    tabName_ = fn.GetName();
+    
 }

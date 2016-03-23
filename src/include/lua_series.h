@@ -70,9 +70,9 @@ namespace agw {
 
 
 
-		static SeriesPtr* checkSeries(lua_State *L, int index);
-		static SeriesPtr* toSeries(lua_State* L, int index);
-		static SeriesPtr* pushSeries(lua_State* L);
+		static agw::SeriesPtr* checkSeries(lua_State *L, int index);
+		static agw::SeriesPtr* toSeries(lua_State* L, int index);
+		static agw::SeriesPtr* pushSeries(lua_State* L);
 
 	};
 

@@ -53,8 +53,6 @@ void LinearScale::drawBottomXAxis(wxDC& dc, PixelWorld& px)
     {
         firstTick = 1.0;
         axisDiv_= 0;
-        wxLogMessage("Months %g %g", dataMin_, dataMax_);
-        wxLogMessage("Scale %g %g", scale_, offset_);
     }
     else {
         firstTick = dataMin_;
@@ -128,23 +126,25 @@ void LinearScale::drawBottomXAxis(wxDC& dc, PixelWorld& px)
                 label.Printf(wxT("%g"),tick);
 
             label.Trim(false);label.Trim(true);
-            dc.GetTextExtent(label, &txw, &txh);
 
-
-            if (tickRotate_ == TextRotate::R_0)
+            if (label.size() > 0)
             {
-                int ylabel = insideLabel_ ? bigTickTop - txh - 3 : bigTickBottom + 3;
-                dc.DrawText(label, xpt - txw/2, ylabel);
-            }
-            else if (tickRotate_ == TextRotate::CW_90)
-            {
-                 int ylabel = insideLabel_ ? bigTickTop - txw - 3 : bigTickBottom + 3;
-                dc.DrawRotatedText(label, xpt + txh/2, ylabel, angle);
-            }
-            else if (tickRotate_ == TextRotate::ACW_90)
-            {
-                 int ylabel = insideLabel_ ? bigTickTop + 3 : bigTickBottom - txw - 3;
-                dc.DrawRotatedText(label, xpt + txh/2, ylabel, angle);
+                dc.GetTextExtent(label, &txw, &txh);
+                if (tickRotate_ == TextRotate::R_0)
+                {
+                    int ylabel = insideLabel_ ? bigTickTop - txh - 3 : bigTickBottom + 3;
+                    dc.DrawText(label, xpt - txw/2, ylabel);
+                }
+                else if (tickRotate_ == TextRotate::CW_90)
+                {
+                     int ylabel = insideLabel_ ? bigTickTop - txw - 3 : bigTickBottom + 3;
+                     dc.DrawRotatedText(label, xpt + txh/2, ylabel, angle);
+                }
+                else if (tickRotate_ == TextRotate::ACW_90)
+                {
+                     int ylabel = insideLabel_ ? bigTickTop + 3 : bigTickBottom - txw - 3;
+                    dc.DrawRotatedText(label, xpt + txh/2, ylabel, angle);
+                }
             }
         }
         if (axisDiv_ > 0)
@@ -246,7 +246,7 @@ void LinearScale::drawLeftYAxis(wxDC& dc, PixelWorld& px)
     int otherSide = axispos+px.xspan_;
     int angle = degreesRotation(tickRotate_);
     int minLeftBound = axispos;
-    int textx;
+    int textx = 0;
 
     if (bigTickLeft < minLeftBound)
         minLeftBound = bigTickLeft;
@@ -426,8 +426,11 @@ void LinearScale::ReadJSON(const Json::Value& json)
             coord_ = ScaleCoord::YCOORD;
         }
    }
-    if (readString(json,"units", tempStr))
-        units_ = toSeriesUnit(tempStr);
+    if (json.isMember("unit"))
+    {
+        auto temp = json["unit"].asString();
+        this->units_ = toSeriesUnit(temp);
+    }
     if (readString(json,"label",tempStr))
         label_ = tempStr;
     readBool(json,"showGrid", showMajorGrid_);

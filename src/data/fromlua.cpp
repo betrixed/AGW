@@ -229,7 +229,7 @@ LuaEngine::Init()
 		SeriesDate::setup_require(state_);
 		PlotLua::setup_require(state_);
         AppData::setup_require(state_);
-
+        NormalStats::setup_require(state_);
 		//const char* CJSON_LIB = "cjson";
 	    //luaL_requiref(state_, CJSON_LIB, luaopen_cjson, 1);
         //lua_pop(state_, 1);  /* remove lib */

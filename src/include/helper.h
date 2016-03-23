@@ -63,8 +63,10 @@ namespace Json {
     class Value;
 };
 
-class Series;
-typedef std::shared_ptr<Series> SeriesPtr;
+namespace agw {
+    class Series;
+    typedef std::shared_ptr<Series> SeriesPtr;
+}
 
 std::string shapeToString(int shapeType);
 int strToPlotShape(const std::string& s);
@@ -83,7 +85,8 @@ bool readDouble(const Json::Value& json, const std::string& prop, double& dest);
 bool readBool(const Json::Value& json, const std::string& prop, bool& dest);
 bool readString(const Json::Value& json, const std::string& prop, std::string& dest);
 bool readColor(const Json::Value& json, const std::string& prop, wxColor& color);
-SeriesPtr readJSONSeries(const Json::Value& v);
+
+agw::SeriesPtr readJSONSeries(const Json::Value& v);
 
 class wxChoice;
 void setChoice(wxChoice* ch,const wxString& value);

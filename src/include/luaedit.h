@@ -92,7 +92,13 @@ public:
     };
 ////@end LuaEdit member variables
 
+
+    void SetFilePath(const wxString& path);
+    
     wxStyledTextCtrl* luaEdit_;
+    wxString    savePath_;
+    wxString    tabName_;
+    
 };
 
 #endif

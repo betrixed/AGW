@@ -13,6 +13,8 @@
     #endif
 #endif
 
+using namespace agw;
+
 static void jsonReadInt(const Json::Value& json, const std::string& key, int& value)
 {
     if (json.isMember(key))
@@ -263,7 +265,7 @@ void RCorrelate::calc(const Series& x, const Series& y)
 
 }
 
-std::string unitAsString(SeriesUnit u)
+std::string agw::unitAsString(SeriesUnit u)
 {
     switch(u)
     {
@@ -281,7 +283,7 @@ std::string unitAsString(SeriesUnit u)
             return "Default";
     }
 }
-SeriesUnit toSeriesUnit(const std::string& s)
+SeriesUnit agw::toSeriesUnit(const std::string& s)
 {
     if (s == "Default")
     {
@@ -363,7 +365,10 @@ void DoubleSeries::ReadJSON(const Json::Value& json)
         this->pts_ = ct;
         for(Json::Value::ArrayIndex ix = 0; ix < ct; ix++)
         {
-            data_[ix] = (points[ix]).asDouble();
+            if (points[ix].isNull())
+                data_[ix] = nanFloat; // avoid converting null to 0.0
+            else
+                data_[ix] = (points[ix]).asDouble();
         }
     }
 }
@@ -391,7 +396,10 @@ void FloatSeries::ReadJSON(const Json::Value& json)
         this->pts_ = ct;
         for(Json::Value::ArrayIndex ix = 0; ix < ct; ix++)
         {
-            data_[ix] = points[ix].asFloat();
+            if (points[ix].isNull())
+                data_[ix] = nanFloat;
+            else
+                data_[ix] = points[ix].asFloat();
         }
     }
 }
@@ -407,6 +415,21 @@ void FloatSeries::SaveJSON(Json::Value& json)
         points[ix] = *i;
     }
     json["items"] = points;
+}
+
+std::string NormalStats::toString()
+{
+    if (valid_)
+    {
+        std::stringstream sout;
+
+        sout << "stats(size=> " << n_ << ", min=> " << this->minval_ << ", max=> " << this->maxval_;
+        sout << "mean=> " << mean_ << ", sdev=> " << stddev_  << ")";
+        return sout.str();
+    }
+    else {
+        return "stats(invalid)";
+    }
 }
 
 void NormalStats::calc(const std::vector<double> &data)

@@ -1,7 +1,11 @@
 #include "appdata.h"
+#include "lua_series.h"
+
+using namespace agw;
 
 static const struct luaL_Reg appLua_funct [] = {
       {"dbpath", AppData::dbpath},
+      {"global", AppData::global},
       {nullptr, nullptr}
 };
 
@@ -26,6 +30,21 @@ int AppData::init_lib(lua_State* L)
     lua_pop(L, 1);  // pop stacktop+2, leaving function table on stacktop+1
     */
 
+    return 1;
+}
+
+
+int AppData::global(lua_State* L)
+{
+    const char* gname = luaL_checkstring(L,1);
+    SeriesPtr sp = gAppData->getGlobal(gname);
+    if (sp == nullptr)
+    {
+        sp = std::make_shared<DoubleSeries>();
+        sp->setLabel(gname);
+    }
+    SeriesPtr* mem = SeriesRay::pushSeries(L);
+    *mem = sp;
     return 1;
 }
 

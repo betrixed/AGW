@@ -22,7 +22,7 @@
 
 
 ////@begin includes
-#include "mapwindow.h"
+#include "../include/mapwindow.h"
 ////@end includes
 
 #include "mapframe.h"

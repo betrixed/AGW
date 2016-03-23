@@ -174,6 +174,38 @@ void AppData::readUserConfig()
     jr.parse(ifs,user_);
 
 }
+
+
+SeriesPtr AppData::getGlobal(const char* s)
+{
+    auto mit = global_.find(std::string(s));
+    if (mit != global_.end())
+    {
+        return (*mit).second;
+    }
+    SeriesPtr sp;
+    if (!root_.isMember("global"))
+    {
+        return sp;
+    }
+
+    Json::Value g = root_["global"];
+    if (g.isObject() && g.isMember(s))
+    {
+        Json::Value js = g[s];
+        if (js.isObject() && js.isMember("jype"))
+        {
+            sp = readJSONSeries(js);
+            if (sp != nullptr)
+            {
+                std::pair<std::string, SeriesPtr> ins(s, sp);
+                global_.insert(ins);
+            }
+        }
+    }
+    return sp;
+}
+
 void AppData::readConfig()
 {
     wxFileName configPath;
@@ -213,7 +245,6 @@ void AppData::readScript(const std::string& path)
 
 void AppData::readPlot(const std::string& path)
 {
-
     PlotLuaPtr pp = std::make_shared<PlotLua>();
 
     PlotLua* pl = pp.get();
@@ -222,16 +253,58 @@ void AppData::readPlot(const std::string& path)
 
     pl->showPlot(pp,true);
 }
+bool AppData::getLuaFileSave(wxString& ipath)
+{
+    std::unique_ptr<wxFileDialog> savedlg(new wxFileDialog(this->mFrame, wxString(_("Save as")), lastScriptDir_, wxEmptyString,
+            STD_SCRIPT_FILES, wxFD_SAVE | wxFD_OVERWRITE_PROMPT));
+    if (savedlg->ShowModal() == wxID_CANCEL)
+        return false;
+
+    wxString path = savedlg->GetPath();
+
+    ensureExtension(path,"lua");
+
+    ipath = path;
+
+    this->lastScriptDir(path);
+    return true;
+}
+
+void AppData::saveLuaScript(const wxString& script, const wxString& path)
+{
+    std::ofstream fout(path.ToStdString());
+
+    fout << script.ToStdString();
+
+    fout.close();
+}
+
+bool AppData::getPlotFileSave(wxString& ipath)
+{
+    std::unique_ptr<wxFileDialog> savedlg(new wxFileDialog(this->mFrame, wxString(_("Save as")), lastPlotDir_, wxEmptyString,
+            STD_PLOT_FILES, wxFD_SAVE | wxFD_OVERWRITE_PROMPT));
+    if (savedlg->ShowModal() == wxID_CANCEL)
+        return false;
+
+    wxString path = savedlg->GetPath();
+
+    ensureExtension(path,"plot");
+
+    ipath = path;
+
+    this->lastPlotDir(path);
+    return true;
+}
 
 void AppData::lastPlotDir(const wxString& path)
 {
     wxFileName check(path);
-    lastPlotDir_ = check.GetPath();
+    lastPlotDir_ = check.GetPathWithSep();
 }
 void AppData::lastScriptDir(const wxString& path)
 {
     wxFileName check(path);
-    lastScriptDir_ = check.GetPath();
+    lastScriptDir_ = check.GetPathWithSep();
 }
 void AppData::openPlotFile()
 {
@@ -269,6 +342,9 @@ bool AppData::getScriptFile(std::string& ipath)
     return true;
 
 }
+
+
+
 
 bool AppData::getPlotFile(std::string& ipath)
 {

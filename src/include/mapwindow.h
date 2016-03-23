@@ -33,7 +33,6 @@ class MapWindow;
  */
 
 ////@begin control identifiers
-
 #define SYMBOL_MAPWINDOW_STYLE wxSUNKEN_BORDER|wxFULL_REPAINT_ON_RESIZE|wxHSCROLL|wxVSCROLL
 #define SYMBOL_MAPWINDOW_IDNAME ID_SCROLLEDWINDOW
 #define SYMBOL_MAPWINDOW_SIZE wxSize(600, 300)
@@ -55,10 +54,6 @@ class MapWindow: public wxScrolledCanvas
     DECLARE_EVENT_TABLE()
 
 public:
-
-    enum { 
-        ID_SCROLLEDWINDOW = 10001 
-    };
 
     /// Constructors
     MapWindow();
@@ -99,6 +94,10 @@ public:
     static bool ShowToolTips();
 
 ////@begin MapWindow member variables
+    /// Control identifiers
+    enum {
+        ID_SCROLLEDWINDOW = 10001
+    };
 ////@end MapWindow member variables
 
     void drawCountryLayer(wxDC& dc);

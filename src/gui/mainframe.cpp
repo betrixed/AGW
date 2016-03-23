@@ -40,6 +40,7 @@
 #include <wx/sstream.h>
 #include <wx/progdlg.h>
 
+
 ////@begin XPM images
 ////@end XPM images
 
@@ -79,8 +80,11 @@ BEGIN_EVENT_TABLE( MainFrame, wxDocParentFrame )
 
 ////@begin MainFrame event table entries
     EVT_WINDOW_DESTROY( MainFrame::OnDestroy )
+    EVT_BUTTON( ID_RUN, MainFrame::OnRunClick )
     EVT_MENU( ID_NEW_SCRIPT, MainFrame::OnNewScriptClick )
     EVT_MENU( wxID_OPEN, MainFrame::OnOpenClick )
+    EVT_MENU( wxID_SAVE, MainFrame::OnSaveClick )
+    EVT_MENU( wxID_SAVEAS, MainFrame::OnSaveasClick )
     EVT_MENU( ID_RUN_LUA, MainFrame::OnRunLuaClick )
     EVT_MENU( wxID_EXIT, MainFrame::OnExitClick )
     EVT_MENU( ID_VIEW_SERIES, MainFrame::OnViewSeriesClick )
@@ -459,14 +463,16 @@ void MainFrame::CreateControls()
     wxMenu* itemMenu11 = new wxMenu;
     itemMenu11->Append(ID_NEW_SCRIPT, _("&New Script"), wxEmptyString, wxITEM_NORMAL);
     itemMenu11->Append(wxID_OPEN, _("&Open"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu11->Append(wxID_SAVE, _("&Save"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu11->Append(wxID_SAVEAS, _("Save &As ..."), wxEmptyString, wxITEM_NORMAL);
     itemMenu11->Append(ID_RUN_LUA, _("&Run"), wxEmptyString, wxITEM_NORMAL);
     itemMenu11->AppendSeparator();
     itemMenu11->Append(wxID_EXIT, _("E&xit"), wxEmptyString, wxITEM_NORMAL);
     itemMenu11->Append(ID_VIEW_SERIES, _("View Series"), wxEmptyString, wxITEM_NORMAL);
-    wxMenu* itemMenu18 = new wxMenu;
-    itemMenu18->Append(ID_MENUITEM, _("&Aussie CSV"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu18->Append(ID_BASELINE, _("Generate baseline"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu11->Append(ID_IMPORT_MENU, _("Setup"), itemMenu18);
+    wxMenu* itemMenu20 = new wxMenu;
+    itemMenu20->Append(ID_MENUITEM, _("&Aussie CSV"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu20->Append(ID_BASELINE, _("Generate baseline"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu11->Append(ID_IMPORT_MENU, _("Setup"), itemMenu20);
     menuBar->Append(itemMenu11, _("&File"));
     mImport = new wxMenu;
     mImport->Append(ID_IMPORT_GISS, _("GISS Month Data"), wxEmptyString, wxITEM_NORMAL);
@@ -474,20 +480,20 @@ void MainFrame::CreateControls()
     mImport->AppendSeparator();
     mImport->Append(ID_IMPORT_SHAPE_FILE, _("Shape File (.SHP)"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(mImport, _("Import"));
-    wxMenu* itemMenu26 = new wxMenu;
-    itemMenu26->Append(ID_FIND_STATION, _("Find Station"), wxEmptyString, wxITEM_NORMAL);
-    menuBar->Append(itemMenu26, _("Search"));
     wxMenu* itemMenu28 = new wxMenu;
-    itemMenu28->Append(ID_SETS, _("Station subsets"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu28->Append(ID_LOG_VIEW, _("Log"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu28->Append(ID_LUA_COMMAND, _("Lua Command"), wxEmptyString, wxITEM_NORMAL);
-    menuBar->Append(itemMenu28, _("Window"));
+    itemMenu28->Append(ID_FIND_STATION, _("Find Station"), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu28, _("Search"));
+    wxMenu* itemMenu30 = new wxMenu;
+    itemMenu30->Append(ID_SETS, _("Station subsets"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu30->Append(ID_LOG_VIEW, _("Log"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu30->Append(ID_LUA_COMMAND, _("Lua Command"), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu30, _("Window"));
     mHelp = new wxMenu;
     mHelp->Append(ID_ABOUT, _("About"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(mHelp, _("Help"));
-    wxMenu* itemMenu34 = new wxMenu;
-    itemMenu34->Append(ID_OPEN_PLOTFILE, _("Open Plot "), wxEmptyString, wxITEM_NORMAL);
-    menuBar->Append(itemMenu34, _("Plot"));
+    wxMenu* itemMenu36 = new wxMenu;
+    itemMenu36->Append(ID_OPEN_PLOTFILE, _("Open Plot "), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu36, _("Plot"));
     itemDocParentFrame1->SetMenuBar(menuBar);
 
     book_ = new wxAuiNotebook( itemDocParentFrame1, ID_AUINOTEBOOK, wxDefaultPosition, wxDefaultSize, wxAUI_NB_DEFAULT_STYLE|wxAUI_NB_TOP );
@@ -518,7 +524,7 @@ void MainFrame::CreateControls()
     itemDocParentFrame1->Connect(ID_MAINFRAME, wxEVT_DESTROY, wxWindowDestroyEventHandler(MainFrame::OnDestroy), NULL, this);
 ////@end MainFrame content construction
 
-    log_ = new wxLogWindow(nullptr, "Log Window", true,false);
+    log_ = new wxLogWindow(nullptr, "Log Window", true,false); 
     auto frame = log_->GetFrame();
     frame->SetClientSize(wxSize(400,500));
 
@@ -1367,3 +1373,67 @@ LuaEdit* MainFrame::createLuaEdit(const std::string& tabname)
     book_->AddPage(led, tabname, false);
     return led;
 }
+
+
+/*
+ * wxEVT_COMMAND_MENU_SELECTED event handler for wxID_SAVEAS
+ */
+
+void MainFrame::OnSaveasClick( wxCommandEvent& event )
+{
+    event.Skip(true);
+    doLuaSaveAs();
+}
+
+void MainFrame::doLuaSaveAs()
+{
+    wxString savePath;
+    wxWindow* page = book_->GetCurrentPage();
+    LuaEdit* led = dynamic_cast<LuaEdit*>(page);
+    if (led != nullptr)
+    {
+        if (ap_->getLuaFileSave(savePath))
+        {
+            ap_->saveLuaScript(led->luaEdit_->GetValue(), savePath);
+            led->SetFilePath(savePath);
+            int sel = book_->GetPageIndex(led);
+            book_->SetPageText(sel, led->tabName_);
+        }       
+    } 
+}
+    
+
+
+/*
+ * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_RUN
+ */
+
+void MainFrame::OnRunClick( wxCommandEvent& event )
+{
+////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_RUN in MainFrame.
+    // Before editing this code, remove the block markers.
+    event.Skip();
+////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_RUN in MainFrame. 
+}
+
+
+/*
+ * wxEVT_COMMAND_MENU_SELECTED event handler for wxID_SAVE
+ */
+
+void MainFrame::OnSaveClick( wxCommandEvent& event )
+{
+    event.Skip(true);
+    wxWindow* page = book_->GetCurrentPage();
+    LuaEdit* led = dynamic_cast<LuaEdit*>(page);
+    if (led != nullptr)
+    {
+        if (led->savePath_.size() > 0)
+        {
+            ap_->saveLuaScript(led->luaEdit_->GetValue(), led->savePath_);
+            return;
+        }
+        doLuaSaveAs();    
+    }        
+}
+

@@ -147,10 +147,9 @@ wxWindow* TestWindowApp::GetSplash(bool timeout)
     wxBitmap bitmap;
     wxWindow* result;
 
-
     wxFileName splashPath;
 
-    splashPath.Assign(theStore->appDataDir(),_T("ClimateAppSplash"), "png");
+    splashPath.Assign(theStore->appDataDir(),_T("AGWSplash"), "png");
     splashPath.AppendDir("images");
     if (bitmap.LoadFile(splashPath.GetFullPath(), wxBITMAP_TYPE_PNG))
     {

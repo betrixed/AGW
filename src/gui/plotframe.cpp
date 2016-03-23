@@ -183,22 +183,13 @@ void PlotFrame::OnSaveMenuClick( wxCommandEvent& event )
     event.Skip(false);
     if (!thePlot)
         return;
-
-    wxFileDialog savedlg(this, "Save as", theApp->lastPlotDir(), wxEmptyString,
-            STD_PLOT_FILES, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-
-    if (savedlg.ShowModal() == wxID_CANCEL)
-        return;
-
-    wxString path = savedlg.GetPath();
-
-    ensureExtension(path,"plot");
-
-    theApp->lastPlotDir(path);
-
-    thePlot->SaveToFile(path);
-
-    wxLogMessage("Saved file to %s", path.c_str());
+    wxString path;
+    
+    if (theApp->getPlotFileSave(path))
+    {
+        thePlot->SaveToFile(path);
+        wxLogMessage("Saved file to %s", path.c_str());
+    }
 }
 
 

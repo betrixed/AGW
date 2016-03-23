@@ -1146,7 +1146,6 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
     " and Y.measure = ?"
     " and Y.codeId = T.codeId";
 
-
     std::string groupBy =  " GROUP by Y.year ORDER BY year";
 
     long baseYearFrom = GetLongValue(this->mBaseStart);
