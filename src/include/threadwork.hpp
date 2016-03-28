@@ -21,11 +21,14 @@ class WorkThread : public wxThread
         }
 
     virtual ~WorkThread();
+    const std::string& dbBath() const { return dbPath_; }
+    const std::string& filePath() const { return filePath_; }
+
+    void UpdateProgress(int value);
 
  protected:
     // send a number from 0 to 100: -1 means cancel.  100 means complete.
 
-    void UpdateProgress(int value);
 
     MainFrame *m_pHandler;
     std::string dbPath_;
@@ -52,7 +55,7 @@ public:
             : WorkThread(handler, dbPath, filePath)
         {
         }
-     void doGlobalTempTrend(Database& db, const std::string& path);
+     void doGlobalTempTrend(const std::string& dbpath, const std::string& path);
 
      virtual ExitCode Entry() wxOVERRIDE;
  };

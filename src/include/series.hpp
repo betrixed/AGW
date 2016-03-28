@@ -161,6 +161,7 @@ namespace agw {
         virtual void assign(size_t n, double value)
         {
             data_.assign(n, value);
+            pts_ = data_.size();
         }
         void clear()
         {

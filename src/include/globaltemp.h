@@ -129,17 +129,19 @@ namespace agw {
     // so list of jobs is a list of BigBox AreaPtr
 
     class GlobalTempArea;
+    typedef std::shared_ptr<GlobalTempArea> GTAPtr;
 
     class AreaThread : public wxThread {
     public:
-        AreaThread(GlobalTempArea* gta);
+        AreaThread(GTAPtr& gta);
         virtual ExitCode Entry() wxOVERRIDE;
     protected:
-        GlobalTempArea* gta_;
+        GTAPtr          gta_;
         Database        db_;
 
 
     };
+
 
     class GlobalTempArea {
         wxCriticalSection       critQ_;
@@ -155,7 +157,7 @@ namespace agw {
         Database                db_;
         int                     startYear_;
         int                     minYears_;
-        std::string             path_;
+        WorkThread*             worker_;
 
     public:
         enum {
@@ -163,7 +165,10 @@ namespace agw {
             default_StartYear = 1880,
             default_minYears = 20,
         };
-        GlobalTempArea();
+        GlobalTempArea(WorkThread* myworker);
+
+        void openDB(const std::string& path);
+
         bool getSite(DBRowId site, SitePtr& setMe);
         bool getArea(AreaPtr& doArea);
         void fillCache();
@@ -176,6 +181,7 @@ namespace agw {
         bool finishedAreas();
         void bigMerge();
     };
+
 
 
 }; // namespace agw

@@ -519,267 +519,27 @@ void TimeSeries::makeMonthAnomalyPlot(const std::vector<float>& monthAvg, const 
     plot->saveToFile(fn.GetFullPath().ToStdString());
 }
 
-void TempTrendThread::doGlobalTempTrend(Database& db, const std::string& path)
+void TempTrendThread::doGlobalTempTrend(const std::string& dbpath, const std::string& path)
 {
-    std::vector<std::unique_ptr<FoundSite>>   localList;
-    std::vector<AreaPtr>   areaList;
-    std::vector<TSPtr>  merge_1;
-    std::vector<TrendPtr>  merge_band;
-    TrendPtr  amp;
-    TrendPtr  h_south;
-    TrendPtr  h_north;
-    TrendPtr  globe;
-    PlotLuaPtr plot;
-    SeriesPtr  xdata;
-    SeriesPtr  ydata;
-    wxFileName fn;
-    AreaPtr    boxp;
-    SeriesPtr gridlat = AppData::instance().getGlobal("grid80");
-    Series*   gridp = gridlat.get();
-    std::vector<float> weights;
+    GTAPtr  gta = std::make_shared<GlobalTempArea>(this);
 
-    enum {
-        default_StartYear = 1880,
-        default_minYears = 20,
-    };
+    gta->openDB(dbpath);
+    gta->fillCache();
 
-    const double default_radius = 1200.0;
-    const double kmPerDegree = 111.3199;
+    int cpus = wxThread::GetCPUCount();
 
-    double correlate_radius = default_radius/kmPerDegree;
-    int startYear = default_StartYear;
-    int minYears = default_minYears;
-
-    int yearsOverlap = 0;
-    double diff = 0.0;
-
-    //int countFound = 0;
-
-
-    areaList.resize(80);
-
-    // build a cache of stations where number of years is >= minYears
-
-    std::unordered_map<DBRowId,SitePtr> site_cache;
+    wxLogMessage("Thread pool = %d", cpus);
+    for(int i = 0; i < cpus; i++)
     {
-        wxLogMessage("Caching station data . . .");
-
-        std::string qsql = stationQuery(startYear, minYears);
-        Statement ystm(db, qsql);
-        int rowct = 0;
-        while(ystm.next())
-        {
-            int yearsCt = ystm.getInt32(0);
-            DBRowId locId = ystm.getRowId(1);
-
-            SitePtr site = std::make_shared<MergeSite>(locId);
-            site->yearsCt_ = yearsCt;
-            site->long_ = ystm.getDouble(2);
-            site->lat_ = ystm.getDouble(3);
-
-            TSPtr tp = std::make_shared<TimeSeries>();
-
-            tp->initFromLocation(db, locId, startYear);
-
-            site->data_ = tp;
-
-            site_cache.insert(std::pair<DBRowId, SitePtr>(locId,site));
-            rowct++;
-            //this->UpdateProgress( int(100.0 * rowct / 10000.0));
-        }
+        AreaThread* pat = new AreaThread(gta);
+        pat->Run();
     }
-    for(int bb = 0; bb < 80; bb++)
+    while(!gta->finishedAreas())
     {
-        areaList[bb] = std::make_shared<BigBox>(bb+1);
+        this->Sleep(1000);
     }
-    try {
-        wxLogMessage("Processing sub-boxes . . . ");
-        for(int bb = 0; bb < 80; bb++)
-        {
-            boxp = areaList[bb];
-            this->UpdateProgress( int(100.0 * bb / 80.0));
-            wxLogMessage("Area %d", bb+1);
-            BigBox* box = boxp.get();
+    gta->bigMerge();
 
-            //int cacheHits = 0;
-
-            for(int row = 0; row < 10; row++)
-            {
-                int ix = (box->rowix_ - 1) * 20 + row*2;
-                double center_lat = gridp->operator[](ix)* box->sign_;
-
-                for(int col = 0; col < 10; col++)
-                {
-                    TrendPtr mdatap = box->sublist_[col*10+row];
-
-                    double mid_long = box->east_ + box->width_ * 3.0/20.0 * col;
-
-                    std::string radQuerySql = radiusQuery(mid_long, center_lat,correlate_radius );
-
-                    Statement stm(db, radQuerySql);
-                    int rowcount = 0;
-                    localList.clear();
-
-                    while(stm.next())
-                    {
-                        DBRowId id = stm.getRowId(0);
-
-                        auto ait = site_cache.find(id);
-                        if (ait != site_cache.end())
-                        {
-                            SitePtr sp_1 = ait->second;
-                            localList.emplace_back(new FoundSite(sp_1, stm.getDouble(1) * kmPerDegree));
-                        }
-                        rowcount++;
-                    }
-                    unsigned int localix = 0;
-                    unsigned int nCount = localList.size();
-                    if (nCount > 1)
-                    {
-                        std::sort(localList.begin(), localList.end(), compareYears);
-                    }
-
-                    if (localix < nCount)
-                    {
-                        FoundSite* fs = localList[localix].get();
-                        localix++;
-                        double weight = (correlate_radius - fs->distance_) / correlate_radius;
-
-                        mdatap->cp_ = std::make_shared<TimeSeries>(*(fs->site_->data_));
-                        mdatap->setWeight(weight);
-                        mdatap->mergeCount_ = 1;
-                    }
-                    while (localix < nCount)
-                    {
-                        FoundSite* fs = localList[localix].get();
-                        localix++;
-
-                        double nWeight = (correlate_radius- fs->distance_) / correlate_radius;
-                        TSPtr cp = fs->site_->data_;
-
-                        unsigned int wsize = cp->dates_.size();
-
-                        if (wsize == 0)
-                            continue;
-
-                        TimeSeries& mergeCS = *(mdatap->cp_);
-                        if (cp->averageDiff(mergeCS, yearsOverlap, diff) && yearsOverlap > 20)
-                        {
-                            weights.assign(wsize, nWeight);
-                            mdatap->mergeDiff(*cp, weights, diff);
-                        }
-                    }
-                    //wxLogMessage("Merged trend: (%g,%g) Months %lu",mid_long,center_lat, mdata.dates_.size());
-                    if (mdatap->mergeCount_ > 0)
-                    {
-                        merge_1.push_back(mdatap->cp_); // ready for full merge
-                    }
-                }
-            }
-            // go to combine all the sub-boxes into one area temp merge.
-            amp = std::make_shared<MergeSeries>();
-            boxp->data_ = amp;
-
-            for(unsigned int mbox = 0; mbox < merge_1.size(); mbox++)
-            {
-                TSPtr tp3 = merge_1[mbox];
-
-                if (mbox == 0) // direct copy
-                {
-                    amp->cp_ = std::make_shared<TimeSeries>(*tp3);
-                    amp->setWeight(1.0);
-                    amp->mergeCount_ = 1;
-                }
-                else {
-                    TimeSeries& cmp = *(amp->cp_);
-                    tp3->averageDiff(cmp, yearsOverlap, diff);
-                    weights.assign(tp3->dates_.size(),1.0);
-                    amp->mergeDiff(*tp3, weights, diff);
-                }
-            }
-        }
-        // Merge individual big boxes across latitude bands, weighted by number of sub-merges
-        // There are 8 bands, so
-        for(int band = 0; band < 8; band++)
-        {
-            merge_band.push_back(std::make_shared<MergeSeries>());
-        }
-        for(int bb = 0; bb < 80; bb++)
-        {
-            AreaPtr boxp = areaList[bb];
-            // zero index into merge_band, 0-3, 4-7
-            int bandix = (boxp->sign_ == 1) ? boxp->rowix_-1 : 8 - boxp->rowix_;
-
-            TrendPtr plat = merge_band[bandix];
-            TrendPtr dp = boxp->data_;
-
-            if (plat->mergeCount_ == 0)
-            {
-                *(plat) = *dp;
-                plat->mergeCount_ = 1;
-                plat->setWeight(dp->mergeCount_/100.0);
-            }
-            else {
-                dp->setWeight(dp->mergeCount_/100.0);
-                plat->autoMerge(*dp);
-            }
-        }
-        // keep the weights merge hemispheres.
-        h_north = std::make_shared<MergeSeries>();
-
-        for(int bb = 3; bb >= 0; bb--)
-        {
-            TrendPtr plat = merge_band[bb];
-            if (h_north->mergeCount_ == 0)
-            {
-                *(h_north) = *plat;
-                h_north->mergeCount_ = 1;
-            }
-            else {
-                h_north->autoMerge(*plat);
-            }
-        }
-        h_south = std::make_shared<MergeSeries>();
-        for(int bb = 4; bb <= 7; bb++)
-        {
-            TrendPtr plat = merge_band[bb];
-            if (h_south->mergeCount_ == 0)
-            {
-                *(h_south) = *plat;
-                h_south->mergeCount_ = 1;
-            }
-            else {
-                h_south->autoMerge(*plat);
-            }
-        }
-        globe = std::make_shared<MergeSeries>();
-        (*globe) = *h_north;
-        globe->mergeCount_ = 1;
-        globe->autoMerge(*h_south);
-
-        plot = std::make_shared<PlotLua>();
-        TimeSeries& gc = *(globe->cp_);
-        ydata = std::make_shared<FloatSeries>(gc.temp_);
-        xdata = std::make_shared<DateYearMonth>(gc.dates_);
-
-        plot->addLayer(xdata, ydata);
-        fn.Assign(path);
-        fn.SetExt("plot");
-        plot->saveToFile(fn.GetFullPath().ToStdString());
-
-        std::vector<float> monthAvg;
-
-        if (gc.getMonthAverage(1951, 1980,monthAvg))
-        {
-            gc.makeMonthAnomalyPlot(monthAvg,path);
-            gc.makeYearAnomalyPlot(monthAvg,path);
-        }
-
-    }
-    catch (DBException& x)
-    {
-        wxLogMessage("%s", x.what());
-    }
 }
 
 BigBox::BigBox(int index) : rowix_(0), sign_(0)
@@ -905,11 +665,7 @@ PlotPtr agw::regressRange( Series const& srcX,  Series const& srcY, double xMin,
 wxThread::ExitCode  TempTrendThread::Entry()
 {
     wxLogMessage("Thread Entry");
-    Database sdb;
-    sdb.path(dbPath_);
-    sdb.open();
-    Database::AutoClose dbscope(sdb);
-    doGlobalTempTrend(sdb, filePath_);
+    doGlobalTempTrend(dbPath_, filePath_);
     this->UpdateProgress( 100);
     UpdateProgress(-1);
     return (wxThread::ExitCode)0;
@@ -917,7 +673,7 @@ wxThread::ExitCode  TempTrendThread::Entry()
 
 
 
-AreaThread::AreaThread(GlobalTempArea* gta) : gta_(gta)
+AreaThread::AreaThread(GTAPtr& gta) : gta_(gta)
 {
 }
 
@@ -933,6 +689,9 @@ void GlobalTempArea::areaDone(int areaIndex)
     wxCriticalSectionLocker lock(critQ_);
 
     doneCount_++;
+
+    worker_->UpdateProgress( int( 95.0 * doneCount_ / 80.0 ) );
+    wxLogMessage("Area %d", areaIndex);
 }
 
 bool GlobalTempArea::getArea(AreaPtr& doArea)
@@ -948,7 +707,7 @@ bool GlobalTempArea::getArea(AreaPtr& doArea)
     return false;
 }
 
-GlobalTempArea::GlobalTempArea()
+GlobalTempArea::GlobalTempArea(WorkThread* myworker) : worker_(myworker)
 {
     startYear_ = default_StartYear;
     minYears_ = default_minYears;
@@ -1083,8 +842,9 @@ AreaThread::Entry()
                 amp->mergeDiff(*tp3, weights, diff);
             }
         }
+        gta_->areaDone(boxp->ix_);
     }
-    gta_->areaDone(boxp->ix_);
+
     return wxThread::ExitCode(0);
 }
 
@@ -1119,9 +879,16 @@ void GlobalTempArea::fillCache()
     areaList_.resize(80);
     for(int bb = 0; bb < 80; bb++)
     {
-        areaList_[bb] = std::make_shared<BigBox>(bb+1);
+        AreaPtr ap = std::make_shared<BigBox>(bb+1);
+        areaList_[bb] = ap;
+        jobList_.push_back(ap);
     }
 
+}
+void GlobalTempArea::openDB(const std::string& path)
+{
+    db_.path(path);
+    db_.open();
 }
 
 void GlobalTempArea::bigMerge()
@@ -1195,7 +962,8 @@ void GlobalTempArea::bigMerge()
     xdata = std::make_shared<DateYearMonth>(gc.dates_);
 
     plot->addLayer(xdata, ydata);
-    fn.Assign(path_);
+    std::string path = worker_->filePath();
+    fn.Assign(path);
     fn.SetExt("plot");
     plot->saveToFile(fn.GetFullPath().ToStdString());
 
@@ -1203,9 +971,10 @@ void GlobalTempArea::bigMerge()
 
     if (gc.getMonthAverage(1951, 1980,monthAvg))
     {
-        gc.makeMonthAnomalyPlot(monthAvg,path_);
-        gc.makeYearAnomalyPlot(monthAvg,path_);
+        gc.makeMonthAnomalyPlot(monthAvg,path);
+        gc.makeYearAnomalyPlot(monthAvg,path);
     }
+    wxLogMessage("Graphs saved");
 }
 
 
