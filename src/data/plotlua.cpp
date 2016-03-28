@@ -125,7 +125,6 @@ void PlotLua::readJson(const Json::Value& jplot)
     {
         const Json::Value& labels = jplot["labels"];
         text_.ReadJSON(labels);
-
     }
     if (jplot.isMember("legend"))
     {
@@ -168,10 +167,8 @@ void PlotLua::readJson(const Json::Value& jplot)
                     lfit->ReadJSON(jlay);
                     addLayer(lfit);
                 }
-
             }
         }
-
     }
 }
 
@@ -311,6 +308,8 @@ void PlotLua::addLayer(PlotPtr& pp)
 		//if (layer->errorbar_!= nullptr)
 			//layer->errorbar_->calcLimits();
 		layer->calcStats();
+        world_.xScale_.units(layer->xdata_->units());
+        world_.yScale_.units(layer->ydata_->units());
 
 		if ((world_.xspan_ > 0) && (world_.yspan_ > 0))
             world_.calcScales(layers_);
@@ -325,7 +324,6 @@ void PlotLua::addLayer(SeriesPtr& xdata, SeriesPtr& ydata)
     dlay->xdata_ = xdata;
     dlay->ydata_ = ydata;
     dlay->label_ = xdata->getLabel() + " vs " + ydata->getLabel();
-
     addLayer(pp);
 
 }

@@ -256,6 +256,10 @@ SeriesPtr readJSONSeries(const Json::Value& s)
         {
             result = std::make_shared<LineSeries>();
         }
+        else if (hype=="year-month-range")
+        {
+            result = std::make_shared<DateYearMonth>();
+        }
         if (result.get())
         {
             result->ReadJSON(s);

@@ -228,7 +228,8 @@ void AppData::readScript(const std::string& path)
 
     wxFileName fn;
 
-    fn.Assign(path);
+    wxString wpath = path;
+    fn.Assign(wpath);
     std::string tabname = fn.GetName().ToStdString();
 
     LuaEdit* led = this->mainFrame()->createLuaEdit(tabname);
@@ -241,6 +242,8 @@ void AppData::readScript(const std::string& path)
       ctrl->AppendText(line);
 
     }
+
+    led->SetFilePath(wpath);
 }
 
 void AppData::readPlot(const std::string& path)

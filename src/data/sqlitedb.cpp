@@ -105,7 +105,7 @@ Statement::~Statement()
 
 void Statement::prepare(const std::string& sql)
 {
-    const char* pzTail;
+    const char* pzTail = nullptr;
     if (h_ != nullptr)
         finalize();
     db_.lastSQL_ = sql;

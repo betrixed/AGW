@@ -370,7 +370,7 @@
           <string name="Compiler location">"%AUTO%"</string>
           <string name="Compiler name">"GCC"</string>
           <string name="Debug flags">"%AUTO%"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <bool name="Enable makefile generation">1</bool>
           <string name="Executable name">"%EXECUTABLE%"</string>
           <string name="Extra compile flags">"-std=c++11"</string>
@@ -449,7 +449,7 @@
           <string name="Compiler location">"%AUTO%"</string>
           <string name="Compiler name">"GCC"</string>
           <string name="Debug flags">"%AUTO%"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <bool name="Enable makefile generation">1</bool>
           <string name="Executable name">"%EXECUTABLE%"</string>
           <string name="Extra compile flags">"-std=gnu++14 %AUTO%"</string>
@@ -528,7 +528,7 @@
           <string name="Compiler location">"%AUTO%"</string>
           <string name="Compiler name">"GCC"</string>
           <string name="Debug flags">"%AUTO%"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <bool name="Enable makefile generation">1</bool>
           <string name="Executable name">"%EXECUTABLE%"</string>
           <string name="Extra compile flags">"-std=gnu++14 %AUTO%"</string>
@@ -607,7 +607,7 @@
           <string name="Compiler location">"%AUTO%"</string>
           <string name="Compiler name">"GCC"</string>
           <string name="Debug flags">"%AUTO%"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <bool name="Enable makefile generation">1</bool>
           <string name="Executable name">"%EXECUTABLE%"</string>
           <string name="Extra compile flags">"-std=gnu++14 %AUTO%"</string>
@@ -1857,6 +1857,28 @@
                 <string name="proxy-Label">"Open Plot "</string>
                 <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
                 <string name="title">"Open Plot : ID_OPEN_PLOTFILE"</string>
+                <long name="title-mode">0</long>
+                <string name="type">"dialog-control-document"</string>
+              </document>
+              <document>
+                <string name="proxy-type">"wbMenuItemProxy"</string>
+                <string name="event-handler-0">"wxEVT_COMMAND_MENU_SELECTED|OnGlobaltempClick|NONE||MainFrame"</string>
+                <string name="filename">""</string>
+                <string name="icon-name">"menuitem"</string>
+                <long name="is-transient">0</long>
+                <long name="locked">0</long>
+                <long name="owns-file">1</long>
+                <string name="proxy-Bitmap">""</string>
+                <string name="proxy-Bitmap unchecked">""</string>
+                <bool name="proxy-Checked">0</bool>
+                <bool name="proxy-Enabled">1</bool>
+                <string name="proxy-Help text">""</string>
+                <string name="proxy-Id name">"ID_GLOBALTEMP"</string>
+                <long name="proxy-Id value">10060</long>
+                <string name="proxy-Kind">"Normal"</string>
+                <string name="proxy-Label">"Global Temp"</string>
+                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
+                <string name="title">"Global Temp: ID_GLOBALTEMP"</string>
                 <long name="title-mode">0</long>
                 <string name="type">"dialog-control-document"</string>
               </document>
@@ -24225,6 +24247,18 @@
             <string name="language">""</string>
           </document>
           <document>
+            <string name="title">"globaltemp.cpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/data/globaltemp.cpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"24/3/2016"</string>
+            <string name="language">""</string>
+          </document>
+          <document>
             <string name="title">"jsoncpp.cpp"</string>
             <string name="type">"source-editor-document"</string>
             <string name="filename">"src/data/jsoncpp.cpp"</string>
@@ -24412,6 +24446,18 @@
             <long name="owns-file">0</long>
             <long name="title-mode">1</long>
             <long name="locked">0</long>
+            <string name="language">""</string>
+          </document>
+          <document>
+            <string name="title">"threadwork.hpp"</string>
+            <string name="type">"source-editor-document"</string>
+            <string name="filename">"src/include/threadwork.hpp"</string>
+            <string name="icon-name">"source-editor"</string>
+            <long name="is-transient">0</long>
+            <long name="owns-file">0</long>
+            <long name="title-mode">1</long>
+            <long name="locked">0</long>
+            <string name="created">"26/3/2016"</string>
             <string name="language">""</string>
           </document>
         </document>

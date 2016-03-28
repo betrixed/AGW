@@ -67,6 +67,8 @@ const std::string GissYearSQL  =
 	 "valuesCt INTEGER NOT NULL"
 ");";
 
+const std::string GissYearIndex = "create index yearloc_ix on gissyear (locId, year);";
+
 const std::string MonthTempCreateSql =
 "CREATE TABLE gisstemp ("
     "codeId INTEGER," // the code is stationID, year, measure, also a foreign key into gissyear
@@ -440,6 +442,7 @@ void Database::init()
 				execute(LocCreateSql);
 				execute("select AddGeometryColumn('gissloc', 'Geometry', 4326, 'POINT', 'XY')");
 				execute(GissYearSQL);
+				execute(GissYearIndex);
 				execute(MonthTempCreateSql);
 				if (commit())
 					wxLogMessage("GISS Tables Created");
@@ -666,9 +669,15 @@ void GissLocation::setId(const std::string& stationId)
 bool GissLocation::save(SqliteDB &sdb)
 {
 
-    Statement query(sdb,
-		"insert or replace into gissloc(codeId,Latitude,Longitude,ElevationStation,ElevationGrid,Name,PopSize,PopClass,PopLights,Vegetation"
-		") values (?,?,?,?,?,?,?,?,?,?)");
+    std::stringstream ss;
+
+    ss << "insert or replace into gissloc("
+        "codeId,Latitude,Longitude,ElevationStation,ElevationGrid,Name,PopSize,PopClass,PopLights,Vegetation,Geometry"
+		") values (?,?,?,?,?,?,?,?,?,?,"
+		<< "MakePoint(" << this->long_ << "," << this->lat_ << ",4326)"
+		<< ")";
+
+    Statement query(sdb,ss.str());
 
     query.bindRowId(this->id,1);
 	query.bind(this->lat_,2);

@@ -37,6 +37,26 @@ Series::~Series()
 {
 }
 
+Series::Series(const Series& cs)
+    : pts_(cs.pts_), dataMin_(cs.dataMin_), dataMax_(cs.dataMax_), units_(cs.units_), altered_(cs.altered_),
+      ordered_(cs.ordered_), jype_(cs.jype_), label_(cs.label_)
+{
+}
+
+const Series& Series::operator=(const Series& cs)
+{
+    pts_ = cs.pts_;
+    dataMin_ = cs.dataMin_;
+    dataMax_ = cs.dataMax_;
+    units_ = cs.units_;
+    altered_ = cs.altered_;
+    ordered_ = cs.ordered_;
+    jype_ = cs.jype_;
+    label_ = cs.label_;
+    return *this;
+}
+
+
 std::string Series::toJsonText()
 {
     Json::Value json(Json::objectValue);
@@ -69,7 +89,7 @@ int Series::saveToFile(const std::string& path)
 
 
 }
-// return number valid values
+
 size_t Series::getDataLimits(double& dmin, double& dmax)
 {
     size_t ct = 0;
@@ -109,9 +129,32 @@ FloatSeries::~FloatSeries()
 {
 }
 
+FloatSeries::FloatSeries(const FloatSeries& cs) : Series(cs), data_(cs.data_)
+{
+
+}
+
+const FloatSeries& FloatSeries::operator=(const FloatSeries& cs)
+{
+    Series::operator=(cs);
+    data_ = cs.data_;
+    return *this;
+}
+
 double FloatSeries::operator[](size_t ix) const
 {
     return data_[ix];
+}
+
+void FloatSeries::prepend(float init_value, size_t n)
+{
+    data_.insert(data_.begin(), n, init_value);
+    pts_ += n;
+}
+void FloatSeries::append(float init_value, size_t n)
+{
+    data_.insert(data_.end(), n, init_value);
+    pts_ += n;
 }
 
 void FloatSeries::append(double value)
@@ -119,6 +162,13 @@ void FloatSeries::append(double value)
     data_.push_back(value);
     pts_ = data_.size();
 }
+
+void FloatSeries::addToValue(size_t ix, double value)
+{
+    data_[ix] += value;
+    altered_ = true;
+}
+
 void FloatSeries::set(size_t ix, double value)
 {
     data_[ix] = (float) value;
@@ -538,14 +588,36 @@ double DateYearMonth::operator[] (size_t ix) const
 }
 size_t DateYearMonth::getDataLimits(double& dmin, double& dmax)
 {
+    calcPts();
     dmin = (*this)[0];
     dmax = (*this)[pts_ - 1];
     return pts_;
 }
 
+DateYearMonth::DateYearMonth(const DateYearMonth& c)
+            : Series(c),year1_(c.year1_), month1_(c.month1_), year2_(c.year2_), month2_(c.month2_)
+{
+}
+
+const DateYearMonth&
+DateYearMonth::operator=(const DateYearMonth&c)
+{
+    Series::operator=(c);
+    year1_ = c.year1_;
+    month1_ = c.month1_;
+    year2_ = c.year2_;
+    month2_ = c.month2_;
+    return *this;
+}
+
+
 void DateYearMonth::calcPts()
 {
-    units_ = DATE_YEAR_MONTH;
+
+    if (year2_ == 0 && month2_ == 0) {
+        pts_ = 0;
+        return;
+    }
     int monthDiff = (month2_ - month1_);
     int yearDiff = (year2_ - year1_);
     if (monthDiff < 0)

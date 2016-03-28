@@ -40,6 +40,9 @@ namespace agw {
         Series();
         virtual ~Series();
 
+        Series(const Series& cs);
+        const Series& operator=(const Series& cs);
+
         virtual void SaveJSON(Json::Value& json);
         virtual void ReadJSON(const Json::Value& json);
 
@@ -51,6 +54,11 @@ namespace agw {
 
         virtual void set(size_t ix, double value) = 0;
         virtual void setSize(size_t pts) = 0;
+        virtual void assign(size_t n, double value)
+        {
+            ignore(n);ignore(value);
+        }
+        // return number valid values (not number of slots)
         virtual size_t getDataLimits(double& dmin, double& dmax);
 
         size_t size() const{ return pts_; }
@@ -68,8 +76,14 @@ namespace agw {
         }
         bool isAltered() const { return altered_; }
         bool isOrdered() const { return ordered_; }
+
         SeriesUnit units() const { return units_; }
         void units(SeriesUnit value) { units_ = value; }
+
+        size_t calcDataLimits()
+        {
+            return getDataLimits(dataMin_, dataMax_);
+        }
 
         double dataMin() const { return dataMin_; }
         double dataMax() const { return dataMax_; }
@@ -78,14 +92,15 @@ namespace agw {
         std::string toJsonText();
 
     protected:
-        std::string jype_;
-        std::string label_;
+
         size_t      pts_;
         double      dataMin_;
         double      dataMax_;
         SeriesUnit	units_;
         bool        altered_;
         bool		ordered_;
+        std::string jype_;
+        std::string label_;
 
         friend class SeriesRay;
 
@@ -119,6 +134,11 @@ namespace agw {
         {
             init();
         }
+
+        const Data& data()  const { return data_; }
+        FloatSeries(const FloatSeries& cs);
+        const FloatSeries& operator=(const FloatSeries& cs);
+
         FloatSeries(std::vector<float>& f, SeriesUnit value, const std::string& label)
         {
             init();
@@ -128,10 +148,25 @@ namespace agw {
         }
         virtual ~FloatSeries();
 
+
+        void prepend(float init_value, size_t n);
+        void append(float init_value, size_t n);
+
+        void addToValue(size_t ix, double value);
+
         virtual double operator[] (size_t ix) const;
         virtual void set(size_t ix, double value);
-         virtual void append(double value);
+        virtual void append(double value);
         virtual void setSize(size_t pts);
+        virtual void assign(size_t n, double value)
+        {
+            data_.assign(n, value);
+        }
+        void clear()
+        {
+            data_.clear();
+            pts_ = 0;
+        }
         void move(std::vector<float>& f);
 
         virtual void SaveJSON(Json::Value& json);
@@ -174,7 +209,16 @@ namespace agw {
             }
             return nanDouble;
         }
-
+        void prepend(double init_value, size_t n)
+        {
+            data_.insert(data_.begin(), n, init_value);
+            pts_ += n;
+        }
+        void append(double init_value, size_t n)
+        {
+            data_.insert(data_.end(), n, init_value);
+            pts_ += n;
+        }
         virtual void set(size_t ix, double value)
         {
             if (ix >= offset_)
@@ -304,6 +348,10 @@ namespace agw {
         virtual void set(size_t ix, double value);
         virtual void append(double value);
         virtual void setSize(size_t pts);
+        virtual void assign(size_t n, double value)
+        {
+            data_.assign(n, value);
+        }
         void move(std::vector<double>& f);
         void copy(const std::vector<double>& f);
 
@@ -314,7 +362,8 @@ namespace agw {
     };
 
     // A virtual time base with Year/Month steps, countains all values inbetween without storing them.
-    // This ignores calendar breakdowns in the past. Both first and last endpoints are included.
+    // This ignores calendar breakdowns in the past. Both first and last endpoints are included, in the range
+    // month values are an enumerator starting at zero for wxDateTime
     class DateYearMonth : public Series {
 
     protected:
@@ -328,8 +377,15 @@ namespace agw {
         void init()
         {
             jype_ = "year-month-range";
+            units_ = DATE_YEAR_MONTH;
         }
     public:
+        DateYearMonth() : year1_(0), month1_(0), year2_(0), month2_(0)
+        {
+            init();
+            calcPts();
+        }
+
         DateYearMonth(int year1, int month1, int year2, int month2) :
             year1_(year1), month1_(month1), year2_(year2), month2_(month2)
         {
@@ -338,6 +394,13 @@ namespace agw {
 
         }
 
+        DateYearMonth(const DateYearMonth&);
+        const DateYearMonth& operator=(const DateYearMonth&);
+
+        void setStartDate(int month, int year) { month1_ = month; year1_ = year; calcPts(); }
+        void setEndDate(int month, int year) { month2_ = month; year2_ = year; calcPts(); }
+        void getStartDate(int& month, int& year) const {month = month1_; year = year1_;}
+        void getEndDate(int& month, int& year) const {month = month2_; year = year2_;}
 
         DateYearMonth(const wxDateTime& firstMonth, const wxDateTime& lastMonth)
         {
@@ -354,8 +417,6 @@ namespace agw {
         // return YEAR*12 + MONTH (0-11) ie number of months
         virtual double operator[] (size_t ix) const;
         virtual size_t getDataLimits(double& dmin, double& dmax);
-
-
 
         virtual void set(size_t ix, double value) { ignore(ix);  ignore(value); }
         virtual void setSize(size_t pts) { ignore(pts); }

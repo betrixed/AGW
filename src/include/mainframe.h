@@ -69,7 +69,7 @@ class wxProgressDialog;
 
 class IdleTimer;
 
-class ImportThread;
+class WorkThread;
 
 class MainFrame: public wxDocParentFrame
 {
@@ -153,6 +153,9 @@ public:
     /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_OPEN_PLOTFILE
     void OnOpenPlotfileClick( wxCommandEvent& event );
 
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_GLOBALTEMP
+    void OnGlobaltempClick( wxCommandEvent& event );
+
 ////@end MainFrame event handler declarations
 
 ////@begin MainFrame member function declarations
@@ -197,7 +200,8 @@ public:
         ID_LOG_VIEW = 10010,
         ID_LUA_COMMAND = 10054,
         ID_ABOUT = 10011,
-        ID_OPEN_PLOTFILE = 10012
+        ID_OPEN_PLOTFILE = 10012,
+        ID_GLOBALTEMP = 10060
     };
 ////@end MainFrame member variables
 
@@ -236,13 +240,13 @@ protected:
     int                 timerState_;
 
     wxProgressDialog*   dlgProgress_;
-    wxCriticalSection    threadCS_;
-    ImportThread*        mThread_;
+    wxCriticalSection   threadCS_;
+    WorkThread*         mThread_;
 
     std::unique_ptr<wxStreamToTextRedirector> logOut_;
     std::unique_ptr<wxStreamToTextRedirector> logError_;
 
-    friend class ImportThread;
+    friend class WorkThread;
 
     void ModalProgressDlg(const wxString& title, const wxString &msg);
 

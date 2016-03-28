@@ -120,21 +120,7 @@ namespace agw {
 			return (xdata_ != nullptr) && (ydata_ != nullptr);
 		}
 
-		void calcStats()
-		{
-			if (xdata_ != nullptr)
-			{
-				xstats_.calc(*xdata_);
-			}
-			else
-				xstats_.n_ = 0;
-			if (ydata_ != nullptr)
-			{
-				ystats_.calc(*ydata_);
-			}
-			else
-				ystats_.n_ = 0;
-		}
+		void calcStats();
 
 		virtual void randomStyle();
 		virtual void renderDC(wxDC& dc, PixelWorld& px);

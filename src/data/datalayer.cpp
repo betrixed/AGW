@@ -346,3 +346,25 @@ int DataLayer::getYData(lua_State* L)
     (*result) = dlay->ydata_;
     return 1;
 }
+
+void DataLayer::calcStats()
+{
+    if (xdata_ != nullptr)
+    {
+        Series& xp = *xdata_;
+        xstats_.n_ = xp.calcDataLimits();
+        xstats_.minval_ = xp.dataMin();
+        xstats_.maxval_ = xp.dataMax();
+        xstats_.valid_ = true;
+    }
+
+    if (ydata_ != nullptr)
+    {
+        Series& xp = *ydata_;
+        ystats_.n_ = xp.calcDataLimits();
+        ystats_.minval_ = xp.dataMin();
+        ystats_.maxval_ = xp.dataMax();
+        ystats_.valid_ = true;
+
+    }
+}

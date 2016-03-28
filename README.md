@@ -7,7 +7,7 @@ Now the ambition is to make the internal data series, graphs and spatialite data
 
 Development and testing is being done on a Linux Platform, and Windows OS.
 
-Mac OS port will be done when there is enough functionality to make it worthwhile, and I don't give up before the whole idea before then.
+Mac OS port will be done when there is enough functionality to make it worthwhile, and I don't give up on the whole idea before then.
 
 A number of open source libraries and code are used. 
 Lua, Sqlite3,  Spatialite, JsonCpp

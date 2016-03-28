@@ -276,18 +276,18 @@ void LinearScale::drawLeftYAxis(wxDC& dc, PixelWorld& px)
 
             if (tickRotate_ == TextRotate::R_0)
             {
-                textx = insideTick_ ? bigTickRight + 3 : bigTickLeft - txw - 10;
+                textx = insideLabel_ ? bigTickRight + 3 : bigTickLeft - txw - 10;
                 dc.DrawText(label, textx, ypt - txh/2);
 
 			}
 			else if (tickRotate_ == TextRotate::CW_90)
 			{
-                textx = insideTick_ ? bigTickRight + txh + 2 : bigTickLeft - txh - 2;
+                textx = insideLabel_ ? bigTickRight + txh + 2 : bigTickLeft - txh - 2;
                 dc.DrawRotatedText(label, textx, ypt - txw/2, angle);
 			}
 			else if (tickRotate_ == TextRotate::ACW_90)
 			{
-                textx = insideTick_ ? bigTickRight + 2 : bigTickLeft - txh - 2;
+                textx = insideLabel_ ? bigTickRight + 2 : bigTickLeft - txh - 2;
                 dc.DrawRotatedText(label, textx, ypt + txw/2, angle);
 			}
             if (textx < minLeftBound)

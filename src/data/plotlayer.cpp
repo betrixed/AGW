@@ -121,6 +121,9 @@ void LabelWorld::ReadJSON(const Json::Value& json)
          }
     }
 }
+
+
+
 LegendLayer* LabelWorld::getLegend()
 {
    PlotLayer* pl = legend_.get();

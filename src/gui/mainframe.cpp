@@ -39,7 +39,7 @@
 #include <wx/txtstrm.h>
 #include <wx/sstream.h>
 #include <wx/progdlg.h>
-
+#include "globaltemp.h"
 
 ////@begin XPM images
 ////@end XPM images
@@ -57,9 +57,7 @@
 
 #include <wx/aui/auibook.h>
 
-enum {
-    WORKER_EVENT = wxID_HIGHEST+1,
-};
+#include "threadwork.hpp"
 
 using namespace agw;
 /*s
@@ -99,89 +97,27 @@ BEGIN_EVENT_TABLE( MainFrame, wxDocParentFrame )
     EVT_MENU( ID_LUA_COMMAND, MainFrame::OnLuaCommandClick )
     EVT_MENU( ID_ABOUT, MainFrame::OnAboutClick )
     EVT_MENU( ID_OPEN_PLOTFILE, MainFrame::OnOpenPlotfileClick )
+    EVT_MENU( ID_GLOBALTEMP, MainFrame::OnGlobaltempClick )
 ////@end MainFrame event table entries
     EVT_THREAD(WORKER_EVENT, MainFrame::OnWorkerEvent)
 END_EVENT_TABLE()
 
+WorkThread::~WorkThread()
+{
+    wxCriticalSectionLocker enter(m_pHandler->threadCS_);
+// the thread is being destroyed; make sure not to leave dangling pointers around
+    m_pHandler->mThread_ = nullptr;
+}
 
- class ImportThread : public wxThread
- {
- public:
-    ImportThread(MainFrame *handler,
-            const std::string& dbPath,
-            const std::string& importPath)
-        : wxThread(), m_pHandler(handler), dbPath_(dbPath), importPath_(importPath)
-        {
-        }
 
-    virtual ~ImportThread()
-    {
-        wxCriticalSectionLocker enter(m_pHandler->threadCS_);
-    // the thread is being destroyed; make sure not to leave dangling pointers around
-        m_pHandler->mThread_ = nullptr;
-    }
-
- protected:
     // send a number from 0 to 100: -1 means cancel.  100 means complete.
 
-    void UpdateProgress(int value)
-    {
-        wxThreadEvent event( wxEVT_THREAD, WORKER_EVENT );
-        event.SetInt(value); // reached maximum
-        wxQueueEvent( m_pHandler, event.Clone() );
-    }
-
-    MainFrame *m_pHandler;
-    std::string dbPath_;
-    std::string importPath_;
- };
-
- class IdleTimer : public wxTimer
+void WorkThread::UpdateProgress(int value)
 {
-protected:
-    MainFrame* notify_;
-public:
-    IdleTimer(MainFrame* owner);
-    virtual ~IdleTimer();
-    virtual void Notify();
-};
-
- class NewDBThread : public ImportThread {
-  public:
-    // importPath is location of country shapefile
-    NewDBThread(MainFrame *handler,
-            const std::string& dbPath,
-            const std::string& importPath)
-            : ImportThread(handler, dbPath, importPath)
-        {
-        }
-
-     virtual ExitCode Entry() wxOVERRIDE;
- };
-
- class ImportGissThread : public ImportThread {
- public:
-    ImportGissThread(MainFrame *handler,
-            const std::string& dbPath,
-            const std::string& importPath)
-            : ImportThread(handler, dbPath, importPath)
-        {
-        }
-
-     virtual ExitCode Entry() wxOVERRIDE;
- };
-
- class ImportStationThread : public ImportThread {
- public:
-    ImportStationThread(MainFrame *handler,
-            const std::string& dbPath,
-            const std::string& importPath)
-        : ImportThread(handler, dbPath, importPath)
-        {
-        }
-
-    virtual ExitCode Entry() wxOVERRIDE;
- };
+    wxThreadEvent event( wxEVT_THREAD, WORKER_EVENT );
+    event.SetInt(value); // reached maximum
+    wxQueueEvent( m_pHandler, event.Clone() );
+}
 
 wxThread::ExitCode NewDBThread::Entry()
 {
@@ -216,7 +152,7 @@ wxThread::ExitCode NewDBThread::Entry()
 wxThread::ExitCode ImportGissThread::Entry()
  {
 
-    wxFileInputStream input_stream(importPath_);
+    wxFileInputStream input_stream(filePath_);
 
     double fileLength = input_stream.GetLength();
     if (!input_stream.IsOk())
@@ -447,6 +383,7 @@ void MainFrame::Init()
 
     timer_ = nullptr;
     timerState_ = -1;
+    mThread_ = nullptr;
 }
 
 
@@ -493,6 +430,7 @@ void MainFrame::CreateControls()
     menuBar->Append(mHelp, _("Help"));
     wxMenu* itemMenu36 = new wxMenu;
     itemMenu36->Append(ID_OPEN_PLOTFILE, _("Open Plot "), wxEmptyString, wxITEM_NORMAL);
+    itemMenu36->Append(ID_GLOBALTEMP, _("Global Temp"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(itemMenu36, _("Plot"));
     itemDocParentFrame1->SetMenuBar(menuBar);
 
@@ -524,7 +462,7 @@ void MainFrame::CreateControls()
     itemDocParentFrame1->Connect(ID_MAINFRAME, wxEVT_DESTROY, wxWindowDestroyEventHandler(MainFrame::OnDestroy), NULL, this);
 ////@end MainFrame content construction
 
-    log_ = new wxLogWindow(nullptr, "Log Window", true,false); 
+    log_ = new wxLogWindow(nullptr, "Log Window", true,false);
     auto frame = log_->GetFrame();
     frame->SetClientSize(wxSize(400,500));
 
@@ -980,13 +918,13 @@ void  MainFrame::EndDBProgress()
 
     Database sdb_;
 
-    wxFileInputStream input_stream(importPath_);
+    wxFileInputStream input_stream(filePath_);
 
 
     //double fileLength = input_stream.GetLength();
     if (!input_stream.IsOk())
     {
-        wxLogError("Cannot open file '%s'.", importPath_);
+        wxLogError("Cannot open file '%s'.", filePath_);
         return 0;
     }
     double fileLength = input_stream.GetLength();
@@ -1087,7 +1025,9 @@ void  MainFrame::EndDBProgress()
 
     if (updateCt > 0)
     {
+        sdb_.begin();
         sdb_.execute_or_throw("update gissloc set Geometry=MakePoint(Longitude,Latitude,4326);");
+        sdb_.commit();
         wxLogMessage("Geometry updated", updateCt);
     }
     sdb_.close();
@@ -1398,10 +1338,10 @@ void MainFrame::doLuaSaveAs()
             led->SetFilePath(savePath);
             int sel = book_->GetPageIndex(led);
             book_->SetPageText(sel, led->tabName_);
-        }       
-    } 
+        }
+    }
 }
-    
+
 
 
 /*
@@ -1413,7 +1353,7 @@ void MainFrame::OnRunClick( wxCommandEvent& event )
 ////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_RUN in MainFrame.
     // Before editing this code, remove the block markers.
     event.Skip();
-////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_RUN in MainFrame. 
+////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_RUN in MainFrame.
 }
 
 
@@ -1433,7 +1373,46 @@ void MainFrame::OnSaveClick( wxCommandEvent& event )
             ap_->saveLuaScript(led->luaEdit_->GetValue(), led->savePath_);
             return;
         }
-        doLuaSaveAs();    
-    }        
+        doLuaSaveAs();
+    }
+}
+
+
+/*
+ * wxEVT_COMMAND_MENU_SELECTED event handler for ID_GLOBALTEMP
+ */
+
+void MainFrame::OnGlobaltempClick( wxCommandEvent& event )
+{
+    event.Skip(true);
+    Database& db = getDB();
+
+    //timer_ = new IdleTimer(this);
+    //timer_->Start();
+
+    auto ttThread = new TempTrendThread(this, db.path(), "globaltemp");
+
+    if ( ttThread->Create() != wxTHREAD_NO_ERROR )
+    {
+        wxLogError(wxT("Can't create thread!"));
+        delete ttThread;
+        return;
+    }
+    this->ModalProgressDlg(wxT("Progress"),wxT("Global Temperature Trend"));
+
+    if ( ttThread->Run() != wxTHREAD_NO_ERROR )
+    {
+        wxLogError("Can't run the thread!");
+        delete ttThread;
+        if (dlgProgress_)
+        {
+            dlgProgress_->Destroy();
+            dlgProgress_ = nullptr;
+        }
+    }
+    // after the call to wxThread::Run(), the m_pThread pointer is "unsafe":
+    // at any moment the thread may cease to exist (because it completes its work).
+    // To avoid dangling pointers OnThreadExit() will set m_pThread
+
 }
 
