@@ -9,6 +9,7 @@
 
 #include "plotlua.h"
 #include "helper.h"
+
 using namespace agw;
 
 const double kmPerDegree = 111.3199;
@@ -202,7 +203,6 @@ bool TimeSeries::asYearAnomaly(const std::vector<float>& monthAvg, FloatSeries& 
     // now only the monthly anomaly temperatures are left, but a yearly anomaly (average) is required
     // compress each years anomaly as an average of the available months, into the results array.
 
-
 }
 
 
@@ -230,6 +230,7 @@ bool TimeSeries::asMonthAnomaly(const std::vector<float>& monthAvg, FloatSeries&
             rTemp.set(tix,value - monthAvg[monthIX]);
         }
     }
+
     return (rDates.size() > 0);
 
 
@@ -443,10 +444,13 @@ MergeSite::MergeSite(DBRowId id) : codeId_(id), yearsCt_(0)
 }
 
 
-
+bool mergeOrder(TSPtr const& t1, TSPtr const& t2)
+{
+    return (t1->dates_.size() > t2->dates_.size());
+}
 bool compareYears(FoundPtr const& s1, FoundPtr const&  s2)
 {
-    return (s1->site_->yearsCt_ < s2->site_->yearsCt_);
+    return (s1->site_->yearsCt_ > s2->site_->yearsCt_);
 }
 
 std::string stationQuery(int startYear, int minYears)
@@ -471,7 +475,8 @@ std::string radiusQuery(double clong, double clat, double cradius)
           << clat
           << ", 4326)) as SDistance"
             " from gissloc A where SDistance < "
-          << cradius;
+          << cradius
+          << " order by SDistance";
 
           return ss.str();
 }
@@ -519,11 +524,9 @@ void TimeSeries::makeMonthAnomalyPlot(const std::vector<float>& monthAvg, const 
     plot->saveToFile(fn.GetFullPath().ToStdString());
 }
 
-void TempTrendThread::doGlobalTempTrend(const std::string& dbpath, const std::string& path)
+void TempTrendThread::doGlobalTempTrend()
 {
-    GTAPtr  gta = std::make_shared<GlobalTempArea>(this);
-
-    gta->openDB(dbpath);
+    gta->openDB(dbPath_);
     gta->fillCache();
 
     int cpus = wxThread::GetCPUCount();
@@ -538,6 +541,7 @@ void TempTrendThread::doGlobalTempTrend(const std::string& dbpath, const std::st
     {
         this->Sleep(1000);
     }
+
     gta->bigMerge();
 
 }
@@ -665,7 +669,7 @@ PlotPtr agw::regressRange( Series const& srcX,  Series const& srcY, double xMin,
 wxThread::ExitCode  TempTrendThread::Entry()
 {
     wxLogMessage("Thread Entry");
-    doGlobalTempTrend(dbPath_, filePath_);
+    doGlobalTempTrend();
     this->UpdateProgress( 100);
     UpdateProgress(-1);
     return (wxThread::ExitCode)0;
@@ -710,7 +714,10 @@ bool GlobalTempArea::getArea(AreaPtr& doArea)
 GlobalTempArea::GlobalTempArea(WorkThread* myworker) : worker_(myworker)
 {
     startYear_ = default_StartYear;
+    endYear_ = startYear_ + 29; // TODO: endYear_ isn't used yet!
     minYears_ = default_minYears;
+    doneCount_ = 0;
+
     correlate_radius_ = default_radiuskm/kmPerDegree;
     gridLat_ = AppData::instance().getGlobal("grid80");
 }
@@ -744,10 +751,14 @@ AreaThread::Entry()
     double correlate_radius = gta_->radius();
     int yearsOverlap;
     double diff;
+    const int cMinYears = gta_->minYears();
 
     while(gta_->getArea(boxp))
     {
         BigBox* box = boxp.get();
+
+        std::string logpath =  "AREA_" + std::to_string(box->ix_) + ".txt";
+        std::ofstream  alog(logpath);
 
         //int cacheHits = 0;
         for(int row = 0; row < 10; row++)
@@ -759,10 +770,10 @@ AreaThread::Entry()
             {
                 TrendPtr mdatap = box->sublist_[col*10+row];
 
-                double mid_long = box->east_ + box->width_ * 3.0/20.0 * col;
+                double mid_long = box->east_ + box->width_ * 0.1 * ( col + 0.5);
 
                 std::string radQuerySql = radiusQuery(mid_long, center_lat, correlate_radius );
-
+                alog << mid_long << " " << center_lat << std::endl;
                 Statement stm(db_, radQuerySql);
                 int rowcount = 0;
                 localList.clear();
@@ -773,8 +784,11 @@ AreaThread::Entry()
                     SitePtr  sp_1;
                     if (gta_->getSite(id, sp_1))
                     {
-                         localList.emplace_back(new FoundSite(sp_1, stm.getDouble(1) * kmPerDegree));
+                         double kDist = stm.getDouble(1) * kmPerDegree;
+                         localList.emplace_back(new FoundSite(sp_1, kDist));
+                         alog << "id: " << id << " " << rowcount << " " << kDist << " km" << std::endl;
                     }
+
                     rowcount++;
                 }
                 unsigned int localix = 0;
@@ -793,11 +807,14 @@ AreaThread::Entry()
                     mdatap->cp_ = std::make_shared<TimeSeries>(*(fs->site_->data_));
                     mdatap->setWeight(weight);
                     mdatap->mergeCount_ = 1;
+                    alog << fs->site_->codeId_ << " Years@: " << fs->site_->yearsCt_ << std::endl;
+
                 }
                 while (localix < nCount)
                 {
                     FoundSite* fs = localList[localix].get();
                     localix++;
+                    alog << fs->site_->codeId_ << " Years#: " << fs->site_->yearsCt_ << std::endl;
 
                     double nWeight = (correlate_radius- fs->distance_) / correlate_radius;
                     TSPtr cp = fs->site_->data_;
@@ -808,8 +825,9 @@ AreaThread::Entry()
                         continue;
 
                     TimeSeries& mergeCS = *(mdatap->cp_);
-                    if (cp->averageDiff(mergeCS, yearsOverlap, diff) && yearsOverlap > 20)
+                    if (cp->averageDiff(mergeCS, yearsOverlap, diff) && yearsOverlap >= cMinYears)
                     {
+                        alog << "Overlap " << yearsOverlap << std::endl;
                         weights.assign(wsize, nWeight);
                         mdatap->mergeDiff(*cp, weights, diff);
                     }
@@ -825,6 +843,9 @@ AreaThread::Entry()
         TrendPtr amp = std::make_shared<MergeSeries>();
         boxp->data_ = amp;
 
+        // order of merge_1 ? biggest first
+        std::sort(merge_1.begin(), merge_1.end(), mergeOrder);
+        alog << "Big Merge" << std::endl;
         for(unsigned int mbox = 0; mbox < merge_1.size(); mbox++)
         {
             TSPtr tp3 = merge_1[mbox];
@@ -834,10 +855,12 @@ AreaThread::Entry()
                 amp->cp_ = std::make_shared<TimeSeries>(*tp3);
                 amp->setWeight(1.0);
                 amp->mergeCount_ = 1;
+                alog << "@ " << tp3->dates_.size() << std::endl;
             }
             else {
                 TimeSeries& cmp = *(amp->cp_);
                 tp3->averageDiff(cmp, yearsOverlap, diff);
+                alog << "# " << tp3->dates_.size() << " diff " << diff << std::endl;
                 weights.assign(tp3->dates_.size(),1.0);
                 amp->mergeDiff(*tp3, weights, diff);
             }
@@ -852,7 +875,7 @@ void GlobalTempArea::fillCache()
 {
     wxLogMessage("Caching station data . . .");
 
-    std::string qsql = stationQuery(startYear_, minYears_);
+    std::string qsql = stationQuery(1880, minYears_); // doto : make mininum year a parameter
     Statement ystm(db_, qsql);
     int rowct = 0;
     while(ystm.next())
@@ -867,7 +890,7 @@ void GlobalTempArea::fillCache()
 
         TSPtr tp = std::make_shared<TimeSeries>();
 
-        tp->initFromLocation(db_, locId, startYear_);
+        tp->initFromLocation(db_, locId, 1880); // TODO - allow edit of series minimum year
 
         site->data_ = tp;
 
@@ -898,6 +921,8 @@ void GlobalTempArea::bigMerge()
     SeriesPtr  ydata;
     wxFileName fn;
     std::vector<TrendPtr>  merge_band;
+
+    this->site_cache_.clear();
 
     for(int band = 0; band < 8; band++)
     {
@@ -967,12 +992,31 @@ void GlobalTempArea::bigMerge()
     fn.SetExt("plot");
     plot->saveToFile(fn.GetFullPath().ToStdString());
 
-    std::vector<float> monthAvg;
-
-    if (gc.getMonthAverage(1951, 1980,monthAvg))
+    std::vector<float> monthAvg1;
+    // startYear for 30 years average base for anomaly calculation, inclusive range
+    if (gc.getMonthAverage(startYear_, endYear_, monthAvg1))
     {
-        gc.makeMonthAnomalyPlot(monthAvg,path);
-        gc.makeYearAnomalyPlot(monthAvg,path);
+
+        if (startYear_ != 1951 && compensateBase_)
+        {
+            // hack to normalize difference as if the gauge reference is 1951, but the pattern is different
+            std::vector<float> monthAvgRef;
+
+            gc.getMonthAverage(1951, 1980, monthAvgRef);
+
+            NormalStats rstats, nstats;
+
+            rstats.calc(monthAvgRef);
+            nstats.calc(monthAvg1);
+            double adiff = rstats.mean_ - nstats.mean_; // if for instance, did 1981 - 2010, nstats is higher, diff is negative
+            for(auto ait = monthAvg1.begin(); ait != monthAvg1.end(); ait++)
+            {
+                (*ait) += adiff; // cancel the average guage difference
+            }
+
+        }
+        gc.makeMonthAnomalyPlot(monthAvg1,path);
+        gc.makeYearAnomalyPlot(monthAvg1,path);
     }
     wxLogMessage("Graphs saved");
 }

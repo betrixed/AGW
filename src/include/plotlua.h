@@ -67,6 +67,8 @@ namespace agw {
 
 		std::string plotTitle_;
 		std::string version_;
+		std::string fileName_;
+
 		wxFont      font_;  //
 
 		PixelWorld  world_;

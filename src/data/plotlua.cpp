@@ -177,7 +177,10 @@ void PlotLua::readFile(const std::string& path)
     std::ifstream fin(path);
 
     if (fin.is_open())
+    {
+        this->fileName_ = path;
         this->readStream(fin);
+    }
     else
         wxLogMessage("Cannot open %s", path.c_str());
     fin.close();
@@ -449,7 +452,14 @@ void PlotLua::showPlot(PlotLuaPtr& pl, bool visible)
         PlotXY*  thePlot = new PlotXY(m_window);
         thePlot->plotLua_ = pl;
         m_window->setPlot(thePlot);
+        if (this->fileName_.size() > 0)
+        {
+            wxFileName fn;
 
+            fn.Assign(this->fileName_);
+
+            m_window->SetTitle(fn.GetName());
+        }
         m_window->Show();
 
     }

@@ -7,10 +7,14 @@
 
 #include "series.hpp"
 #include "database.hpp"
-#include "threadwork.hpp"
+#include <wx/thread.h>
 #include "plotptr.h"
 #include <deque>
 #include <unordered_map>
+#include <fstream>
+
+
+class WorkThread;
 
 namespace agw {
 
@@ -139,9 +143,7 @@ namespace agw {
         GTAPtr          gta_;
         Database        db_;
 
-
     };
-
 
     class GlobalTempArea {
         wxCriticalSection       critQ_;
@@ -155,14 +157,17 @@ namespace agw {
         SeriesPtr               gridLat_;
         double                  correlate_radius_;
         Database                db_;
-        int                     startYear_;
         int                     minYears_;
         WorkThread*             worker_;
 
     public:
+        int                     startYear_; // anomaly base line
+        int                     endYear_;
+        bool                    compensateBase_; // adjust as if 1951-1980 baseline
+
         enum {
             default_radiuskm = 1200,
-            default_StartYear = 1880,
+            default_StartYear = 1951,
             default_minYears = 20,
         };
         GlobalTempArea(WorkThread* myworker);
@@ -177,6 +182,8 @@ namespace agw {
         double getBoxCenter(unsigned int bix);
         const std::string& getDBPath() const { return db_.path(); }
         double radius() const { return correlate_radius_; }
+        int startYear() const { return startYear_; }
+        int minYears() const { return minYears_; }
         void areaDone(int areaIndex);
         bool finishedAreas();
         void bigMerge();

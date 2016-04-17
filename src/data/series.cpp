@@ -540,6 +540,64 @@ void NormalStats::calc(const std::vector<double> &data)
 
 }
 
+void NormalStats::calc(const std::vector<float> &data)
+{
+    double sum1 = 0.0;
+    double value;
+    auto fwd = data.begin();
+	auto fend = data.end();
+	size_t ct = 0;
+
+	for(; fwd != fend; fwd++)
+	{
+        value = *fwd;
+        if (std::isnan(value))
+            continue;
+
+        if (ct==0)
+        {
+            minval_ =  value;
+            maxval_ =   value;
+        }
+        else if (value < minval_)
+            minval_ = value;
+        else if (value > maxval_)
+            maxval_ = value;
+        ct++;
+        sum1 += value;
+	}
+	n_ = ct;
+	if (ct > 0)
+	{
+		this->mean_ = sum1 / ct;
+
+		if (ct > 1)
+		{
+			double sum2 = 0;
+			double sum3 = 0;
+			for(fwd = data.begin(); fwd != fend; fwd++)
+			{
+                value = *fwd;
+                if (std::isnan(value))
+                    continue;
+				auto x = (value - this->mean_);
+				sum2 += x*x;
+				sum3 += x;
+			}
+			this->stddev_ = sqrt((sum2 - sum3*sum3/ct)/(ct-1));
+		}
+		else {
+			this->stddev_ = 0;
+		}
+	}
+	else {
+		this->mean_ = 0.0;
+		this->stddev_ = 0.0;
+	}
+    valid_ = (ct > 0);
+
+}
+
 void OffsetFloatSeries::SaveJSON(Json::Value& json)
 {
     Series::SaveJSON(json);

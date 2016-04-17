@@ -180,8 +180,27 @@ bool Statement::clear()
 
 bool Statement::next()
 {
-    code_ = sqlite3_step(h_);
-    return (code_ == SQLITE_ROW);
+    bool isbusy = true;
+    while (isbusy)
+    {
+        code_ = sqlite3_step(h_);
+        switch(code_)
+        {
+        case SQLITE_ROW: return true;
+        case SQLITE_DONE: return false;
+        case SQLITE_BUSY:
+            wxLogMessage("next() was busy");
+            break;
+        default:
+            // some error ?
+            {
+                return false;
+            }
+            break;
+
+        }
+    }
+    return false;
 }
 
 bool Statement::bind(double value, int pos)

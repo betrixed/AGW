@@ -448,7 +448,7 @@ namespace agw {
         }
 
         ~NormalStats(){}
-
+        void calc(const std::vector<float> &data);
         void calc(const std::vector<double>& data);
         void calc(const Series& x);
         static void setup_require(lua_State* L);

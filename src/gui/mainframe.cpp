@@ -40,6 +40,7 @@
 #include <wx/sstream.h>
 #include <wx/progdlg.h>
 #include "globaltemp.h"
+#include "areaavgtempdlg.h"
 
 ////@begin XPM images
 ////@end XPM images
@@ -53,6 +54,7 @@
 #include <sstream>
 #include <exception>
 #include "appdata.h"
+#include "helper.h"
 
 
 #include <wx/aui/auibook.h>
@@ -1385,20 +1387,50 @@ void MainFrame::OnSaveClick( wxCommandEvent& event )
 void MainFrame::OnGlobaltempClick( wxCommandEvent& event )
 {
     event.Skip(true);
-    Database& db = getDB();
+
+
 
     //timer_ = new IdleTimer(this);
     //timer_->Start();
 
-    auto ttThread = new TempTrendThread(this, db.path(), "globaltemp");
+    std::unique_ptr<AreaAvgTempDlg>  dlg( new AreaAvgTempDlg(this));
+
+    if (dlg->ShowModal() != wxID_OK)
+    {
+        dlg->Destroy();
+        return;
+    }
+
+    Database& db = getDB();
+    AreaAvgTempDlg& aat = *(dlg.get());
+    std::string basePath = aat.mFileBase->GetValue().ToStdString();
+
+    if (basePath.size() == 0)
+        basePath = "gtemp";
+
+    auto ttThread = new TempTrendThread(this, db.path(), basePath);
 
     if ( ttThread->Create() != wxTHREAD_NO_ERROR )
     {
         wxLogError(wxT("Can't create thread!"));
         delete ttThread;
+        dlg->Destroy();
         return;
     }
+
+    auto gta = std::make_shared<GlobalTempArea>(ttThread);
+    ttThread->gta = gta;
+
+    long year = 0;
+
+    gta->startYear_ = longValue(aat.mBaseFrom,year) ? year : GlobalTempArea::default_StartYear;
+    gta->endYear_ = longValue(aat.mBaseFrom,year) ? year : gta->startYear_ + 29;
+    gta->compensateBase_ = aat.mBoxAdjust->IsChecked();
+
     this->ModalProgressDlg(wxT("Progress"),wxT("Global Temperature Trend"));
+
+    // dispose the dialog before run
+    dlg->Destroy();
 
     if ( ttThread->Run() != wxTHREAD_NO_ERROR )
     {

@@ -4,6 +4,8 @@
 #include <wx/thread.h>
 #include <wx/timer.h>
 
+#include "globaltemp.h"
+
 class MainFrame;
 
 enum {
@@ -46,18 +48,24 @@ public:
     virtual void Notify();
 };
 
+
 class TempTrendThread : public WorkThread {
 public:
     // importPath is location of country shapefile
+
+
     TempTrendThread(MainFrame *handler,
             const std::string& dbPath,
             const std::string& filePath)
             : WorkThread(handler, dbPath, filePath)
         {
         }
-     void doGlobalTempTrend(const std::string& dbpath, const std::string& path);
+
+     void doGlobalTempTrend();
 
      virtual ExitCode Entry() wxOVERRIDE;
+
+     agw::GTAPtr gta;
  };
 
 class NewDBThread : public WorkThread {

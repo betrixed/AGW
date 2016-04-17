@@ -57,6 +57,7 @@
 			<Add option="`wx-config --libs`" />
 		</Linker>
 		<Unit filename="LICENSE.txt" />
+		<Unit filename="README.md" />
 		<Unit filename="src/data/app_lua.cpp" />
 		<Unit filename="src/data/autoaxis.cpp" />
 		<Unit filename="src/data/database.cpp" />
@@ -81,6 +82,7 @@
 		<Unit filename="src/data/textlayer.cpp" />
 		<Unit filename="src/data/wxCSV.cpp" />
 		<Unit filename="src/gui/appdata.cpp" />
+		<Unit filename="src/gui/areaavgtempdlg.cpp" />
 		<Unit filename="src/gui/countrylistdlg.cpp" />
 		<Unit filename="src/gui/datalayerdlg.cpp" />
 		<Unit filename="src/gui/helper.cpp" />
@@ -105,6 +107,7 @@
 		<Unit filename="src/gui/vegedlg.cpp" />
 		<Unit filename="src/include/agw.h" />
 		<Unit filename="src/include/appdata.h" />
+		<Unit filename="src/include/areaavgtempdlg.h" />
 		<Unit filename="src/include/countrylistdlg.h" />
 		<Unit filename="src/include/database.hpp" />
 		<Unit filename="src/include/datalayerdlg.h" />
