@@ -43,6 +43,7 @@ class wxMenu;
 
 class PlotXY;
 class AppData;
+class AxisDlg;
 
 /*!
  * PlotFrame class declaration
@@ -95,6 +96,9 @@ public:
     /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_DATA_VIEW
     void OnDataViewClick( wxCommandEvent& event );
 
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENU_AXIS
+    void OnMenuAxisClick( wxCommandEvent& event );
+
 ////@end PlotFrame event handler declarations
 
 ////@begin PlotFrame member function declarations
@@ -122,13 +126,15 @@ public:
         ID_PLOT_SETTINGS = 10042,
         ID_LAYER_MENU = 10045,
         ID_LEGEND = 10046,
-        ID_DATA_VIEW = 10047
+        ID_DATA_VIEW = 10047,
+        ID_MENU_AXIS = 10061
     };
 ////@end PlotFrame member variables
 
 
     PlotXY*     thePlot;
     AppData*    theApp;
+    AxisDlg*    axisDlg;
 
     void  setPlot(PlotXY* p);
     void AdjustFixed(bool toContent = false);

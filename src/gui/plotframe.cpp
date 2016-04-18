@@ -41,6 +41,7 @@
 #include "plottable.h"
 #include "plotlua.h"
 #include "helper.h"
+#include "axisdlg.h"
 
 using namespace agw;
 /*
@@ -65,6 +66,7 @@ BEGIN_EVENT_TABLE( PlotFrame, wxFrame )
     EVT_MENU( ID_LAYER_MENU, PlotFrame::OnLayerMenuClick )
     EVT_MENU( ID_LEGEND, PlotFrame::OnLegendClick )
     EVT_MENU( ID_DATA_VIEW, PlotFrame::OnDataViewClick )
+    EVT_MENU( ID_MENU_AXIS, PlotFrame::OnMenuAxisClick )
 ////@end PlotFrame event table entries
 
 END_EVENT_TABLE()
@@ -129,6 +131,7 @@ void PlotFrame::Init()
 ////@end PlotFrame member initialisation
 
     thePlot = nullptr;
+    axisDlg = nullptr;
 }
 
 
@@ -154,6 +157,7 @@ void PlotFrame::CreateControls()
     mMenuView->Append(ID_LAYER_MENU, _("Layer Settings"), wxEmptyString, wxITEM_NORMAL);
     mMenuView->Append(ID_LEGEND, _("Legend"), wxEmptyString, wxITEM_CHECK);
     mMenuView->Append(ID_DATA_VIEW, _("Series Table"), wxEmptyString, wxITEM_NORMAL);
+    mMenuView->Append(ID_MENU_AXIS, _("Axis Settings"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(mMenuView, _("View"));
     itemFrame1->SetMenuBar(menuBar);
 
@@ -184,7 +188,7 @@ void PlotFrame::OnSaveMenuClick( wxCommandEvent& event )
     if (!thePlot)
         return;
     wxString path;
-    
+
     if (theApp->getPlotFileSave(path))
     {
         thePlot->SaveToFile(path);
@@ -411,6 +415,29 @@ void PlotFrame::OnDataViewClick( wxCommandEvent& event )
     grid->SetColLabelSize(50);
     grid->ForceRefresh();
     grid->EndBatch();
+
+}
+
+
+/*
+ * wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENU_AXIS
+ */
+
+void PlotFrame::OnMenuAxisClick( wxCommandEvent& event )
+{
+    event.Skip(true);
+
+    if (this->axisDlg == nullptr)
+    {
+        AxisDlg* dlg = new AxisDlg(this);
+
+        dlg->setPlotFrame(this);
+        this->axisDlg = dlg;
+    }
+    else {
+        this->axisDlg->Show();
+    }
+
 
 }
 

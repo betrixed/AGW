@@ -8,7 +8,7 @@
 
 
 class PlotProperty;
-
+class AxisDlg;
 
 namespace agw {
 	enum ScaleFlow {
@@ -29,6 +29,7 @@ namespace agw {
 		friend class ::PlotProperty;
 		friend class DataLayer;
 		friend class PixelWorld;
+        friend class ::AxisDlg;
 
 		double scale_;
 		double offset_;
@@ -61,7 +62,7 @@ namespace agw {
 		TextRotate  tickRotate_;
 
 	public:
-		LinearScale(ScaleCoord co, ScaleFlow flow);
+		LinearScale(ScaleCoord co = ScaleCoord::XCOORD, ScaleFlow flow = ScaleFlow::POSITIVE);
 
 		void calcScale(int32_t pixelSpan)
 		{
