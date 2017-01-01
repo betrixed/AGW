@@ -34,7 +34,7 @@ void DataLayer::renderDC(wxDC& dc, PixelWorld& px)
     wxRect clip(px.left_,px.top_, px.xspan_, px.yspan_);
 
     {
-        wxDCClipper(dc, clip);
+
 
         if ((lineWidth_ > 0) && (linepen != wxPENSTYLE_TRANSPARENT))
         {
@@ -42,6 +42,7 @@ void DataLayer::renderDC(wxDC& dc, PixelWorld& px)
 
             auto savePen = dc.GetPen();
             dc.SetPen(linePen);
+            dc.SetClippingRegion(clip);
 
             int xprev = 0;
             int yprev = 0;
@@ -69,6 +70,7 @@ void DataLayer::renderDC(wxDC& dc, PixelWorld& px)
         wxPen sympen(this->symbolBorder_, 1, wxPENSTYLE_SOLID);
 
         dc.SetPen(sympen);
+        dc.SetClippingRegion(clip);
         auto errors = errorbar_;
         for(size_t i = 0; i < xdata.size(); i++)
         {
@@ -93,6 +95,7 @@ void DataLayer::renderDC(wxDC& dc, PixelWorld& px)
     }
     dc.SetBrush(savefill);
     dc.SetPen(savepen);
+    dc.DestroyClippingRegion();
 }
 void LineFit::renderDC(wxDC& dc, PixelWorld& px)
 {

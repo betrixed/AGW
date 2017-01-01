@@ -20,7 +20,6 @@
 ////@begin includes
 #include "wx/propdlg.h"
 #include "wx/gbsizer.h"
-#include "wx/spinctrl.h"
 #include "wx/clrpicker.h"
 #include "wx/fontpicker.h"
 ////@end includes
@@ -30,7 +29,6 @@
  */
 
 ////@begin forward declarations
-class wxSpinCtrl;
 class wxColourPickerCtrl;
 class wxFontPickerCtrl;
 ////@end forward declarations
@@ -82,12 +80,6 @@ public:
 
 ////@begin PlotProperty event handler declarations
 
-    /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_XBOX_AUTOLIMITS
-    void OnXboxAutolimitsClick( wxCommandEvent& event );
-
-    /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_YBOX_AUTOLIMITS
-    void OnYboxAutolimitsClick( wxCommandEvent& event );
-
     /// wxEVT_COMMAND_LISTBOX_SELECTED event handler for ID_LABEL_LIST
     void OnLabelListSelected( wxCommandEvent& event );
 
@@ -125,36 +117,6 @@ public:
     wxCheckBox* mBoxFixed;
     wxTextCtrl* mXSize;
     wxTextCtrl* mYSize;
-    wxTextCtrl* mXMin;
-    wxTextCtrl* mXMax;
-    wxCheckBox* mXReverse;
-    wxCheckBox* mXAutolimits;
-    wxTextCtrl* mXDivMajor;
-    wxCheckBox* mXBoxMajor;
-    wxSpinCtrl* mXDivSmall;
-    wxCheckBox* mXBoxSmall;
-    wxTextCtrl* mXRefLine;
-    wxCheckBox* mXBoxRef;
-    wxCheckBox* mXAutoAxis;
-    wxCheckBox* mXTextRotate;
-    wxCheckBox* mXInside;
-    wxCheckBox* mXLabelInside;
-    wxListBox* mXListUnits;
-    wxTextCtrl* mYMin;
-    wxTextCtrl* mYMax;
-    wxCheckBox* mYReverse;
-    wxCheckBox* mYAutolimits;
-    wxTextCtrl* mYDivMajor;
-    wxCheckBox* mYBoxMajor;
-    wxSpinCtrl* mYDivSmall;
-    wxCheckBox* mYBoxSmall;
-    wxTextCtrl* mYRefLine;
-    wxCheckBox* mYBoxRef;
-    wxCheckBox* mYAutoAxis;
-    wxCheckBox* mYTextRotate;
-    wxCheckBox* mYInside;
-    wxCheckBox* mYLabelInside;
-    wxListBox* mYListUnits;
     wxColourPickerCtrl* mColorBack;
     wxColourPickerCtrl* mColorAxis;
     wxColourPickerCtrl* mColorRefLine;
@@ -183,38 +145,6 @@ public:
         ID_BOX_FIXED = 10028,
         ID_XSIZE = 10029,
         ID_YSIZE = 10030,
-        ID_PP_XSCALE = 10002,
-        ID_XMIN = 10032,
-        ID_XMAX = 10033,
-        ID_XBOX_REVERSE = 10034,
-        ID_XBOX_AUTOLIMITS = 10031,
-        ID_XDIV_MAJOR = 10008,
-        ID_XBOX_MAJOR = 10010,
-        ID_XSPIN_MINOR = 10009,
-        ID_XBOX_MINOR = 10011,
-        ID_XEDIT_REFLINE = 10013,
-        ID_XBOX_REFLINE = 10014,
-        ID_XBOX_AUTOAXIS = 10027,
-        ID_XBOX_ROTATE = 10054,
-        ID_XBOX_INSIDE = 10056,
-        ID_LABEL_INSIDE = 10058,
-        ID_XLIST_UNITS = 10012,
-        ID_PP_YSCALE = 10003,
-        ID_YMIN = 10035,
-        ID_YMAX = 10036,
-        ID_YBOX_REVERSE = 10037,
-        ID_YBOX_AUTOLIMITS = 10043,
-        ID_YDIV_MAJOR = 10015,
-        ID_YBOX_MAJOR = 10016,
-        ID_YDIV_SMALL = 10017,
-        ID_YBOX_SMALL = 10018,
-        ID_YREF_LINE = 10019,
-        ID_YBOX_REFLINE = 10020,
-        ID_YBOX_AUTOTICK = 10026,
-        ID_YBOX_ROTATE = 10055,
-        ID_YBOX_INSDIE = 10057,
-        ID_YLABEL_INSIDE = 10059,
-        ID_YLIST_UNITS = 10021,
         ID_PLOT_COLOR = 10022,
         ID_COLOR_BACK = 10023,
         ID_COLOR_AXIS = 10024,

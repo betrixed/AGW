@@ -28,6 +28,7 @@
 
 #include "plotframe.h"
 #include "plotlua.h"
+#include "helper.h"
 
 ////@begin XPM images
 ////@end XPM images
@@ -324,15 +325,16 @@ void AxisDlg::CreateControls()
 
     wxStaticBox* itemStaticBoxSizer55Static = new wxStaticBox(mPageNumber, wxID_ANY, _("Units"));
     wxStaticBoxSizer* itemStaticBoxSizer55 = new wxStaticBoxSizer(itemStaticBoxSizer55Static, wxVERTICAL);
-    itemBoxSizer41->Add(itemStaticBoxSizer55, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemBoxSizer41->Add(itemStaticBoxSizer55, 0, wxGROW|wxALL, 5);
     wxArrayString mXListUnitsStrings;
     mXListUnitsStrings.Add(_("Number"));
     mXListUnitsStrings.Add(_("Julian Date"));
     mXListUnitsStrings.Add(_("Modified Julian"));
     mXListUnitsStrings.Add(_("Month"));
+    mXListUnitsStrings.Add(_("Year-Month"));
     mXListUnits = new wxListBox( itemStaticBoxSizer55->GetStaticBox(), ID_XLIST_UNITS, wxDefaultPosition, wxSize(-1, 120), mXListUnitsStrings, wxLB_SINGLE );
     mXListUnits->SetStringSelection(_("Number"));
-    itemStaticBoxSizer55->Add(mXListUnits, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    itemStaticBoxSizer55->Add(mXListUnits, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     itemBoxSizer41->Add(5, 5, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
@@ -405,6 +407,7 @@ wxIcon AxisDlg::GetIconResource( const wxString& name )
 void AxisDlg::fromAxis(const agw::LinearScale& xaxis)
 {
     wxString tempStr;
+    std::string text;
 
     tempStr << xaxis.axisTicks_;
     mXDivMajor->SetValue(tempStr);
@@ -419,14 +422,41 @@ void AxisDlg::fromAxis(const agw::LinearScale& xaxis)
     mXBoxRef->SetValue(xaxis.refLine_);
     mXAutoAxis->SetValue(xaxis.autoTicks_);
     mXListUnits->SetSelection((int) xaxis.units_);
+    switch(xaxis.units_)
+    {
+        case SeriesUnit::DATE_YEAR_MONTH:
+            {
+                // convert to format yyyy-mm, 1 - based month
+                int year;
+                wxDateTime::Month month;
+                mjdn_to_year_month(xaxis.dataMax_, year, month);
+                text = std::to_string(year) + "-" + std::to_string(int(month)+1);
+                mXMax->SetValue(text);
+                mjdn_to_year_month(xaxis.dataMin_, year, month);
+                text = std::to_string(year) + "-" + std::to_string(int(month)+1);
+                mXMin->SetValue(text);
+            }
+            break;
+        case SeriesUnit::DATE_JULIAN_MOD:
+            {
+            wxDateTime tempDate(xaxis.dataMin_ + 2400000.5);
+            mDateFrom->SetValue(tempDate);
+            tempDate.Set(xaxis.dataMax_ + 2400000.5);
+            mDateTo->SetValue(tempDate);
+            }
+            break;
+        case SeriesUnit::DEFAULT:
+        default:
+            tempStr.Clear();
+            tempStr << xaxis.dataMax_;
+            mXMax->SetValue(tempStr);
 
-    tempStr.Clear();
-    tempStr << xaxis.dataMax_;
-    mXMax->SetValue(tempStr);
+            tempStr.Clear();
+            tempStr << xaxis.dataMin_;
+            mXMin->SetValue(tempStr);
 
-    tempStr.Clear();
-    tempStr << xaxis.dataMin_;
-    mXMin->SetValue(tempStr);
+            break;
+    }
 
     mXReverse->SetValue(xaxis.direct_ == ScaleFlow::NEGATIVE);
 
@@ -540,11 +570,42 @@ void AxisDlg::toAxis(LinearScale& xaxis)
 
     xaxis.units_ = (SeriesUnit) mXListUnits->GetSelection();
 
-    tempStr = mXMax->GetValue();
-    tempStr.ToDouble(&xaxis.dataMax_);
 
-    tempStr = mXMin->GetValue();
-    tempStr.ToDouble(&xaxis.dataMin_);
+    switch(xaxis.units_)
+    {
+        case SeriesUnit::DATE_YEAR_MONTH:
+            {
+                int year;
+                wxDateTime::Month month;
+                std::string xmin_text = mXMin->GetValue().ToStdString();
+                std::string xmax_text = mXMax->GetValue().ToStdString();
+
+                // convert from format yyyy-mm, 1 - based month
+                to_year_month(xmin_text, year, month);
+                xaxis.dataMin_  = to_mjdn(year, month);
+                to_year_month(xmax_text, year, month);
+                xaxis.dataMax_ = to_mjdn(year, month);
+            }
+            break;
+        case SeriesUnit::DATE_JULIAN_MOD:
+            {
+            wxDateTime tempDate = mDateFrom->GetValue();
+            xaxis.dataMin_ = tempDate.GetModifiedJulianDayNumber();
+            tempDate = mDateTo->GetValue();
+            xaxis.dataMax_ = tempDate.GetModifiedJulianDayNumber();
+            }
+            break;
+        case SeriesUnit::DEFAULT:
+        default:
+            tempStr = mXMax->GetValue();
+            tempStr.ToDouble(&xaxis.dataMax_);
+
+            tempStr = mXMin->GetValue();
+            tempStr.ToDouble(&xaxis.dataMin_);
+            break;
+    }
+
+
 
     xaxis.direct_ = mXReverse->IsChecked() ? ScaleFlow::NEGATIVE : ScaleFlow::POSITIVE;
 

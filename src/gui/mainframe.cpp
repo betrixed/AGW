@@ -1424,7 +1424,7 @@ void MainFrame::OnGlobaltempClick( wxCommandEvent& event )
     long year = 0;
 
     gta->startYear_ = longValue(aat.mBaseFrom,year) ? year : GlobalTempArea::default_StartYear;
-    gta->endYear_ = longValue(aat.mBaseFrom,year) ? year : gta->startYear_ + 29;
+    gta->endYear_ = longValue(aat.mBaseTo,year) ? year : gta->startYear_ + 29;
     gta->compensateBase_ = aat.mBoxAdjust->IsChecked();
 
     this->ModalProgressDlg(wxT("Progress"),wxT("Global Temperature Trend"));

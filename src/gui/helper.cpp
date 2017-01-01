@@ -31,6 +31,36 @@ using namespace agw;
     }
 }
 
+void to_year_month(const std::string& text, int& year, wxDateTime::Month& month)
+{
+    auto pos = text.find('-');
+
+    if (pos == std::string::npos)
+    {
+        year = 0;
+        month = wxDateTime::Month::Inv_Month;
+        return;
+    }
+
+    year = std::stoi(text.substr(0,pos));
+    int m = std::stoi(text.substr(pos+1));
+    month = wxDateTime::Month(m-1);
+}
+
+double to_mjdn(int year, wxDateTime::Month month)
+{
+    wxDateTime conv(1, month, year);
+
+    return conv.GetModifiedJulianDayNumber();
+}
+
+void mjdn_to_year_month(double mjdn, int& year, wxDateTime::Month& month)
+{
+    wxDateTime   conv(mjdn + 2400000.5);
+    year = conv.GetYear();
+    month = conv.GetMonth();
+}
+
 void ensureExtension(wxString& path, const wxString& ext)
 {
     wxFileName fn;

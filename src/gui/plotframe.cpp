@@ -42,6 +42,8 @@
 #include "plotlua.h"
 #include "helper.h"
 #include "axisdlg.h"
+#include "trendfitdlg.h"
+#include <set>
 
 using namespace agw;
 /*
@@ -64,9 +66,10 @@ BEGIN_EVENT_TABLE( PlotFrame, wxFrame )
     EVT_MENU( ID_EXPORT_PNG, PlotFrame::OnExportPngClick )
     EVT_MENU( ID_PLOT_SETTINGS, PlotFrame::OnPlotSettingsClick )
     EVT_MENU( ID_LAYER_MENU, PlotFrame::OnLayerMenuClick )
+    EVT_MENU( ID_MENU_AXIS, PlotFrame::OnMenuAxisClick )
     EVT_MENU( ID_LEGEND, PlotFrame::OnLegendClick )
     EVT_MENU( ID_DATA_VIEW, PlotFrame::OnDataViewClick )
-    EVT_MENU( ID_MENU_AXIS, PlotFrame::OnMenuAxisClick )
+    EVT_MENU( ID_TREND_FIT, PlotFrame::OnTrendFitClick )
 ////@end PlotFrame event table entries
 
 END_EVENT_TABLE()
@@ -155,9 +158,10 @@ void PlotFrame::CreateControls()
     mMenuView = new wxMenu;
     mMenuView->Append(ID_PLOT_SETTINGS, _("Frame Settings"), wxEmptyString, wxITEM_NORMAL);
     mMenuView->Append(ID_LAYER_MENU, _("Layer Settings"), wxEmptyString, wxITEM_NORMAL);
+    mMenuView->Append(ID_MENU_AXIS, _("Axis Settings"), wxEmptyString, wxITEM_NORMAL);
     mMenuView->Append(ID_LEGEND, _("Legend"), wxEmptyString, wxITEM_CHECK);
     mMenuView->Append(ID_DATA_VIEW, _("Series Table"), wxEmptyString, wxITEM_NORMAL);
-    mMenuView->Append(ID_MENU_AXIS, _("Axis Settings"), wxEmptyString, wxITEM_NORMAL);
+    mMenuView->Append(ID_TREND_FIT, _("Add Trend Fit"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(mMenuView, _("View"));
     itemFrame1->SetMenuBar(menuBar);
 
@@ -438,6 +442,92 @@ void PlotFrame::OnMenuAxisClick( wxCommandEvent& event )
         this->axisDlg->Show();
     }
 
+
+}
+
+
+bool insertSet(SeriesPtr& sp, std::set<SeriesPtr>& slist, int& ct, const std::string& suffix)
+{
+    std::string slabel = sp->getLabel();
+
+    if (slabel.size() == 0)
+    {
+        ct++;
+        slabel = "unknown#" + std::to_string(ct) + suffix;
+        sp->setLabel(slabel);
+    }
+
+    auto fit = slist.find(sp);
+    if (fit == slist.end())
+    {
+        slist.insert(sp);
+        return true;
+    }
+    return false;
+}
+/*
+ * wxEVT_COMMAND_MENU_SELECTED event handler for ID_TREND_FIT
+ */
+
+void PlotFrame::OnTrendFitClick( wxCommandEvent& event )
+{
+
+    event.Skip(true);
+    std::unique_ptr<TrendFitDlg> dlg(new TrendFitDlg(this));
+    TrendFitDlg* tfit = dlg.get();
+
+    // setup names of Series
+
+    PlotLuaPtr plp = thePlot->plotLua_;
+
+    std::vector<PlotPtr> pv = plp->layers_;
+
+    std::set<SeriesPtr> slist;
+
+    auto vit = pv.begin();
+    auto endit = pv.end();
+
+    // May be using same xdata_ for different series. so need a map or set to ensure represented once
+    std::string slabel;
+    int unknownCt = 0;
+    std::string xsuffix = ".x";
+    std::string ysuffix = ".y";
+
+    while(vit != endit)
+    {
+        PlotPtr pp = *vit;
+
+        DataLayer* dd = dynamic_cast<DataLayer*>(pp.get());
+
+        if (dd != nullptr)
+        {
+            auto sp = dd->xdata_;
+            insertSet(sp, slist, unknownCt,xsuffix);
+
+            sp = dd->ydata_;
+            insertSet(sp, slist, unknownCt,ysuffix);
+
+        }
+        vit++;
+    }
+
+    for(auto sit = slist.begin(); sit != slist.end(); sit++)
+    {
+        SeriesPtr sp = *sit;
+        wxString label = sp->getLabel();
+
+        //correlate by index
+        tfit->series_.push_back(sp);
+
+        tfit->mXList->Append(label);
+        tfit->mYList->Append(label);
+    }
+
+    if (tfit->ShowModal() == wxID_OK)
+    {
+        tfit->doTrendFit(plp);
+        this->thePlot->Refresh();
+    }
 
 }
 

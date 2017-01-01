@@ -90,14 +90,17 @@ public:
     /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_LAYER_MENU
     void OnLayerMenuClick( wxCommandEvent& event );
 
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENU_AXIS
+    void OnMenuAxisClick( wxCommandEvent& event );
+
     /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_LEGEND
     void OnLegendClick( wxCommandEvent& event );
 
     /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_DATA_VIEW
     void OnDataViewClick( wxCommandEvent& event );
 
-    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENU_AXIS
-    void OnMenuAxisClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_TREND_FIT
+    void OnTrendFitClick( wxCommandEvent& event );
 
 ////@end PlotFrame event handler declarations
 
@@ -125,9 +128,10 @@ public:
         ID_EXPORT_PNG = 10044,
         ID_PLOT_SETTINGS = 10042,
         ID_LAYER_MENU = 10045,
+        ID_MENU_AXIS = 10061,
         ID_LEGEND = 10046,
         ID_DATA_VIEW = 10047,
-        ID_MENU_AXIS = 10061
+        ID_TREND_FIT = 10062
     };
 ////@end PlotFrame member variables
 

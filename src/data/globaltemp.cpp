@@ -3,6 +3,7 @@
 #include "database.hpp"
 #include <wx/log.h>
 #include <cmath>
+#include <csignal>
 #include <algorithm>
 #include "threadwork.hpp"
 #include <wx/filename.h>
@@ -714,7 +715,7 @@ bool GlobalTempArea::getArea(AreaPtr& doArea)
 GlobalTempArea::GlobalTempArea(WorkThread* myworker) : worker_(myworker)
 {
     startYear_ = default_StartYear;
-    endYear_ = startYear_ + 29; // TODO: endYear_ isn't used yet!
+    endYear_ = startYear_ + 29; // TODO: endYear_ check
     minYears_ = default_minYears;
     doneCount_ = 0;
 

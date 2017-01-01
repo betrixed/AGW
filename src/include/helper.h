@@ -77,6 +77,10 @@ wxPenStyle indexToPenStyle(int ix);
 int penNameToIndex(const std::string& name);
 std::string indexToPenName(int ix);
 
+void mjdn_to_year_month(double mjdn, int& year, wxDateTime::Month& month);
+double to_mjdn(int year, wxDateTime::Month month);
+void to_year_month(const std::string& text, int& year, wxDateTime::Month& month);
+
 
 bool readPoint(const Json::Value& json, const std::string& prop, wxPoint& pt);
 bool readUInt(const Json::Value& json, const std::string& prop, uint& dest);

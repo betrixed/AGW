@@ -13,6 +13,8 @@
 
 // Something that can be moved around, as an image. Therefore it is drawn as an image.
 namespace agw {
+
+
 	class BoxLayer : public PlotLayer {
 	protected:
 		wxRect      bounds_; // calculated bounds
@@ -229,6 +231,9 @@ namespace agw {
 		LegendLayer* getLegend();
 
 	};
+
+    PlotPtr regressRange(const Series& srcX, const Series& srcY, double xMin, double xMax);
+
 
 }; // namespace agw
 #endif

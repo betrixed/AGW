@@ -105,6 +105,7 @@
 		<Unit filename="src/gui/stationquery.cpp" />
 		<Unit filename="src/gui/stationsets.cpp" />
 		<Unit filename="src/gui/testwindowapp.cpp" />
+		<Unit filename="src/gui/trendfitdlg.cpp" />
 		<Unit filename="src/gui/vegedlg.cpp" />
 		<Unit filename="src/include/agw.h" />
 		<Unit filename="src/include/appdata.h" />
@@ -150,6 +151,7 @@
 		<Unit filename="src/include/stationtable.h" />
 		<Unit filename="src/include/testwindowapp.h" />
 		<Unit filename="src/include/threadwork.hpp" />
+		<Unit filename="src/include/trendfitdlg.h" />
 		<Unit filename="src/include/vegedlg.h" />
 		<Unit filename="src/include/wxCSV.hpp" />
 		<Unit filename="src/lua-5.3.2/src/lapi.c">

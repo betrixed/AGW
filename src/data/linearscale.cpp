@@ -184,11 +184,42 @@ void LinearScale::drawBottomDateAxis(wxDC& dc, PixelWorld& px)
     auto yeardate = wxDateTime(1,wxDateTime::Month::Jan, tick);
     auto datetick = yeardate.GetModifiedJulianDayNumber();
     auto axispos = px.yspan_ + px.top_;
+    auto endpos = px.left_ + px.xspan_;
 
-    while (datetick <= dataMax_)
+    int bigTickTop, bigTickBottom;
+    int tickTop, tickBottom;
+    int tempx;
+    int otherSide = px.top_;
+    if (insideTick_)
+    {
+        bigTickTop = axispos - 10;
+        bigTickBottom = axispos;
+        tickTop = axispos - 5;
+        tickBottom = axispos;
+    }
+    else {
+         bigTickTop = axispos;
+         bigTickBottom = axispos+10;
+         tickTop = axispos;
+         tickBottom = axispos+5;
+    }
+
+    wxPen gridPen(px.gridColor_);
+
+    double prevTick = (dtick-1.0)* axisTicks_;
+    int prevPt = (int)( (prevTick-offset_)* scale_ ) + px.left_;
+
+    while (prevTick <= dataMax_)
     {
         auto xpt = (int)( (datetick-offset_)* scale_ ) + px.left_;
-        if (xpt >= px.left_)
+        if (showMajorGrid_ && (xpt > px.left_) && (xpt < endpos))
+        {
+            auto savePen = dc.GetPen();
+            dc.SetPen(gridPen);
+            dc.DrawLine(xpt, bigTickTop, xpt, otherSide);
+            dc.SetPen(savePen);
+        }
+        if (xpt >= px.left_  && (xpt < endpos))
         {
             dc.DrawLine(xpt, axispos, xpt, axispos+10);
             // into text
@@ -196,7 +227,28 @@ void LinearScale::drawBottomDateAxis(wxDC& dc, PixelWorld& px)
             dc.GetTextExtent(label, &txw, &txh);
             dc.DrawText(label, xpt - txw/2, axispos + txh + 10);
         }
+        if (axisDiv_ > 0)
+        {
+            for(uint ix = 1; ix < axisDiv_; ix++)
+            {
+                tempx = prevPt - ((prevPt-xpt)*(int)ix) / (int)axisDiv_;
+                if ((tempx <= endpos) && (tempx > px.left_))
+                {
+                    dc.DrawLine(tempx,tickTop, tempx, tickBottom );
+                    if (showMinorTicks_)
+                    {
+                        auto savePen = dc.GetPen();
+                        dc.SetPen(gridPen);
+                        dc.DrawLine(tempx,tickTop, tempx, otherSide );
+                        dc.SetPen(savePen);
+                    }
+                }
+            }
+            prevPt = xpt;
+        }
+
         dtick += 1.0;
+        prevTick = tick;
         tick = dtick * axisTicks_;
         yeardate = wxDateTime(1, wxDateTime::Month::Jan, tick);
         datetick = yeardate.GetModifiedJulianDayNumber();
@@ -429,7 +481,7 @@ void LinearScale::ReadJSON(const Json::Value& json)
     if (json.isMember("unit"))
     {
         auto temp = json["unit"].asString();
-        this->units_ = toSeriesUnit(temp);
+        this->units(toSeriesUnit(temp));
     }
     if (readString(json,"label",tempStr))
         label_ = tempStr;
