@@ -112,6 +112,8 @@ extern const wxString STD_PLOT_FILES;
         void openPlotFile();
         bool getPlotFile(std::string& ipath);
         bool getScriptFile(std::string& ipath);
+        bool luaFileChooser(std::string msg, std::string extension, std::string& retPath);
+
         void readPlot(const std::string& path);
 
         bool getPlotFileSave(wxString& ipath);
@@ -146,6 +148,7 @@ extern const wxString STD_PLOT_FILES;
     static int init_lib(lua_State* L);
     static int dbpath(lua_State* L);
     static int global(lua_State* L);
+    static int fileChooser(lua_State* L);
 
     };
 #define APP_LUA "app"

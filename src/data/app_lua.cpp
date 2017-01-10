@@ -6,6 +6,7 @@ using namespace agw;
 static const struct luaL_Reg appLua_funct [] = {
       {"dbpath", AppData::dbpath},
       {"global", AppData::global},
+      {"fileChooser", AppData::fileChooser},
       {nullptr, nullptr}
 };
 
@@ -59,4 +60,46 @@ void AppData::setup_require(lua_State *L)
 {
     luaL_requiref(L, APP_LUA, AppData::init_lib, 1);
     lua_pop(L, 1);  /* remove lib */
+}
+
+int AppData::fileChooser(lua_State* L)
+{
+    std::string msg;
+    std::string extension;
+    std::string result;
+
+    int stacktop = lua_gettop(L); // number of arguments
+
+    if (stacktop > 1)
+    {
+        const char* arg2 = luaL_checkstring(L,2);
+        if (arg2)
+        {
+            extension.assign(arg2,strlen(arg2));
+        }
+    }
+
+    if (stacktop > 0)
+    {
+        const char* arg1 = luaL_checkstring(L,1);
+        if (arg1)
+        {
+            msg.assign(arg1,strlen(arg1));
+        }
+
+    }
+    if (msg.size()==0)
+        msg = "Running script";
+    if (extension.size()==0)
+        extension = "*";
+
+    if (gAppData->luaFileChooser(msg,extension,result))
+    {
+        lua_pushlstring(L, result.c_str(), result.size() );
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
 }

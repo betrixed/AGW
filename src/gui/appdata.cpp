@@ -24,6 +24,7 @@
 #include "helper.h"
 
 #include <string>
+#include <sstream>
 #include <memory>
 #include <fstream>
 #include <iostream>
@@ -326,6 +327,43 @@ void AppData::openScriptFile()
         return;
     readScript(ipath);
 }
+
+bool
+AppData::luaFileChooser(
+    std::string msg,
+    std::string extension,
+    std::string& retPath)
+{
+    wxString lastFolder = lastScriptDir();
+
+    wxString prompt = wxString(msg);
+
+    std::stringstream fileTypes;
+
+    fileTypes << "For Script (*." << extension << ")|*." << extension;
+
+    wxString fileKinds = wxString(fileTypes.str());
+
+    wxFileDialog* dlg = new wxFileDialog(this->mFrame, prompt, lastFolder, wxEmptyString,
+                       fileKinds, wxFD_OPEN|wxFD_FILE_MUST_EXIST);
+
+    if (dlg->ShowModal() == wxID_CANCEL)
+    {
+        retPath = "";
+        return false;     // the user changed mind...
+    }
+
+    wxString path = dlg->GetPath();
+
+    this->lastScriptDir(path);
+
+    retPath = path.ToStdString();
+
+    dlg->Destroy();
+    return true;
+
+}
+
 bool AppData::getScriptFile(std::string& ipath)
 {
     wxString lastFolder = lastScriptDir();

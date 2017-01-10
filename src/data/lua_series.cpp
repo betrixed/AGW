@@ -118,15 +118,15 @@ static void stackDump (lua_State *L) {
       int i;
       int top = lua_gettop(L);
       std::cout << "STACK " << std::endl;
-      for (i = 1; i <= top; i++) {  // repeat for each level 
+      for (i = 1; i <= top; i++) {  // repeat for each level
         int t = lua_type(L, i);
         switch (t) {
 
-          case LUA_TSTRING:  // strings 
+          case LUA_TSTRING:  // strings
             std::cout << i << ": " <<  lua_tostring(L, i);
             break;
 
-          case LUA_TBOOLEAN:  // booleans 
+          case LUA_TBOOLEAN:  // booleans
             std::cout << i << ": " <<  (lua_toboolean(L, i) ? "true" : "false");
             break;
 
@@ -134,7 +134,7 @@ static void stackDump (lua_State *L) {
             std::cout << i << ": " <<  lua_tonumber(L, i);
             break;
 
-          default:  // other values 
+          default:  // other values
             std::cout << i << ": " <<  lua_typename(L, t);
             break;
 
@@ -297,6 +297,8 @@ int SeriesRay::appendSeries(lua_State* L)
     lua_settop(L,1);
     return 1;
 }
+
+// Lua: <seriesObject:set(index, value);
 int SeriesRay::setSeries(lua_State* L)
 {
     SeriesPtr *mem = checkSeries(L,1);
@@ -587,14 +589,15 @@ pushNormalStats(lua_State* L)
     lua_pushinteger(L, mem->n_);
     return 1;
  }
+
  int
  NormalStats::lAvg(lua_State* L)
  {
     NormalStats* mem = validStats(L);
     lua_pushnumber(L, mem->mean_);
     return 1;
-
  }
+
  int
  NormalStats::lStddev(lua_State* L)
  {
