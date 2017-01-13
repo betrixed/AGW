@@ -127,7 +127,7 @@ namespace agw {
     typedef std::shared_ptr<BigBox> AreaPtr;
 
     // basic regression selection using xvalue limits for ydata on xdata
-    //PlotPtr regressRange(const Series& srcX, const Series& srcY, double xMin, double xMax);
+    //PlotLayer_sptr regressRange(const Series& srcX, const Series& srcY, double xMin, double xMax);
 
     // jobs are an area to do
     // so list of jobs is a list of BigBox AreaPtr

@@ -5,6 +5,7 @@
 
 using namespace agw;
 
+
 void BoxLayer::SaveJSON(Json::Value& json)
 {
     json["jype"] = this->get_jype();
@@ -114,7 +115,7 @@ void LabelWorld::ReadJSON(const Json::Value& json)
             if (jype == "textbox")
             {
 
-                PlotPtr p = std::make_shared<TextLayer>(PlotPlace::TLEFT_CORNER,defaultOffset);
+                PlotLayer_sptr p = std::make_shared<TextLayer>(PlotPlace::TLEFT_CORNER,defaultOffset);
                 p.get()->ReadJSON(theLabel);
                 labels_.push_back(p);
             }
@@ -136,7 +137,7 @@ void LabelWorld::removeLegend()
     legend_ = nullptr;
 }
 
-void LabelWorld::setLegend(PlotPtr pp)
+void LabelWorld::setLegend(PlotLayer_sptr pp)
 {
     legend_ = pp;
 }
@@ -148,7 +149,7 @@ void LabelWorld::addLegend()
 
 void LabelWorld::title(const std::string& s)
 {
-    PlotPtr p = getLabelKind(LabelKind::TITLE);
+    PlotLayer_sptr p = getLabelKind(LabelKind::TITLE);
     bool isNew = (p == nullptr);
     if (isNew)
     {
@@ -164,7 +165,7 @@ void LabelWorld::title(const std::string& s)
 void LabelWorld::xlabel(const std::string& s)
 {
 
-    PlotPtr p = getLabelKind(LabelKind::XLABEL);
+    PlotLayer_sptr p = getLabelKind(LabelKind::XLABEL);
     bool isNew = (p == nullptr);
     if (isNew)
     {
@@ -181,7 +182,7 @@ void LabelWorld::xlabel(const std::string& s)
 }
 void LabelWorld::ylabel(const std::string& s)
 {
-    PlotPtr p = getLabelKind(LabelKind::YLABEL);
+    PlotLayer_sptr p = getLabelKind(LabelKind::YLABEL);
     bool isNew = (p == nullptr);
     if (isNew)
     {
@@ -196,7 +197,7 @@ void LabelWorld::ylabel(const std::string& s)
     t->value(s);
 
 }
-PlotPtr
+PlotLayer_sptr
 LabelWorld::getLabelKind(LabelKind k)
 {
     auto it = labels_.begin();

@@ -134,6 +134,7 @@
 		<Unit filename="src/include/plotframe.h" />
 		<Unit filename="src/include/plotlayer.h" />
 		<Unit filename="src/include/plotlua.h" />
+		<Unit filename="src/include/plotlua_forward.h" />
 		<Unit filename="src/include/plotoptions.h" />
 		<Unit filename="src/include/plotproperty.h" />
 		<Unit filename="src/include/plotptr.h" />

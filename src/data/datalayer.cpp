@@ -65,13 +65,13 @@ DataLayer::~DataLayer()
         */
 }
 
-// argument 1 - DataLayer ( PlotPtr )
+// argument 1 - DataLayer ( PlotLayer_sptr)
 // argument 2 -  Lua Table
-// Convert table to json string, parse json, and then pass to PlotPtr ?
+// Convert table to json string, parse json, and then pass to PlotLayer_sptr ?
 // how about iterate table, and go direct to a Json::Value tree. No recursion yet.
 int DataLayer::setDisplay(lua_State* L)
 {
-    PlotPtr* mem = DataLayer::checkLayer(L,1);
+    PlotLayer_sptr* mem = DataLayer::checkLayer(L,1);
     luaL_checktype(L, 2, LUA_TTABLE);
     lua_pushnil(L);
     Json::Value root(Json::objectValue);
@@ -222,7 +222,7 @@ static void* UserDataMatch(lua_State *L, int index, const char* const tablename[
     return ud;
 }
 
-PlotPtr*
+PlotLayer_sptr*
 DataLayer::checkLayer (lua_State *L, int index)
 {
 
@@ -233,22 +233,22 @@ DataLayer::checkLayer (lua_State *L, int index)
     const char* match;
     void *ud = UserDataMatch(L,index, tables, &match);
     luaL_argcheck(L, ud != nullptr, 1, "'plotxy' expected");
-    return (PlotPtr *)ud;
+    return (PlotLayer_sptr *)ud;
 }
 
-PlotPtr*
+PlotLayer_sptr*
 LineFit::checkLineFit (lua_State *L, int index)
 {
   luaL_checktype(L, index, LUA_TUSERDATA);
   void *ud = luaL_checkudata(L, index, LF_LUA);
   luaL_argcheck(L, ud != nullptr, 1, "'linefit' expected");
-  return (PlotPtr *)ud;
+  return (PlotLayer_sptr *)ud;
 }
 
-PlotPtr*
+PlotLayer_sptr*
 DataLayer::toLayer(lua_State* L, int index)
 {
-    PlotPtr* p = (PlotPtr*) lua_touserdata(L,index);
+    PlotLayer_sptr* p = (PlotLayer_sptr*) lua_touserdata(L,index);
     if (p == nullptr)
         Series_typerror(L,index,DL_LUA);
     return p;
@@ -257,9 +257,9 @@ DataLayer::toLayer(lua_State* L, int index)
 const char* DataLayer::DL_LUA = "plotxy";
 const char* LineFit::LF_LUA = "linefit";
 
-static LineFit* PlotPtrLineFit(lua_State* L)
+static LineFit* PlotLayer_sptrLineFit(lua_State* L)
 {
-    PlotPtr* pp = LineFit::checkLayer(L,1);
+    PlotLayer_sptr* pp = LineFit::checkLayer(L,1);
     PlotLayer* p = (*pp).get();
     if (typeid(*p) != typeid(LineFit))
     {
@@ -269,12 +269,12 @@ static LineFit* PlotPtrLineFit(lua_State* L)
     return static_cast<LineFit*>(p);
 }
 
-PlotPtr* LineFit::pushLineFit(lua_State* L)
+PlotLayer_sptr* LineFit::pushLineFit(lua_State* L)
 {
-    size_t nbytes = sizeof(PlotPtr);
+    size_t nbytes = sizeof(PlotLayer_sptr);
     void *a = lua_newuserdata(L, nbytes);
 
-    PlotPtr* mem = new (a) PlotPtr();  // new blank shared pointer placement syntax=
+    PlotLayer_sptr* mem = new (a) PlotLayer_sptr();  // new blank shared pointer placement syntax=
     luaL_setmetatable(L, LF_LUA);
 
     return mem;
@@ -282,38 +282,38 @@ PlotPtr* LineFit::pushLineFit(lua_State* L)
 
 int LineFit::getRVal(lua_State* L)
 {
-    LineFit* fit = PlotPtrLineFit(L);
+    LineFit* fit = PlotLayer_sptrLineFit(L);
     lua_pushnumber(L, fit->rval_);
     return 1;
 }
 
 int LineFit::getSlope(lua_State* L)
 {
-    LineFit* fit = PlotPtrLineFit(L);
+    LineFit* fit = PlotLayer_sptrLineFit(L);
     lua_pushnumber(L, fit->slope_);
     return 1;
 }
 int LineFit::getYOffset(lua_State* L)
 {
-    LineFit* fit = PlotPtrLineFit(L);
+    LineFit* fit = PlotLayer_sptrLineFit(L);
     lua_pushnumber(L, fit->yintercept_);
     return 1;
 }
 
-PlotPtr* DataLayer::pushLayer(lua_State* L)
+PlotLayer_sptr* DataLayer::pushLayer(lua_State* L)
 {
-    size_t nbytes = sizeof(PlotPtr);
+    size_t nbytes = sizeof(PlotLayer_sptr);
     void *a = lua_newuserdata(L, nbytes);
 
-    PlotPtr* mem = new (a) PlotPtr();  // new blank shared pointer placement syntax=
+    PlotLayer_sptr* mem = new (a) PlotLayer_sptr();  // new blank shared pointer placement syntax=
     luaL_setmetatable(L, DL_LUA);
 
     return mem;
 }
 
-static DataLayer* PlotPtrDataLayer(lua_State* L)
+static DataLayer* PlotLayer_sptrDataLayer(lua_State* L)
 {
-    PlotPtr* pp = DataLayer::checkLayer(L,1);
+    PlotLayer_sptr* pp = DataLayer::checkLayer(L,1);
     DataLayer* dlay = dynamic_cast<DataLayer*>((*pp).get());
     if (dlay==nullptr)
     {
@@ -325,7 +325,7 @@ static DataLayer* PlotPtrDataLayer(lua_State* L)
 
 int DataLayer::setLegend(lua_State* L)
 {
-    DataLayer* dlay = PlotPtrDataLayer(L);
+    DataLayer* dlay = PlotLayer_sptrDataLayer(L);
     const char* text = luaL_checkstring(L,2);
     dlay->legendText_ = text;
     return 0;
@@ -333,7 +333,7 @@ int DataLayer::setLegend(lua_State* L)
 
 int DataLayer::getXData(lua_State* L)
 {
-    DataLayer* dlay = PlotPtrDataLayer(L);
+    DataLayer* dlay = PlotLayer_sptrDataLayer(L);
     SeriesPtr* result = SeriesRay::pushSeries(L);
     (*result) = dlay->xdata_;
     return 1;
@@ -341,7 +341,7 @@ int DataLayer::getXData(lua_State* L)
 
 int DataLayer::getYData(lua_State* L)
 {
-    DataLayer* dlay = PlotPtrDataLayer(L);
+    DataLayer* dlay = PlotLayer_sptrDataLayer(L);
     SeriesPtr* result = SeriesRay::pushSeries(L);
     (*result) = dlay->ydata_;
     return 1;

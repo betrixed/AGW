@@ -249,7 +249,7 @@ void AppData::readScript(const std::string& path)
 
 void AppData::readPlot(const std::string& path)
 {
-    PlotLuaPtr pp = std::make_shared<PlotLua>();
+    PlotLua_sptr pp = PlotLua::create_sptr();
 
     PlotLua* pl = pp.get();
 

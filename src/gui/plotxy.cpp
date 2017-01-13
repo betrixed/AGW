@@ -160,7 +160,7 @@ void PlotXY::Init()
 void PlotXY::CreateControls()
 {
 ////@begin PlotXY content construction
-    PlotXY* itemScrolledCanvas1 = this;
+    //PlotXY* itemScrolledCanvas1 = this;
 
     this->SetScrollbars(1, 1, 8, 8);
 ////@end PlotXY content construction
@@ -206,7 +206,7 @@ void PlotXY::OnDraw(wxDC& dc)
 {
     agw::PlotLua* pl = plotLua_.get();
 
-    std::vector<agw::PlotPtr>& layers = pl->layers_;
+    std::vector<agw::PlotLayer_sptr>& layers = pl->layers_;
 
     if (layers.size() == 0)
         return;
@@ -260,14 +260,14 @@ void PlotXY::OnDraw(wxDC& dc)
 
     dc.SetPen(savePen);
 
-    std::vector<PlotPtr>& text = pl->text_.labels_;
+    std::vector<PlotLayer_sptr>& text = pl->text_.labels_;
     it = text.begin();
     fin = text.end();
 
     for( ; it != fin; it++)
     {
         PlotLayer* p = it->get();
-        p->setPlot(pl);
+        p->setPlot(plotLua_);
 
         if (p->isVisible())
             p->renderDC(dc, pw);
@@ -276,7 +276,7 @@ void PlotXY::OnDraw(wxDC& dc)
     PlotLayer* p = pl->text_.legend_.get();
     if (p && p->isVisible())
     {
-        p->setPlot(pl);
+        p->setPlot(plotLua_);
         p->renderDC(dc, pw);
 
     }
@@ -289,7 +289,7 @@ void PlotXY::calcScales()
     pl->world_.calcScales(pl->layers_);
 }
 
-void PlotXY::AddData(PlotPtr& pp)
+void PlotXY::AddData(PlotLayer_sptr& pp)
 {
     plotLua_->addLayer(pp);
 }

@@ -17,16 +17,9 @@
 #include "plottable.h"
 #include <wx/dc.h>
 
-class PlotFrame;
+#include "plotlua_forward.h"
 
 namespace agw {
-	class PlotLua;
-
-
-	typedef std::shared_ptr<DataTable> DataTablePtr;
-	typedef std::shared_ptr<PlotLua>    PlotLuaPtr;
-
-	// this class generates the plot image
 
 	bool L_asBoolean(lua_State* L, int ix, bool useDefault);
 
@@ -36,10 +29,12 @@ namespace agw {
 		PlotLua();
 		virtual ~PlotLua();
 
+        static PlotLua_sptr create_sptr();
 		void addLayer(SeriesPtr& xdata, SeriesPtr& ydata);
-		void addLayer(PlotPtr& layer);
+		void addLayer(PlotLayer_sptr& layer);
+        void removeLayer(PlotLayer_sptr& layer);
 
-		void showPlot(PlotLuaPtr& pl, bool visible = true);
+		void showPlot(PlotLua_sptr& pl, bool visible = true);
 		void title(const std::string& s);
 		void xlabel(const std::string& s);
 		void ylabel(const std::string& s);
@@ -74,9 +69,10 @@ namespace agw {
 		PixelWorld  world_;
 		LabelWorld  text_;
 
-		std::vector<PlotPtr> layers_;
+        PlotLua_wptr  self_; //weak ref to self - owner
+		std::vector<PlotLayer_sptr> layers_;
 
-		DataTablePtr  m_table;
+		DataTable_sptr  m_table;
 
 		PlotFrame*    m_window;
 
@@ -100,8 +96,8 @@ namespace agw {
 		static int getLayer(lua_State* L);
 		static int showLegend(lua_State* L);
 		static int layerCount(lua_State* L);
-		static PlotLuaPtr* checkPlot(lua_State *L, int index);
-		static PlotLuaPtr* pushPlot(lua_State* L);
+		static PlotLua_sptr* checkPlot(lua_State *L, int index);
+		static PlotLua_sptr* pushPlot(lua_State* L);
 		static int addLayer(lua_State* L);
 	};
 

@@ -30,7 +30,7 @@
 #include <sstream>
 #include <wx/filedlg.h>
 #include "plotlua.h"
-
+#include "plotxy.h"
 ////@begin XPM images
 ////@end XPM images
 
@@ -221,8 +221,7 @@ void LargePlot::OnMonthAverageClick( wxCommandEvent& event )
         int YearNo;
         int MonthNo;
 
-        agw::PlotLuaPtr pp = plot_->plotLua_;
-
+        auto pp = plot_->plotLua_;
 		agw::DataLayer* p = dynamic_cast<agw::DataLayer*>(pp->layers_[0].get());
 
         Series *ds = p->xdata_.get();
@@ -298,7 +297,7 @@ void LargePlot::OnMonthAverageClick( wxCommandEvent& event )
         auto xyplot = f->plot_;
         xyplot->SetVirtualSize(1000,500);
 
-		agw::PlotPtr sp = std::make_shared<agw::DataLayer>();
+		agw::PlotLayer_sptr sp = std::make_shared<agw::DataLayer>();
 		agw::DataLayer* layer = static_cast<agw::DataLayer*>(sp.get());
 
 		layer->xdata_ = months;
@@ -396,7 +395,7 @@ void LargePlot::OnRainfallTotalClick( wxCommandEvent& event )
         int YearNo;
         int MonthNo;
 
-        agw::PlotLuaPtr pp = plot_->plotLua_;
+        auto pp = plot_->plotLua_;
 
 		agw::DataLayer* p = dynamic_cast<agw::DataLayer*> (pp->layers_[0].get());
 
@@ -509,7 +508,7 @@ void LargePlot::OnRainfallTotalClick( wxCommandEvent& event )
         auto xyplot = f->plot_;
         xyplot->SetVirtualSize(1000,500);
 
-        agw::PlotPtr sp = std::make_shared<agw::DataLayer>();
+        agw::PlotLayer_sptr sp = std::make_shared<agw::DataLayer>();
 
 		agw::DataLayer* layer = static_cast<agw::DataLayer*>(sp.get());
 

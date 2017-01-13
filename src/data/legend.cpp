@@ -55,7 +55,7 @@ wxBitmap* LegendLayer::makeImage()
 
 void LegendLayer::drawInBox(wxDC& dc,const wxRect& box)
 {
-    std::vector<PlotPtr>& collect = thePlot_->layers_;
+    std::vector<PlotLayer_sptr>& collect = thePlot_->layers_;
 
     auto it = collect.begin();
     auto fin = collect.end();

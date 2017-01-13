@@ -491,10 +491,11 @@ void TimeSeries::makeYearAnomalyPlot(const std::vector<float>& monthAvg, const s
     FloatSeries& rYear = (FloatSeries&)*(xdata.get());
     this->asYearAnomaly(monthAvg, rTemp, rYear);
 
-    PlotLuaPtr plot = std::make_shared<PlotLua>();
+    PlotLua_sptr plot = PlotLua::create_sptr();
+
     plot->addLayer(xdata, ydata);
 
-    PlotPtr fit = regressRange(*xdata,*ydata,1975.0, nanDouble);
+    PlotLayer_sptr fit = regressRange(*xdata,*ydata,1975.0, nanDouble);
     plot->addLayer(fit);
     std::string apath = path + "_anom";
 
@@ -512,10 +513,11 @@ void TimeSeries::makeMonthAnomalyPlot(const std::vector<float>& monthAvg, const 
     DateYearMonth& rDates = (DateYearMonth&)*(xdata.get());
 
     this->asMonthAnomaly(monthAvg, rTemp, rDates);
-    PlotLuaPtr plot = std::make_shared<PlotLua>();
+    PlotLua_sptr plot = PlotLua::create_sptr();
+
     plot->addLayer(xdata, ydata);
 
-    //PlotPtr fit = regressRange(*xdata,*ydata, 1975.0, nanDouble);
+    //PlotLayer_sptr fit = regressRange(*xdata,*ydata, 1975.0, nanDouble);
     //plot->addLayer(fit);
     std::string apath = path + "_month";
 
@@ -628,9 +630,9 @@ BigBox::BigBox(int index) : rowix_(0), sign_(0)
     }
 }
 
-PlotPtr agw::regressRange( Series const& srcX,  Series const& srcY, double xMin, double xMax)
+PlotLayer_sptr agw::regressRange( Series const& srcX,  Series const& srcY, double xMin, double xMax)
 {
-    PlotPtr fit = std::make_shared<LineFit>();
+    PlotLayer_sptr fit = std::make_shared<LineFit>();
 
     LineFit* line = static_cast<LineFit*>(fit.get());
 
@@ -757,10 +759,10 @@ AreaThread::Entry()
     while(gta_->getArea(boxp))
     {
         BigBox* box = boxp.get();
-
+#ifdef AREA_LOG
         std::string logpath =  "AREA_" + std::to_string(box->ix_) + ".txt";
         std::ofstream  alog(logpath);
-
+#endif
         //int cacheHits = 0;
         for(int row = 0; row < 10; row++)
         {
@@ -774,7 +776,9 @@ AreaThread::Entry()
                 double mid_long = box->east_ + box->width_ * 0.1 * ( col + 0.5);
 
                 std::string radQuerySql = radiusQuery(mid_long, center_lat, correlate_radius );
+                #ifdef AREA_LOG
                 alog << mid_long << " " << center_lat << std::endl;
+                #endif
                 Statement stm(db_, radQuerySql);
                 int rowcount = 0;
                 localList.clear();
@@ -787,7 +791,9 @@ AreaThread::Entry()
                     {
                          double kDist = stm.getDouble(1) * kmPerDegree;
                          localList.emplace_back(new FoundSite(sp_1, kDist));
+                         #ifdef AREA_LOG
                          alog << "id: " << id << " " << rowcount << " " << kDist << " km" << std::endl;
+                         #endif
                     }
 
                     rowcount++;
@@ -808,14 +814,18 @@ AreaThread::Entry()
                     mdatap->cp_ = std::make_shared<TimeSeries>(*(fs->site_->data_));
                     mdatap->setWeight(weight);
                     mdatap->mergeCount_ = 1;
+                    #ifdef AREA_LOG
                     alog << fs->site_->codeId_ << " Years@: " << fs->site_->yearsCt_ << std::endl;
+                    #endif
 
                 }
                 while (localix < nCount)
                 {
                     FoundSite* fs = localList[localix].get();
                     localix++;
+                    #ifdef AREA_LOG
                     alog << fs->site_->codeId_ << " Years#: " << fs->site_->yearsCt_ << std::endl;
+                    #endif
 
                     double nWeight = (correlate_radius- fs->distance_) / correlate_radius;
                     TSPtr cp = fs->site_->data_;
@@ -828,7 +838,9 @@ AreaThread::Entry()
                     TimeSeries& mergeCS = *(mdatap->cp_);
                     if (cp->averageDiff(mergeCS, yearsOverlap, diff) && yearsOverlap >= cMinYears)
                     {
+                        #ifdef AREA_LOG
                         alog << "Overlap " << yearsOverlap << std::endl;
+                        #endif
                         weights.assign(wsize, nWeight);
                         mdatap->mergeDiff(*cp, weights, diff);
                     }
@@ -846,7 +858,9 @@ AreaThread::Entry()
 
         // order of merge_1 ? biggest first
         std::sort(merge_1.begin(), merge_1.end(), mergeOrder);
+        #ifdef AREA_LOG
         alog << "Big Merge" << std::endl;
+        #endif
         for(unsigned int mbox = 0; mbox < merge_1.size(); mbox++)
         {
             TSPtr tp3 = merge_1[mbox];
@@ -856,12 +870,16 @@ AreaThread::Entry()
                 amp->cp_ = std::make_shared<TimeSeries>(*tp3);
                 amp->setWeight(1.0);
                 amp->mergeCount_ = 1;
+                #ifdef AREA_LOG
                 alog << "@ " << tp3->dates_.size() << std::endl;
+                #endif
             }
             else {
                 TimeSeries& cmp = *(amp->cp_);
                 tp3->averageDiff(cmp, yearsOverlap, diff);
+                #ifdef AREA_LOG
                 alog << "# " << tp3->dates_.size() << " diff " << diff << std::endl;
+                #endif
                 weights.assign(tp3->dates_.size(),1.0);
                 amp->mergeDiff(*tp3, weights, diff);
             }
@@ -917,7 +935,7 @@ void GlobalTempArea::openDB(const std::string& path)
 
 void GlobalTempArea::bigMerge()
 {
-    PlotLuaPtr plot;
+    PlotLua_sptr plot;
     SeriesPtr  xdata;
     SeriesPtr  ydata;
     wxFileName fn;
@@ -981,8 +999,8 @@ void GlobalTempArea::bigMerge()
     (*globe) = *h_north;
     globe->mergeCount_ = 1;
     globe->autoMerge(*h_south);
+    plot = PlotLua::create_sptr();
 
-    plot = std::make_shared<PlotLua>();
     TimeSeries& gc = *(globe->cp_);
     ydata = std::make_shared<FloatSeries>(gc.temp_);
     xdata = std::make_shared<DateYearMonth>(gc.dates_);

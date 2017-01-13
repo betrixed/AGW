@@ -58,7 +58,7 @@ class PlotXY;
 #include "plottable.h"
 
 #include "plotsymbol.h"
-
+#include "plotlua.h"
 
 #if defined(__WXGTK__)
 class wxGenericDragImage;
@@ -77,7 +77,8 @@ enum DragMode {
 namespace agw {
 	class DataTable;
 	class PlotLua;
-	typedef std::shared_ptr<PlotLua> PlotLuaPtr;
+	typedef std::shared_ptr<PlotLua> PlotLua_sptr;
+	typedef std::weak_ptr<PlotLua> PlotLua_wptr;
 };
 
 class PlotXY: public wxScrolledCanvas
@@ -137,7 +138,7 @@ public:
 
     void ReadJSON(const Json::Value& jplot);
 
-    void AddData(agw::PlotPtr& pp);
+    void AddData(agw::PlotLayer_sptr& pp);
     void SaveToFile(const wxString& path);
     void setAxisMargins(const wxRect& m);
     void calcScales();
@@ -147,16 +148,7 @@ public:
     agw::PlotPlace nearestPlace(const wxPoint& pos);
     wxPoint getPlotPlace(agw::PlotPlace pp);
 
-    agw::PlotLuaPtr   plotLua_;
-
-    /*
-    PixelWorld  world_;
-    LabelWorld  text_;
-
-	std::vector<PlotPtr> layers_;
-
-	DataTable*             m_table;
-    */
+    agw::PlotLua_sptr  plotLua_;
 
 	DragMode        m_dragMode;
     wxPoint         m_dragStartPos;

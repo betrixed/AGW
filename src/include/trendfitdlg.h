@@ -118,7 +118,7 @@ public:
 
     std::vector<agw::SeriesPtr>  series_;
 
-    void doTrendFit(agw::PlotLuaPtr plp);
+    void doTrendFit(agw::PlotLua_sptr plp);
 
     private:
         void doListSelect(wxListBox* mList, wxTextCtrl* txtMin, wxTextCtrl* txtMax, wxChoice* chUnits);

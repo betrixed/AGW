@@ -216,9 +216,9 @@ namespace agw {
 		void SaveJSON(Json::Value& json);
 		void ReadJSON(const Json::Value& json);
 
-		void calcScales(std::vector<PlotPtr>& layers);
-		void autoXDataLimits(std::vector<PlotPtr>& layers, double& xMin, double &xMax);
-		void autoYDataLimits(std::vector<PlotPtr>& layers, double& yMin, double &yMax);
+		void calcScales(std::vector<PlotLayer_sptr>& layers);
+		void autoXDataLimits(std::vector<PlotLayer_sptr>& layers, double& xMin, double &xMax);
+		void autoYDataLimits(std::vector<PlotLayer_sptr>& layers, double& yMin, double &yMax);
 	};
 
 }; // namespace agw;

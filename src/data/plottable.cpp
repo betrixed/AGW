@@ -41,7 +41,7 @@ DataTableColumn::DataTableColumn(SeriesPtr p) : data_(p), colWidth_(-1), colDec_
     this->label_ = p->getLabel();
 }
 
-DataTable::DataTable(std::vector<PlotPtr>& pdata, const Json::Value& graph)
+DataTable::DataTable(std::vector<PlotLayer_sptr>& pdata, const Json::Value& graph)
 {
     graph_ = graph;
 

@@ -734,7 +734,7 @@ void MainFrame::OnViewSeriesClick( wxCommandEvent& event )
             auto xyplot = f->plot_;
             xyplot->SetVirtualSize(1000,500);
 
-            PlotPtr sp = std::make_shared<DataLayer>();
+            PlotLayer_sptr sp = std::make_shared<DataLayer>();
 
 			DataLayer* p = static_cast<DataLayer*>(sp.get());
 			p->xdata_ = ds;

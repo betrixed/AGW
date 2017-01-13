@@ -260,7 +260,7 @@ void PlotFrame::OnPlotSettingsClick( wxCommandEvent& event )
 
     Json::Value   prop(Json::objectValue);
 
-    agw::PlotLuaPtr plua = thePlot->plotLua_;
+    agw::PlotLua_sptr plua = thePlot->plotLua_;
 
     plua->world_.SaveJSON(prop);
     plua->text_.SaveJSON(prop);
@@ -357,8 +357,9 @@ void PlotFrame::OnLayerMenuClick( wxCommandEvent& event )
 
     event.Skip(false);
     DataLayerDlg dlg(this);
+    dlg.setPlot(thePlot->plotLua_);
 
-    dlg.fromLayers(thePlot->plotLua_->layers_);
+
 
     if (dlg.ShowModal() == wxID_OK)
     {
@@ -397,11 +398,11 @@ void PlotFrame::OnDataViewClick( wxCommandEvent& event )
 
     // make a plottable
     Json::Value jgraph(Json::objectValue);
-    PlotLuaPtr pp = thePlot->plotLua_;
+    PlotLua_sptr pp = thePlot->plotLua_;
 
     pp->world_.SaveJSON(jgraph);
 
-    DataTablePtr tp = std::make_shared<DataTable>(pp->layers_, jgraph);
+    DataTable_sptr tp = std::make_shared<DataTable>(pp->layers_, jgraph);
 
     // make a frame and grid to show
     SeriesFrame* sf = new SeriesFrame(theApp->mainFrame());
@@ -478,9 +479,9 @@ void PlotFrame::OnTrendFitClick( wxCommandEvent& event )
 
     // setup names of Series
 
-    PlotLuaPtr plp = thePlot->plotLua_;
+    PlotLua_sptr plp = thePlot->plotLua_;
 
-    std::vector<PlotPtr> pv = plp->layers_;
+    std::vector<PlotLayer_sptr> pv = plp->layers_;
 
     std::set<SeriesPtr> slist;
 
@@ -495,7 +496,7 @@ void PlotFrame::OnTrendFitClick( wxCommandEvent& event )
 
     while(vit != endit)
     {
-        PlotPtr pp = *vit;
+        PlotLayer_sptr pp = *vit;
 
         DataLayer* dd = dynamic_cast<DataLayer*>(pp.get());
 

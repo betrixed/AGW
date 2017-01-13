@@ -650,7 +650,7 @@ PixelWorld::PixelWorld() : left_(100), right_(50), top_(80), bottom_(80)
 }
 
 
-void PixelWorld::autoXDataLimits(std::vector<PlotPtr>& layers, double& xMin, double &xMax)
+void PixelWorld::autoXDataLimits(std::vector<PlotLayer_sptr>& layers, double& xMin, double &xMax)
 {
     bool xvalid = false;
     auto it = layers.begin();
@@ -690,7 +690,7 @@ void PixelWorld::autoXDataLimits(std::vector<PlotPtr>& layers, double& xMin, dou
     }
 }
 
-void PixelWorld::autoYDataLimits(std::vector<PlotPtr>& layers, double& yMin, double &yMax)
+void PixelWorld::autoYDataLimits(std::vector<PlotLayer_sptr>& layers, double& yMin, double &yMax)
 {
     bool yvalid = false;
 
@@ -735,7 +735,7 @@ void PixelWorld::autoYDataLimits(std::vector<PlotPtr>& layers, double& yMin, dou
 }
 
 
-void PixelWorld::calcScales(std::vector<PlotPtr>& layers)
+void PixelWorld::calcScales(std::vector<PlotLayer_sptr>& layers)
 {
 
 

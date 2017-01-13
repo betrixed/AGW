@@ -277,7 +277,7 @@ wxIcon TrendFitDlg::GetIconResource( const wxString& name )
 void TrendFitDlg::doListSelect(wxListBox* mList, wxTextCtrl* txtMin, wxTextCtrl* txtMax, wxChoice* chUnits)
 {
     int ix = mList->GetSelection();
-    if (ix < 0 || ix >= series_.size())
+    if (ix < 0 || ix >= (int) series_.size())
         return;
 
     SeriesPtr sp = series_[ix];
@@ -336,12 +336,12 @@ void TrendFitDlg::OnYlistSelected( wxCommandEvent& event )
 // parse yyyy-mm,  convert to zero based month
 
 
-void TrendFitDlg::doTrendFit(agw::PlotLuaPtr plp)
+void TrendFitDlg::doTrendFit(agw::PlotLua_sptr plp)
 {
     int xsel = mXList->GetSelection();
     int ysel = mYList->GetSelection();
 
-    if (xsel != ysel && xsel >= 0 && ysel >= 0 && xsel < series_.size() && ysel < series_.size())
+    if (xsel != ysel && xsel >= 0 && ysel >= 0 && xsel < (int) series_.size() && ysel < (int) series_.size())
     {
         SeriesPtr yseries = series_[ysel];
         SeriesPtr xseries = series_[xsel];
@@ -372,7 +372,7 @@ void TrendFitDlg::doTrendFit(agw::PlotLuaPtr plp)
             break;
         }
 
-        PlotPtr pp = regressRange(*(xseries.get()), *(yseries.get()), dmin, dmax);
+        PlotLayer_sptr pp = regressRange(*(xseries.get()), *(yseries.get()), dmin, dmax);
         plp->addLayer(pp);
     }
     else {

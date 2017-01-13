@@ -20,7 +20,7 @@
 #include "wx/wx.h"
 #endif
 
-#include "linestylecombo.h"
+//#include "linestylecombo.h"
 
 ////@begin includes
 #include "wx/imaglist.h"
@@ -30,6 +30,7 @@
 #include "datalayerdlg.h"
 #include "helper.h"
 #include "plotlayer.h"
+#include "plotlua.h"
 
 ////@begin XPM images
 ////@end XPM images
@@ -50,6 +51,7 @@ BEGIN_EVENT_TABLE( DataLayerDlg, wxDialog )
 
 ////@begin DataLayerDlg event table entries
     EVT_LISTBOX( ID_LISTBOX, DataLayerDlg::OnListboxSelected )
+    EVT_BUTTON( ID_REMOVE_LAYER, DataLayerDlg::OnRemoveLayerClick )
     EVT_LISTBOX( ID_LISTBOX1, DataLayerDlg::OnListbox1Selected )
     EVT_SPINCTRL( ID_SPINCTRL, DataLayerDlg::OnSpinctrlUpdated )
     EVT_COLOURPICKER_CHANGED( ID_COLOURCTRL, DataLayerDlg::OnColourctrlColourPickerChanged )
@@ -118,6 +120,7 @@ void DataLayerDlg::Init()
 {
 ////@begin DataLayerDlg member initialisation
     mLayer = NULL;
+    btnRemoveLayer = NULL;
     mSymbol = NULL;
     mSymbolSize = NULL;
     mSymbolBorder = NULL;
@@ -162,15 +165,21 @@ void DataLayerDlg::CreateControls()
     mLayer = new wxListBox( itemStaticBoxSizer4->GetStaticBox(), ID_LISTBOX, wxDefaultPosition, wxSize(150, -1), mLayerStrings, wxLB_SINGLE );
     itemStaticBoxSizer4->Add(mLayer, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxNotebook* itemNotebook6 = new wxNotebook( itemDialog1, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxBK_DEFAULT );
+    wxBoxSizer* itemBoxSizer6 = new wxBoxSizer(wxHORIZONTAL);
+    itemStaticBoxSizer4->Add(itemBoxSizer6, 0, wxGROW|wxALL, 5);
 
-    wxPanel* itemPanel7 = new wxPanel( itemNotebook6, ID_SYM_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    itemPanel7->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
-    wxBoxSizer* itemBoxSizer8 = new wxBoxSizer(wxHORIZONTAL);
-    itemPanel7->SetSizer(itemBoxSizer8);
+    btnRemoveLayer = new wxButton( itemStaticBoxSizer4->GetStaticBox(), ID_REMOVE_LAYER, _("Remove"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
+    itemBoxSizer6->Add(btnRemoveLayer, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer9 = new wxBoxSizer(wxVERTICAL);
-    itemBoxSizer8->Add(itemBoxSizer9, 0, wxGROW|wxALL, 5);
+    wxNotebook* itemNotebook8 = new wxNotebook( itemDialog1, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxBK_DEFAULT );
+
+    wxPanel* itemPanel9 = new wxPanel( itemNotebook8, ID_SYM_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    itemPanel9->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
+    wxBoxSizer* itemBoxSizer10 = new wxBoxSizer(wxHORIZONTAL);
+    itemPanel9->SetSizer(itemBoxSizer10);
+
+    wxBoxSizer* itemBoxSizer11 = new wxBoxSizer(wxVERTICAL);
+    itemBoxSizer10->Add(itemBoxSizer11, 0, wxGROW|wxALL, 5);
     wxArrayString mSymbolStrings;
     mSymbolStrings.Add(_("None"));
     mSymbolStrings.Add(_("Plus"));
@@ -178,49 +187,49 @@ void DataLayerDlg::CreateControls()
     mSymbolStrings.Add(_("Circle"));
     mSymbolStrings.Add(_("Triangle"));
     mSymbolStrings.Add(_("Square"));
-    mSymbol = new wxListBox( itemPanel7, ID_LISTBOX1, wxDefaultPosition, wxSize(100, -1), mSymbolStrings, wxLB_SINGLE );
-    itemBoxSizer9->Add(mSymbol, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    mSymbol = new wxListBox( itemPanel9, ID_LISTBOX1, wxDefaultPosition, wxSize(100, -1), mSymbolStrings, wxLB_SINGLE );
+    itemBoxSizer11->Add(mSymbol, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxStaticText* itemStaticText11 = new wxStaticText( itemPanel7, wxID_STATIC, _("Shape"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer9->Add(itemStaticText11, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxStaticText* itemStaticText13 = new wxStaticText( itemPanel9, wxID_STATIC, _("Shape"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer11->Add(itemStaticText13, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer12 = new wxBoxSizer(wxVERTICAL);
-    itemBoxSizer8->Add(itemBoxSizer12, 0, wxGROW|wxALL, 5);
-    wxBoxSizer* itemBoxSizer13 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer12->Add(itemBoxSizer13, 0, wxALIGN_RIGHT|wxALL, 15);
-    wxStaticText* itemStaticText14 = new wxStaticText( itemPanel7, wxID_STATIC, _("Size"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer13->Add(itemStaticText14, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer14 = new wxBoxSizer(wxVERTICAL);
+    itemBoxSizer10->Add(itemBoxSizer14, 0, wxGROW|wxALL, 5);
+    wxBoxSizer* itemBoxSizer15 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer14->Add(itemBoxSizer15, 0, wxALIGN_RIGHT|wxALL, 15);
+    wxStaticText* itemStaticText16 = new wxStaticText( itemPanel9, wxID_STATIC, _("Size"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer15->Add(itemStaticText16, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    mSymbolSize = new wxSpinCtrl( itemPanel7, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 6, 1 );
-    itemBoxSizer13->Add(mSymbolSize, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    mSymbolSize = new wxSpinCtrl( itemPanel9, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 6, 1 );
+    itemBoxSizer15->Add(mSymbolSize, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer16 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer12->Add(itemBoxSizer16, 0, wxALIGN_RIGHT|wxALL, 10);
-    wxStaticText* itemStaticText17 = new wxStaticText( itemPanel7, wxID_STATIC, _("Border"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer16->Add(itemStaticText17, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer18 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer14->Add(itemBoxSizer18, 0, wxALIGN_RIGHT|wxALL, 10);
+    wxStaticText* itemStaticText19 = new wxStaticText( itemPanel9, wxID_STATIC, _("Border"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer18->Add(itemStaticText19, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    mSymbolBorder = new wxColourPickerCtrl( itemPanel7, ID_COLOURCTRL, wxColour(0, 0, 0), wxDefaultPosition, wxDefaultSize, wxCLRP_DEFAULT_STYLE );
-    itemBoxSizer16->Add(mSymbolBorder, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    mSymbolBorder = new wxColourPickerCtrl( itemPanel9, ID_COLOURCTRL, wxColour(0, 0, 0), wxDefaultPosition, wxDefaultSize, wxCLRP_DEFAULT_STYLE );
+    itemBoxSizer18->Add(mSymbolBorder, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer19 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer12->Add(itemBoxSizer19, 0, wxALIGN_RIGHT|wxALL, 10);
-    wxStaticText* itemStaticText20 = new wxStaticText( itemPanel7, wxID_STATIC, _("Fill"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer19->Add(itemStaticText20, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer21 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer14->Add(itemBoxSizer21, 0, wxALIGN_RIGHT|wxALL, 10);
+    wxStaticText* itemStaticText22 = new wxStaticText( itemPanel9, wxID_STATIC, _("Fill"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer21->Add(itemStaticText22, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    mSymbolFill = new wxColourPickerCtrl( itemPanel7, ID_COLOURPICKERCTRL, wxColour(30, 144, 255), wxDefaultPosition, wxDefaultSize, wxCLRP_DEFAULT_STYLE );
-    itemBoxSizer19->Add(mSymbolFill, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    mSymbolFill = new wxColourPickerCtrl( itemPanel9, ID_COLOURPICKERCTRL, wxColour(30, 144, 255), wxDefaultPosition, wxDefaultSize, wxCLRP_DEFAULT_STYLE );
+    itemBoxSizer21->Add(mSymbolFill, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    itemNotebook6->AddPage(itemPanel7, _("Symbol"));
+    itemNotebook8->AddPage(itemPanel9, _("Symbol"));
 
-    wxPanel* itemPanel22 = new wxPanel( itemNotebook6, ID_LINE_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    itemPanel22->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
-    wxBoxSizer* itemBoxSizer23 = new wxBoxSizer(wxVERTICAL);
-    itemPanel22->SetSizer(itemBoxSizer23);
+    wxPanel* itemPanel24 = new wxPanel( itemNotebook8, ID_LINE_PANEL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    itemPanel24->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
+    wxBoxSizer* itemBoxSizer25 = new wxBoxSizer(wxVERTICAL);
+    itemPanel24->SetSizer(itemBoxSizer25);
 
-    wxFlexGridSizer* itemFlexGridSizer24 = new wxFlexGridSizer(4, 2, 15, 0);
-    itemBoxSizer23->Add(itemFlexGridSizer24, 1, wxGROW|wxALL, 5);
-    wxStaticText* itemStaticText25 = new wxStaticText( itemPanel22, wxID_STATIC, _("Style"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemFlexGridSizer24->Add(itemStaticText25, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxFlexGridSizer* itemFlexGridSizer26 = new wxFlexGridSizer(4, 2, 15, 0);
+    itemBoxSizer25->Add(itemFlexGridSizer26, 1, wxGROW|wxALL, 5);
+    wxStaticText* itemStaticText27 = new wxStaticText( itemPanel24, wxID_STATIC, _("Style"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemFlexGridSizer26->Add(itemStaticText27, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxArrayString mLineStyleStrings;
     mLineStyleStrings.Add(_("Solid"));
@@ -229,51 +238,51 @@ void DataLayerDlg::CreateControls()
     mLineStyleStrings.Add(_("Long Dash"));
     mLineStyleStrings.Add(_("Short Dash"));
     mLineStyleStrings.Add(_("Dot Dash"));
-    mLineStyle = new LineStyleCombo( itemPanel22, LineStyleCombo::ID_OWNERDRAWNCOMBOCTRL, _("Solid"), wxDefaultPosition, wxDefaultSize, mLineStyleStrings, 0 );
+    mLineStyle = new LineStyleCombo( itemPanel24, LineStyleCombo::ID_OWNERDRAWNCOMBOCTRL, _("Solid"), wxDefaultPosition, wxDefaultSize, mLineStyleStrings, 0 );
     mLineStyle->SetStringSelection(_("Solid"));
-    itemFlexGridSizer24->Add(mLineStyle, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemFlexGridSizer26->Add(mLineStyle, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxStaticText* itemStaticText27 = new wxStaticText( itemPanel22, wxID_STATIC, _("Thickness"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemFlexGridSizer24->Add(itemStaticText27, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxStaticText* itemStaticText29 = new wxStaticText( itemPanel24, wxID_STATIC, _("Thickness"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemFlexGridSizer26->Add(itemStaticText29, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    mLineThick = new wxSpinCtrl( itemPanel22, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 4, 1 );
-    itemFlexGridSizer24->Add(mLineThick, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    mLineThick = new wxSpinCtrl( itemPanel24, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 4, 1 );
+    itemFlexGridSizer26->Add(mLineThick, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxStaticText* itemStaticText29 = new wxStaticText( itemPanel22, wxID_STATIC, _("Colour"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemFlexGridSizer24->Add(itemStaticText29, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxStaticText* itemStaticText31 = new wxStaticText( itemPanel24, wxID_STATIC, _("Colour"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemFlexGridSizer26->Add(itemStaticText31, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    mLineColor = new wxColourPickerCtrl( itemPanel22, ID_COLOURPICKERCTRL1, wxColour(128, 0, 128), wxDefaultPosition, wxDefaultSize, wxCLRP_DEFAULT_STYLE );
-    itemFlexGridSizer24->Add(mLineColor, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    mLineColor = new wxColourPickerCtrl( itemPanel24, ID_COLOURPICKERCTRL1, wxColour(128, 0, 128), wxDefaultPosition, wxDefaultSize, wxCLRP_DEFAULT_STYLE );
+    itemFlexGridSizer26->Add(mLineColor, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    itemFlexGridSizer24->AddGrowableCol(1);
+    itemFlexGridSizer26->AddGrowableCol(1);
 
-    itemNotebook6->AddPage(itemPanel22, _("Line"));
+    itemNotebook8->AddPage(itemPanel24, _("Line"));
 
-    itemBoxSizer3->Add(itemNotebook6, 1, wxGROW|wxALL, 5);
+    itemBoxSizer3->Add(itemNotebook8, 1, wxGROW|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer31 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer2->Add(itemBoxSizer31, 0, wxGROW|wxALL, 5);
+    wxBoxSizer* itemBoxSizer33 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer33, 0, wxGROW|wxALL, 5);
 
-    wxStaticText* itemStaticText32 = new wxStaticText( itemDialog1, wxID_STATIC, _("Label"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer31->Add(itemStaticText32, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxStaticText* itemStaticText34 = new wxStaticText( itemDialog1, wxID_STATIC, _("Label"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer33->Add(itemStaticText34, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     mLabel = new wxTextCtrl( itemDialog1, ID_LABEL, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0 );
-    itemBoxSizer31->Add(mLabel, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemBoxSizer33->Add(mLabel, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     mDisplay = new wxPanel( itemDialog1, ID_DISPLAY, wxDefaultPosition, wxSize(-1, 60), wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     mDisplay->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
-    itemBoxSizer31->Add(mDisplay, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemBoxSizer33->Add(mDisplay, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxStdDialogButtonSizer* itemStdDialogButtonSizer35 = new wxStdDialogButtonSizer;
+    wxStdDialogButtonSizer* itemStdDialogButtonSizer37 = new wxStdDialogButtonSizer;
 
-    itemBoxSizer2->Add(itemStdDialogButtonSizer35, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
-    wxButton* itemButton36 = new wxButton( itemDialog1, wxID_OK, _("&OK"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemStdDialogButtonSizer35->AddButton(itemButton36);
+    itemBoxSizer2->Add(itemStdDialogButtonSizer37, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxButton* itemButton38 = new wxButton( itemDialog1, wxID_OK, _("&OK"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStdDialogButtonSizer37->AddButton(itemButton38);
 
-    wxButton* itemButton37 = new wxButton( itemDialog1, wxID_CANCEL, _("&Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemStdDialogButtonSizer35->AddButton(itemButton37);
+    wxButton* itemButton39 = new wxButton( itemDialog1, wxID_CANCEL, _("&Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStdDialogButtonSizer37->AddButton(itemButton39);
 
-    itemStdDialogButtonSizer35->Realize();
+    itemStdDialogButtonSizer37->Realize();
 
     // Connect events and objects
     mDisplay->Connect(ID_DISPLAY, wxEVT_PAINT, wxPaintEventHandler(DataLayerDlg::OnPaintResult), NULL, this);
@@ -403,27 +412,33 @@ void DataLayerDlg::OnPaintResult( wxPaintEvent& event )
     dc.SetBrush(saveBrush);
 }
 
-void DataLayerDlg::fromLayers(std::vector<agw::PlotPtr>& layers)
+void DataLayerDlg::fromLayers(std::vector<agw::PlotLayer_sptr>& layers)
 {
+    layers_.clear();
+
     for(auto it = layers.begin(); it != layers.end(); it++)
     {
-        agw::PlotLayer* pl = it->get();
-        agw::DataLayer* d = dynamic_cast<DataLayer*>(pl);
+        agw::PlotLayer_sptr pl = (*it);
+        agw::DataLayer* d = dynamic_cast<DataLayer*>(pl.get());
         if (d)
         {
-            layers_.push_back(d);
+            layers_.push_back(pl);
         }
     }
 
-    store = Json::Value(Json::arrayValue);
+    mLayer->Clear();
+    store = Json::Value(Json::arrayValue); // replace with empty array
     for(auto it = layers_.begin(); it != layers_.end(); it++)
     {
         Json::Value dlayer(Json::objectValue);
-
-        agw::DataLayer* d = (*it);
-        d->SaveJSON(dlayer);
-        store.append(dlayer);
-        mLayer->AppendAndEnsureVisible(d->label_);
+        PlotLayer_sptr pp = (*it);
+        agw::DataLayer* d = dynamic_cast<agw::DataLayer*>(pp.get());
+        if (d)
+        {
+            d->SaveJSON(dlayer);
+            store.append(dlayer);
+            mLayer->AppendAndEnsureVisible(d->label_);
+        }
     }
 }
 
@@ -505,8 +520,10 @@ void DataLayerDlg::toLayers()
 
     for(uint ix = 0; ix < store.size(); ix++)
     {
-        DataLayer* d = layers_[ix];
-
+        PlotLayer_sptr pp = layers_[ix];
+        DataLayer* d = dynamic_cast<DataLayer*>(pp.get());
+        if (!d)
+            continue;
         wxColor ctemp(0,0,0);
         int itemp;
         std::string stemp;
@@ -612,3 +629,35 @@ void DataLayerDlg::OnListbox1Selected( wxCommandEvent& event )
     mDisplay->Refresh();
 }
 
+
+/*
+ * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_REMOVE_LAYER
+ */
+
+void DataLayerDlg::OnRemoveLayerClick( wxCommandEvent& event )
+{
+    // Before editing this code, remove the block markers.
+    event.Skip();
+    int select = mLayer->GetSelection();
+    if (select >= 0)
+    {
+        agw::PlotLayer_sptr pp = layers_[select];
+        auto plot = pp->getPlot();
+        if (plot)
+        {
+            layerIX_ = -1; // user selection hack reset
+            layers_.clear();
+            plot->removeLayer(pp);
+            fromLayers(plotLua_->layers_);
+            return;
+        }
+    }
+
+
+}
+
+void DataLayerDlg::setPlot(agw::PlotLua_sptr& pl)
+{
+    plotLua_ = pl;
+    fromLayers(plotLua_->layers_);
+}

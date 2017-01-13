@@ -6,7 +6,7 @@
 #include "plotlayer.h"
 #include "appdata.h"
 #include "helper.h"
-
+#include "plotxy.h"
 #include <fstream>
 #include <wx/font.h>
 #include <wx/settings.h>
@@ -21,6 +21,12 @@ PlotLua::~PlotLua()
 {
 }
 
+PlotLua_sptr PlotLua::create_sptr()
+{
+    PlotLua_sptr sptr = std::make_shared<PlotLua>();
+    sptr->self_ = sptr;
+    return sptr;
+}
 void PlotLua::writeStream(std::ostream& s)
 {
     Json::Value root(Json::objectValue);
@@ -136,7 +142,7 @@ void PlotLua::readJson(const Json::Value& jplot)
         readPoint(legend, "offset", offset);
         readInt(legend, "attach", place);
 
-        PlotPtr box = std::make_shared<LegendLayer>(PlotPlace(place), offset);
+        auto box = std::make_shared<LegendLayer>(PlotPlace(place), offset);
         text_.setLegend(box);
 
     }
@@ -156,14 +162,14 @@ void PlotLua::readJson(const Json::Value& jplot)
                 std::string layertype = jlay["jype"].asString();
                 if (layertype == "data_layer")
                 {
-                    PlotPtr dlay = std::make_shared<DataLayer>();
+                    agw::PlotLayer_sptr dlay = std::make_shared<DataLayer>();
 
                     dlay->ReadJSON(jlay);
                     addLayer(dlay);
                 }
                 else if (layertype == "line_fit")
                 {
-                    PlotPtr lfit = std::make_shared<LineFit>();
+                    PlotLayer_sptr lfit = std::make_shared<LineFit>();
                     lfit->ReadJSON(jlay);
                     addLayer(lfit);
                 }
@@ -208,7 +214,7 @@ void PlotLua::readStream(std::istream& s)
 
 int PlotLua::setTitle(lua_State* L)
 {
-    PlotLuaPtr* mem = PlotLua::checkPlot(L,1);
+    PlotLua_sptr* mem = PlotLua::checkPlot(L,1);
     if (mem)
     {
         std::string title = luaL_checkstring(L,2);
@@ -220,7 +226,7 @@ int PlotLua::setTitle(lua_State* L)
 
 int PlotLua::setXLabel(lua_State* L)
 {
-    PlotLuaPtr* mem = PlotLua::checkPlot(L,1);
+    PlotLua_sptr* mem = PlotLua::checkPlot(L,1);
     if (mem)
     {
         std::string title = luaL_checkstring(L,2);
@@ -232,7 +238,7 @@ int PlotLua::setXLabel(lua_State* L)
 
 int PlotLua::setYLabel(lua_State* L)
 {
-    PlotLuaPtr* mem = PlotLua::checkPlot(L,1);
+    PlotLua_sptr* mem = PlotLua::checkPlot(L,1);
     if (mem)
     {
         std::string title = luaL_checkstring(L,2);
@@ -298,7 +304,14 @@ bool PlotLua::isDrawReady()
     return ready;
 }
 
-void PlotLua::addLayer(PlotPtr& pp)
+void PlotLua::removeLayer(PlotLayer_sptr& pp)
+{
+    auto it = std::find(layers_.begin(), layers_.end(), pp);
+    if (it != layers_.end())
+        layers_.erase(it);
+}
+
+void PlotLua::addLayer(PlotLayer_sptr& pp)
 {
     layers_.push_back(pp);
 
@@ -306,6 +319,9 @@ void PlotLua::addLayer(PlotPtr& pp)
 
 	if (layer && layer->isReady())
 	{
+        auto sp = this->self_.lock();
+
+        layer->setPlot( sp);
 		//layer->xdata_->calcLimits();
 		//layer->ydata_->calcLimits();
 		//if (layer->errorbar_!= nullptr)
@@ -321,7 +337,7 @@ void PlotLua::addLayer(PlotPtr& pp)
 void PlotLua::addLayer(SeriesPtr& xdata, SeriesPtr& ydata)
 {
 
-    PlotPtr pp = std::make_shared<DataLayer>();
+    PlotLayer_sptr pp = std::make_shared<DataLayer>();
     DataLayer* dlay = static_cast<DataLayer*>(pp.get());
 
     dlay->xdata_ = xdata;
@@ -420,7 +436,7 @@ bool agw::L_asBoolean(lua_State* L, int ix, bool useDefault)
 
 int PlotLua::show(lua_State* L)
 {
-    PlotLuaPtr* mem = PlotLua::checkPlot(L,1);
+    PlotLua_sptr* mem = PlotLua::checkPlot(L,1);
     if (mem)
     {
         bool visible = agw::L_asBoolean(L, 2, true);
@@ -437,7 +453,7 @@ wxFont PlotLua::getFont()
     }
     return font_;
 }
-void PlotLua::showPlot(PlotLuaPtr& pl, bool visible)
+void PlotLua::showPlot(PlotLua_sptr& pl, bool visible)
 {
     if (m_window != nullptr)
     {
@@ -554,20 +570,20 @@ int PlotLua::init_lib(lua_State* L)
     return 1;
 }
 
-PlotLuaPtr* PlotLua::checkPlot (lua_State *L, int index ) {
+PlotLua_sptr* PlotLua::checkPlot (lua_State *L, int index ) {
   luaL_checktype(L, index, LUA_TUSERDATA);
   void *ud = luaL_checkudata(L, index, PLOT_LIB);
   luaL_argcheck(L, ud != nullptr, 1, "`plot' expected");
-  return (PlotLuaPtr *)ud;
+  return (PlotLua_sptr *)ud;
 }
 
-PlotLuaPtr*
+PlotLua_sptr*
 PlotLua::pushPlot(lua_State* L)
 {
-    size_t nbytes = sizeof(PlotLuaPtr);
+    size_t nbytes = sizeof(PlotLua_sptr);
     void *a = lua_newuserdata(L, nbytes);
 
-    PlotLuaPtr* mem = new (a) PlotLuaPtr();  // new blank shared pointer placement syntax=
+    PlotLua_sptr* mem = new (a) PlotLua_sptr();  // new blank shared pointer placement syntax=
     luaL_setmetatable(L, PLOT_LIB);
     return mem;
 }
@@ -578,7 +594,7 @@ int PlotLua::addXY(lua_State* L)
     int top = lua_gettop(L);
     if (top >= 3)
     {
-        PlotLuaPtr* mem = PlotLua::checkPlot(L,1);
+        PlotLua_sptr* mem = PlotLua::checkPlot(L,1);
         SeriesPtr* xdata = SeriesRay::checkSeries(L,2);
         SeriesPtr* ydata = SeriesRay::checkSeries(L,3);
         if (mem != nullptr && xdata != nullptr && ydata != nullptr)
@@ -591,15 +607,15 @@ int PlotLua::addXY(lua_State* L)
     return 1;
 }
 
-// function, create PlotPtr from series ( a plotxy ), not added to a plot
+// function, create PlotLayer_sptr from series ( a plotxy ), not added to a plot
 
 
 
 int PlotLua::plotXY(lua_State* L)
 {
     int top = lua_gettop(L);
-    PlotPtr pp = std::make_shared<DataLayer>();
-    PlotPtr* mem = DataLayer::pushLayer(L);
+    PlotLayer_sptr pp = std::make_shared<DataLayer>();
+    PlotLayer_sptr* mem = DataLayer::pushLayer(L);
     (*mem) = pp;
 
     DataLayer* dlay = static_cast<DataLayer*>(pp.get());
@@ -619,15 +635,16 @@ int PlotLua::plotXY(lua_State* L)
    return 1;
 }
 
+
 // argument is a table, with plot information, or X, Y, two SERIES
 int PlotLua::addLayer(lua_State* L)
 {
     int top = lua_gettop(L);
     if (top >= 2)
     {
-        PlotLuaPtr* mem = PlotLua::checkPlot(L,1);
+        PlotLua_sptr* mem = PlotLua::checkPlot(L,1);
 
-        PlotPtr* layer = DataLayer::checkLayer(L,2);
+        PlotLayer_sptr* layer = DataLayer::checkLayer(L,2);
             // new PlotLayer
         (*mem)->addLayer(*layer);
     }
@@ -642,8 +659,8 @@ int PlotLua::addLayer(lua_State* L)
 
 int PlotLua::newPlot(lua_State* L)
 {
-    PlotLuaPtr* mem = pushPlot(L);
-    (*mem) = std::make_shared<PlotLua>();
+    PlotLua_sptr* mem = pushPlot(L);
+    (*mem) = PlotLua::create_sptr();;
     return 1;
 }
 
@@ -651,8 +668,8 @@ int PlotLua::readPlot(lua_State* L)
 {
     std::string path = luaL_checkstring(L,1);
 
-    PlotLuaPtr* mem = pushPlot(L);
-    (*mem) = std::make_shared<PlotLua>();
+    PlotLua_sptr* mem = pushPlot(L);
+    (*mem) = PlotLua::create_sptr();
     (*mem)->readFile(path);
 
     return 1;
@@ -671,7 +688,7 @@ void PlotLua::removeLegend()
 
 int PlotLua::showLegend(lua_State* L)
 {
-    PlotLuaPtr* mem = PlotLua::checkPlot(L,1);
+    PlotLua_sptr* mem = PlotLua::checkPlot(L,1);
     bool visible = L_asBoolean(L,2,true);
     if (visible)
         (*mem)->addLegend();
@@ -690,7 +707,7 @@ void PlotLua::saveToFile(const std::string& path)
 
 int PlotLua::toFile(lua_State* L)
 {
-    PlotLuaPtr* mem = PlotLua::checkPlot(L,1);
+    PlotLua_sptr* mem = PlotLua::checkPlot(L,1);
     std::string path = luaL_checkstring(L,2);
     (*mem)->saveToFile(path);
     lua_settop(L,1);
@@ -698,7 +715,7 @@ int PlotLua::toFile(lua_State* L)
 }
 int PlotLua::toCSV(lua_State* L)
 {
-    PlotLuaPtr* mem = PlotLua::checkPlot(L,1);
+    PlotLua_sptr* mem = PlotLua::checkPlot(L,1);
     std::string path = luaL_checkstring(L,2);
     (*mem)->saveCSV(path);
     lua_settop(L,1);
@@ -706,7 +723,7 @@ int PlotLua::toCSV(lua_State* L)
 }
 int PlotLua::layerCount(lua_State* L)
 {
-    PlotLuaPtr* mem = PlotLua::checkPlot(L,1);
+    PlotLua_sptr* mem = PlotLua::checkPlot(L,1);
     lua_pushinteger(L, (*mem)->layers_.size());
     return 1;
 
@@ -720,7 +737,7 @@ int PlotLua::fitLine(lua_State* L)
 {
     SeriesPtr* xdata = SeriesRay::checkSeries(L,1);
     SeriesPtr* ydata = SeriesRay::checkSeries(L,2);
-    PlotPtr* pp = LineFit::pushLineFit(L);
+    PlotLayer_sptr* pp = LineFit::pushLineFit(L);
     (*pp) = std::make_shared<LineFit>();
     LineFit* fit = static_cast<LineFit*>(pp->get());
     fit->regression( *(xdata->get()), *(ydata->get()));
@@ -730,16 +747,16 @@ int PlotLua::fitLine(lua_State* L)
 
 int PlotLua::getLayer(lua_State* L)
 {
-    PlotLuaPtr* mem = PlotLua::checkPlot(L,1);
+    PlotLua_sptr* mem = PlotLua::checkPlot(L,1);
     int index = luaL_checkinteger(L,2);
     if (index >= (int) (*mem)->layers_.size())
     {
         luaL_error(L, "layer index error: %d", index);
     }
-    PlotPtr p = (*mem)->layers_[index];
+    PlotLayer_sptr p = (*mem)->layers_[index];
 
     // what have we got?
-    PlotPtr* result;
+    PlotLayer_sptr* result;
     if (typeid(*p) == typeid(DataLayer))
     {
         result = DataLayer::pushLayer(L);
@@ -754,7 +771,7 @@ int PlotLua::getLayer(lua_State* L)
 
 }
 int PlotLua::toString (lua_State* L) {
-    PlotLuaPtr* mem = PlotLua::checkPlot(L,1);
+    PlotLua_sptr* mem = PlotLua::checkPlot(L,1);
     lua_pushfstring(L, "plot(%s)", (*mem)->plotTitle_.c_str());
     return 1;
 }

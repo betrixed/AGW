@@ -116,7 +116,7 @@ public:
     int oldBottomAxis_;
 
     PlotXY* plotWindow_;
-    agw::PlotLuaPtr plot_;
+    agw::PlotLua_sptr plot_;
 };
 
 #endif

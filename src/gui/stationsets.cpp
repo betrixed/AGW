@@ -1276,9 +1276,9 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
 
     if (ct > 0)
     {
-        PlotLuaPtr plua = std::make_shared<PlotLua>();
+        auto plua = PlotLua::create_sptr();
 
-        PlotPtr sp = std::make_shared<DataLayer>();
+        agw::PlotLayer_sptr sp = std::make_shared<DataLayer>();
 
         DataLayer* play = static_cast<DataLayer*>(sp.get());
 
@@ -1294,7 +1294,7 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
         plua->addLayer(sp);
         if (wantRegression)
         {
-            PlotPtr fit = std::make_shared<LineFit>();
+            PlotLayer_sptr fit = std::make_shared<LineFit>();
 
             LineFit* line = static_cast<LineFit*>(fit.get());
 
@@ -1462,7 +1462,7 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
     int    year;
     int    month;
     std::vector<float> months = {1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.};
-    std::vector<PlotPtr>  years;
+    std::vector<PlotLayer_sptr>  years;
 
     SeriesPtr xdata = std::make_shared<FloatSeries>(months,SeriesUnit::DATE_MONTH_NUM, "Month");
     SeriesPtr ydata;
@@ -1490,7 +1490,7 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
             if (year != currentYear)
             {
                currentYear = year;
-               PlotPtr yearplot = std::make_shared<DataLayer>();
+               PlotLayer_sptr yearplot = std::make_shared<DataLayer>();
                DataLayer* play = static_cast<DataLayer*>(yearplot.get());
 
                ydata = std::make_shared<FloatSeries>();
@@ -1521,13 +1521,13 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
 
     if (years.size() > 0)
     {
-        PlotLuaPtr pl = std::make_shared<PlotLua>();
+        PlotLua_sptr pl = PlotLua::create_sptr();
 
         pl->world_.xScale_.units(SeriesUnit::DATE_MONTH_NUM);
 
         for( uint ct = 0; ct < years.size(); ct++)
         {
-            PlotPtr pp = years[ct];
+            PlotLayer_sptr pp = years[ct];
             pl->addLayer(pp);
         }
         pl->showPlot(pl, true);
@@ -1675,7 +1675,7 @@ void StationSets::OnTimeSeriesClick( wxCommandEvent& event )
 
         SeriesPtr xdata = std::make_shared<DateYearMonth>(minMonth/12, minMonth%12, maxMonth/12, maxMonth%12);
 
-        PlotLuaPtr pl = std::make_shared<PlotLua>();
+        PlotLua_sptr pl = PlotLua::create_sptr();
 
 
         pl->world_.xScale_.units(xdata->units());
@@ -1683,7 +1683,7 @@ void StationSets::OnTimeSeriesClick( wxCommandEvent& event )
         {
             Series* sp = it->get();
 
-            PlotPtr pp = std::make_shared<DataLayer>();
+            PlotLayer_sptr pp = std::make_shared<DataLayer>();
             DataLayer* dlay = static_cast<DataLayer*>(pp.get());
 
             dlay->symbolShape_ = PlotShape::CIRCLE;

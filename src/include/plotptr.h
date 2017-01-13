@@ -9,11 +9,10 @@
 #include <wx/log.h>
 #include <wx/geometry.h>
 #include <wx/dc.h>
-class PlotXY;
+
+#include "plotlua_forward.h"
 
 namespace agw {
-	class PixelWorld;
-	class PlotLua;
 
 	enum PlotPlace {
 		LEFT_BORDER,
@@ -43,11 +42,11 @@ namespace agw {
 		RIGHT
 	};
 
-	
+
 
 	class PlotLayer {
 	public:
-		PlotLayer() : thePlot_(nullptr), visible_(true) {}
+		PlotLayer() : visible_(true) {}
 		virtual ~PlotLayer() {}
 
 		virtual void SaveJSON(Json::Value& json) = 0;
@@ -57,21 +56,21 @@ namespace agw {
 		void Show(bool visible) { visible_ = visible; }
 		bool isVisible() const { return visible_; }
 
-
 		const std::string& get_jype()
 		{
 			return jype_;
 		}
 
-		void setPlot(PlotLua* p) { thePlot_ = p; }
+		void setPlot(PlotLua_sptr pp) { thePlot_ = pp; }
+		PlotLua_sptr getPlot() { return thePlot_; }
 	protected:
-		PlotLua* thePlot_; // a non-shared pointer or a weak pointer?
+		PlotLua_sptr thePlot_; // a non-shared pointer or a weak pointer?
 		std::string jype_;
 		bool  visible_;
 
 	};
 
-	typedef std::shared_ptr<PlotLayer> PlotPtr;
+
 }; // namespace agw
 
 #endif //_H_PLOTPTR

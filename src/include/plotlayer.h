@@ -155,9 +155,9 @@ namespace agw {
 		static int setLegend(lua_State* L);
 		static int setDisplay(lua_State* L);
 
-		static PlotPtr* checkLayer(lua_State *L, int index);
-		static PlotPtr* toLayer(lua_State* L, int index);
-		static PlotPtr* pushLayer(lua_State* L);
+		static PlotLayer_sptr* checkLayer(lua_State *L, int index);
+		static PlotLayer_sptr* toLayer(lua_State* L, int index);
+		static PlotLayer_sptr* pushLayer(lua_State* L);
 
 		static const char* DL_LUA;
 	};
@@ -204,8 +204,8 @@ namespace agw {
 		virtual void ReadJSON(const Json::Value& json);
 
 		static const char* LF_LUA;
-		static PlotPtr* checkLineFit(lua_State *L, int index);
-		static PlotPtr* pushLineFit(lua_State* L);
+		static PlotLayer_sptr* checkLineFit(lua_State *L, int index);
+		static PlotLayer_sptr* pushLineFit(lua_State* L);
 		static int getRVal(lua_State* L);
 		static int getSlope(lua_State* L);
 		static int getYOffset(lua_State* L);
@@ -213,8 +213,8 @@ namespace agw {
 
 	class LabelWorld {
 	public:
-		PlotPtr              legend_; // only one of these?
-		std::vector<PlotPtr> labels_;
+		PlotLayer_sptr              legend_; // only one of these?
+		std::vector<PlotLayer_sptr> labels_;
 		PlotXY*  thePlot;
 		void SaveJSON(Json::Value& json);
 		void ReadJSON(const Json::Value& json);
@@ -224,15 +224,15 @@ namespace agw {
 		void title(const std::string& s);
 		void addLegend();
 		void removeLegend();
-		void setLegend(PlotPtr pp);
+		void setLegend(PlotLayer_sptr pp);
 
-		PlotPtr getLabelKind(LabelKind k);
+		PlotLayer_sptr getLabelKind(LabelKind k);
 
 		LegendLayer* getLegend();
 
 	};
 
-    PlotPtr regressRange(const Series& srcX, const Series& srcY, double xMin, double xMax);
+    PlotLayer_sptr regressRange(const Series& srcX, const Series& srcY, double xMin, double xMax);
 
 
 }; // namespace agw

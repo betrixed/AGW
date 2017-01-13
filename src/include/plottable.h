@@ -18,11 +18,11 @@
 
 // PlotTable references the PlotXY, and unpacks the Series, so we get an array of Series, but each one gets labelled as [Plot].[Layer][.x|.y|.ye|.xe]
 // in a global namespace. To keep the entities from being too attached to a particular window, or view, use this global model hierarchy
-// PlotXY graphics window is a vector of PlotPtr, associated with a "PixelWorld", which maybe can be a JSON template. (frame, axes, labels, legend templates.
+// PlotXY graphics window is a vector of PlotLayer_sptr, associated with a "PixelWorld", which maybe can be a JSON template. (frame, axes, labels, legend templates.
 
 // another shared object
 
-// PlotPtr,  SeriesPtr,
+// PlotLayer_sptr,  SeriesPtr,
 
 namespace agw {
 	class JsonStore {
@@ -68,7 +68,7 @@ namespace agw {
 		uint                  maxRows_;
 	public:
 
-		DataTable(std::vector<PlotPtr>& data, const Json::Value& graph);
+		DataTable(std::vector<PlotLayer_sptr>& data, const Json::Value& graph);
 
 		virtual ~DataTable();
 

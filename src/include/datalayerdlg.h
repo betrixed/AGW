@@ -57,7 +57,7 @@ namespace agw {
  class DataLayer;
  class PlotLayer;
 
- typedef std::shared_ptr<PlotLayer> PlotPtr;
+ typedef std::shared_ptr<PlotLayer> PlotLayer_sptr;
 
 };
 
@@ -90,6 +90,9 @@ public:
 
     /// wxEVT_COMMAND_LISTBOX_SELECTED event handler for ID_LISTBOX
     void OnListboxSelected( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_REMOVE_LAYER
+    void OnRemoveLayerClick( wxCommandEvent& event );
 
     /// wxEVT_COMMAND_LISTBOX_SELECTED event handler for ID_LISTBOX1
     void OnListbox1Selected( wxCommandEvent& event );
@@ -128,6 +131,7 @@ public:
 
 ////@begin DataLayerDlg member variables
     wxListBox* mLayer;
+    wxButton* btnRemoveLayer;
     wxListBox* mSymbol;
     wxSpinCtrl* mSymbolSize;
     wxColourPickerCtrl* mSymbolBorder;
@@ -141,6 +145,7 @@ public:
     enum {
         ID_DATALAYERDLG = 10000,
         ID_LISTBOX = 10001,
+        ID_REMOVE_LAYER = 10013,
         ID_NOTEBOOK = 10002,
         ID_SYM_PANEL = 10003,
         ID_LISTBOX1 = 10005,
@@ -155,13 +160,16 @@ public:
     };
 ////@end DataLayerDlg member variables
 
-    std::vector<agw::DataLayer*> layers_;
+    agw::PlotLua_sptr plotLua_;
+
+    std::vector<agw::PlotLayer_sptr> layers_;
 
     //wxArrayString   m_arrItems; // pen style names
     Json::Value     store;
     int     layerIX_;
+    void setPlot(agw::PlotLua_sptr& thePlot);
 
-    void fromLayers(std::vector<agw::PlotPtr>& layers);
+    void fromLayers(std::vector<agw::PlotLayer_sptr>& layers);
     void toJSON();
     void toLayers();
 

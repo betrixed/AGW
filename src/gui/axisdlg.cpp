@@ -481,7 +481,11 @@ void AxisDlg::setPlotFrame(PlotFrame* pf)
 {
     this->plotFrame = pf;
 
-    agw::PlotLuaPtr  plp = pf->thePlot->plotLua_;
+    agw::PlotLua_sptr   plp = pf->thePlot->plotLua_;
+    if (!plp)
+        return; //TODO : notify?
+
+    auto pl =
 
     origXAxis = plp->world_.xScale_;
     origYAxis = plp->world_.yScale_;
@@ -521,7 +525,7 @@ void AxisDlg::setPlotFrame(PlotFrame* pf)
 void AxisDlg::OnRevertClick( wxCommandEvent& event )
 {
     event.Skip(true);
-    agw::PlotLuaPtr  plp = plotFrame->thePlot->plotLua_;
+    auto  plp = plotFrame->thePlot->plotLua_;
 
      plp->world_.xScale_ = origXAxis;
      plp->world_.yScale_ = origYAxis;
@@ -541,7 +545,7 @@ void AxisDlg::OnApplyClick( wxCommandEvent& event )
 
     event.Skip(true);
 
-    agw::PlotLuaPtr  plp = plotFrame->thePlot->plotLua_;
+    auto plp = plotFrame->thePlot->plotLua_;
 
     if (mAxisId->GetSelection() == 1)
         toAxis(plp->world_.xScale_);
