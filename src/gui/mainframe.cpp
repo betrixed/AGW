@@ -212,7 +212,7 @@ wxThread::ExitCode ImportGissThread::Entry()
                     // make foreigns key for station-year
                     GissYear yr;
                     yr.setId(stationCode, yearNum, startIX); // station, year, measure
-                    yr.locId = GissLocation::MakeRowId(stationCode);
+                    yr.stationid = stationCode;
                     yr.year = yearNum;
 
                     if (lineCount == 0)
@@ -248,7 +248,7 @@ wxThread::ExitCode ImportGissThread::Entry()
                     {
 
                         yr.valuesCt = validCount;
-                        yr.measure = measure;
+                        yr.measure = startIX;
                         yr.year = yearNum;
                         yr.save(sdb_);
                         updateCt++;
@@ -582,76 +582,6 @@ static void showRow(wxArrayString& row)
  }
  bool MainFrame::ImportCSV(const wxString& filepath)
  {
-    Database& db = this->getDB();
-
-    wxFileInputStream input_stream(filepath);
-    if (!input_stream.IsOk())
-    {
-        wxLogError("Cannot open file '%s'.", filepath);
-        return false;
-    }
-	std::string fileroot = getFullFileName(filepath).ToStdString();
-    if (db.hasImportFile(fileroot))
-    {
-        wxLogError("Already have '%s'.", fileroot);
-        return false;
-    }
-
-    wxTextInputStream   text(input_stream, ',');
-    wxCSV rdr(&text, ',');
-    wxArrayString row;
-    if(rdr.next(row))
-    {
-        if (row.size() < 7)
-        {
-            wxLogError("Expected header row ");
-            showRow(row);
-            return false;
-        }
-        auto AllGood = true;
-        if (row[0] != "Product code")
-        {
-            AllGood = false;
-            wxLogError("Expected Product code");
-        }
-        else if (row[1] != "Bureau of Meteorology station number")
-            AllGood = false;
-        else if (row[2] != "Year")
-            AllGood = false;
-        else if (row[3] != "Month")
-            AllGood = false;
-        else if (row[4] != "Day")
-            AllGood = false;
-        if (AllGood)
-        {
-            wxString statsTable;
-            auto StatisticName = row[5];
-
-            if (StatisticName == "Maximum temperature (Degree C)")
-                statsTable = "max_temp";
-            else if (StatisticName == "Minimum temperature (Degree C)")
-				statsTable = "min_temp";
-            else if (StatisticName == "Rainfall amount (millimetres)")
-                statsTable = "rainfall";
-			else
-			{
-                wxLogError("Unknown statistic name '%s'", StatisticName);
-                return false;
-            }
-            if (statsTable == "max_temp")
-                return db.importMaxTemp(rdr, fileroot);
-			else if (statsTable == "min_temp")
-				return db.importMinTemp(rdr,fileroot);
-            else if (statsTable == "rainfall")
-                return db.importRainfall(rdr,fileroot);
-            else {
-                showRow(row);
-                wxLogError("Unsuccessful import");
-                return false;
-            }
-        }
-    }
-    return true;
  }
 
 
@@ -670,83 +600,6 @@ wxArrayString toWxList(std::vector<std::string>&   values)
 void MainFrame::OnViewSeriesClick( wxCommandEvent& event )
 {
     event.Skip();
-    SelectSeries ss(this);
-
-    std::vector<std::string>   values;
-
-    Database& db = getDB();
-
-    db.getSeriesNames(values);
-    wxArrayString itemSet = toWxList(values);
-    ss.listSeries_->InsertItems(itemSet, 0);
-
-    if (ss.ShowModal() == wxID_OK)
-    {
-        wxArrayInt  items;
-        ss.listSeries_->GetCheckedItems(items);
-
-        for(size_t i = 0; i < items.size(); i++)
-        {
-            auto itemNo = items[i];
-            wxString s = ss.listSeries_->GetString(itemNo);
-            wxStringInputStream sis(s);
-            wxTextInputStream row(sis," ,");
-
-            int rowid;
-            row >> rowid;
-
-            wxString fileName;
-            wxString tableName;
-
-            row >> fileName;
-            row >> tableName;
-
-            std::vector<float> fdata;
-            std::vector<double> xdata;
-
-            std::string tname = tableName.ToStdString();
-            if (!db.getSeriesData(rowid, tname, fdata, xdata))
-			{
-				wxLogError("No records found");
-				return;
-			}
-
-            std::stringstream ss;
-
-            if (tname=="max_temp")
-                ss << "Max. daily Temp (C) " << fileName.char_str();
-            else if (tname == "min_temp")
-                ss << "Min. daily Temp (C) " << fileName.char_str();
-            else if (tname == "rainfall")
-                ss << "Daily Rainfall (mm) " << fileName.char_str();
-
-
-            SeriesPtr fs = std::make_shared<FloatSeries>(fdata,DEFAULT,ss.str());
-
-            SeriesPtr ds = std::make_shared<DoubleSeries>(xdata,DATE_JULIAN_MOD,"Date");
-
-			LargePlot* f = new LargePlot(this);
-            tableName << " ";
-            tableName << fileName;
-            f->SetTitle(tableName);
-
-			f->Show();
-            auto xyplot = f->plot_;
-            xyplot->SetVirtualSize(1000,500);
-
-            PlotLayer_sptr sp = std::make_shared<DataLayer>();
-
-			DataLayer* p = static_cast<DataLayer*>(sp.get());
-			p->xdata_ = ds;
-			p->ydata_ = fs;
-
-            xyplot->AddData(sp);
-            xyplot->Refresh();
-        }
-
-
-
-    }
 
 }
 
@@ -957,32 +810,28 @@ void  MainFrame::EndDBProgress()
 			auto longitudeStr = chars.substr(21,9);
 			auto elevationStr = chars.substr(31,6);
 			auto nameStr = chars.substr(38,30);
-			auto elevationGridStr = chars.substr(69,4);
+
+			/*auto elevationGridStr = chars.substr(69,4);
 			auto popClassStr = chars.substr(73,1);
 			auto popSizeStr = chars.substr(74,5);
 			auto popLightsStr = chars.substr(106,1);
 			auto vegetationStr = chars.substr(90,16);
 
-
             vegetationStr.Trim(true);
             popSizeStr.Trim(true);
+            */
+
 
             //int validCount = 0;
-			GissLocation	rec;
+			Station4	rec;
 
 			rec.setId(stationCode);
 			latitudeStr.ToDouble(&rec.lat_);
 			longitudeStr.ToDouble(&rec.long_);
-			elevationStr.ToDouble(&rec.elevation1_);
-			elevationGridStr.ToDouble(&rec.elevation2_);
+			elevationStr.ToDouble(&rec.elev_);
+
 			rec.name_ = nameStr;
 			long temp;
-
-			popSizeStr.ToLong(&temp);
-			rec.popSize_ = temp;
-			rec.popClass_ = popClassStr.at(0);
-			rec.popLights_ = popLightsStr.at(0);
-			rec.vegetation_ = vegetationStr;
 
 
             try {

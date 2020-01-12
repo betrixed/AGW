@@ -23,6 +23,9 @@ class DataView {
 };
 
 #include <wx/platinfo.h>
+#include <list>
+#include <typeinfo>
+#include <typeindex>
 
 class CountryLayer;
 typedef std::shared_ptr<CountryLayer>  CountryMapPtr;
@@ -33,10 +36,24 @@ typedef std::shared_ptr<LocTable> LocTablePtr;
 
 extern const wxString STD_PLOT_FILES;
 
+
+    class WeakBase {
+    public:
+        std::type_info info;
+    };
+
+    template <class T>
+    class WeakList : WeakBase {
+    public:
+        std::list<std::weak_ptr<T>>   items;
+        void add(std::weak_ptr<T> &p);
+    };
+
+
 // Singleton application data and management object, to be passed around by pointer or reference
     class AppData {
         // data about OS and user
-
+        std::unordered_map<std::type_index, WeakBase*>  items;
         std::string       OSDescription_;
         wxOperatingSystemId  OSId_;
 
@@ -151,6 +168,24 @@ extern const wxString STD_PLOT_FILES;
     static int fileChooser(lua_State* L);
 
     };
+
+    template <class T> void TrackPtr( std::shared_ptr<T> &p)
+    {
+       auto wp = std::weak_ptr<T>(p);
+       auto appdata = AppData::instance();
+       auto& items = appdata.items;
+       auto ix = std::type_index(typeid(T));
+       auto it = appdata.items.find(ix);
+       WeakList<T>* wlist;
+       if (it != items.end()) {
+            wlist = dynamic_cast< WeakList<T>* >( *it );
+       }
+       else {
+            wlist = new WeakList<T>();
+            items[ ix ] = wlist;
+       }
+       wlist->add(wp);
+    }
 #define APP_LUA "app"
 
 #endif // _H_APPDATA

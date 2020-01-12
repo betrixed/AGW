@@ -6,7 +6,7 @@
 
 #include "database.hpp"
 
-typedef std::vector<std::unique_ptr<GissLocation>> LocList;
+typedef std::vector<std::unique_ptr<Station4>> LocList;
 
 class LocTable : public wxGridTableBase {
     LocList table_;
@@ -19,7 +19,7 @@ public:
     LocTable();
     virtual ~LocTable();
 
-    static std::string displayColumn(GissLocation* loc, int col);
+    static std::string displayColumn(Station4* loc, int col);
 
 
     virtual int 	GetNumberRows ()
@@ -54,20 +54,20 @@ public:
         // not allowed
     }
 
-    GissLocation* getRecord(int row)
+    Station4* getRecord(int row)
     {
         return table_[row].get();
     }
 
-    void addRecord(GissLocation* loc)
+    void addRecord(Station4* loc)
     {
-        table_.push_back(std::move(std::unique_ptr<GissLocation>(loc)));
+        table_.push_back(std::move(std::unique_ptr<Station4>(loc)));
     }
     virtual wxString GetValue (int row, int col)
     {
         if (row < 0 || row >= (int)table_.size())
             return "";
-        GissLocation* loc = table_[row].get();
+        Station4* loc = table_[row].get();
         return displayColumn(loc,col);
     }
 };

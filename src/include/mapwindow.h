@@ -103,7 +103,7 @@ public:
     void drawCountryLayer(wxDC& dc);
     void drawStationLayer(wxDC& dc);
 
-    const GissLocation* findStation(const wxPoint& p);
+    const Station4* findStation(const wxPoint& p);
     const CountryRecord* findCountry(const wxPoint& p);
 
     CountryMapPtr    map_c;

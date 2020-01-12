@@ -1,6 +1,16 @@
 #ifndef _H_AGW_FIRST
 #define _H_AGW_FIRST
 
+#define wxOVERRIDE override
+
+/** README - linux build dependencies
+    libspatialite
+        - requires geos, proj, libfreexl
+    shapelib
+    jsoncpp
+
+    Need to link in module library for wxStyledTextCtrl
+**/
 template <typename T>
 void ignore(T &&)
 { }
@@ -14,6 +24,7 @@ void ignore(T &&)
 #include <string>
 #include <memory>
 #include "msgexception.h"
+
 
 // forward declarations
 namespace agw {

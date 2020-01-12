@@ -25,6 +25,7 @@
 
 #include "luaedit.h"
 #include <wx/filename.h>
+#include <wx/stc/stc.h>
 
 ////@begin XPM images
 ////@end XPM images
@@ -200,8 +201,8 @@ void LuaEdit::SetFilePath(const wxString& path)
 {
     savePath_ = path;
     wxFileName fn;
-    
+
     fn.Assign(path);
     tabName_ = fn.GetName();
-    
+
 }

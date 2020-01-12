@@ -683,7 +683,7 @@ void StationSets::RefreshMembers()
 
     while(qy.next())
     {
-        GissLocation* loc = new GissLocation();
+        Station4* loc = new Station4();
         loc->set(qy);
         model->addRecord(loc);
     }
@@ -1576,13 +1576,13 @@ void StationSets::OnTimeSeriesClick( wxCommandEvent& event )
     try {
         for(uint i = 0; i < rows.GetCount(); i++)
         {
-            GissLocation* loc = base->getRecord(rows[i]);
+            Station4* loc = base->getRecord(rows[i]);
             auto mit = measures.begin();
             auto fin = measures.end();
             for( ; mit != fin; mit++)
             {
                 std::string theMeasure = (*mit);
-                qtemp.bindRowId(loc->id, 1);
+                qtemp.bind(loc->stationid, 1);
                 qtemp.bind(theMeasure,2);
 
                 SeriesPtr data = std::make_shared<FloatSeries>();

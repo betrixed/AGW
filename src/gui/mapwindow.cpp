@@ -177,7 +177,7 @@ void MapWindow::drawStationLayer(wxDC& dc)
     auto sdraw = agw::SymbolDraw::MakeSymbolDraw(PlotShape::CIRCLE, 3, dc);
     for(; it != fin; it++)
     {
-        const GissLocation& loc = *(it->get());
+        const Station4& loc = *(it->get());
         wxCoord xpt = (loc.long_ + xoffset_) * xscale_;
         wxCoord ypt = (loc.lat_ + yoffset_) * yscale_;
         sdraw->draw(xpt,ypt);
@@ -290,7 +290,7 @@ const CountryRecord* MapWindow::findCountry(const wxPoint& p)
     return nullptr;
 
 }
-const GissLocation* MapWindow::findStation(const wxPoint& p)
+const Station4* MapWindow::findStation(const wxPoint& p)
 {
     // Convert to Lat, Long
 
@@ -300,11 +300,11 @@ const GissLocation* MapWindow::findStation(const wxPoint& p)
     auto fin = data.end();
 
     double minDistance = FLT_MAX;
-    const GissLocation* minloc = nullptr;
+    const Station4* minloc = nullptr;
 
     for(int ct = 0; it != fin; it++, ct++)
     {
-        const GissLocation* loc = it->get();
+        const Station4* loc = it->get();
         wxCoord xpt = (loc->long_ + xoffset_) * xscale_;
         wxCoord ypt = (loc->lat_ + yoffset_) * yscale_;
         double xdiff = (xpt - p.x);
@@ -337,7 +337,7 @@ void MapWindow::OnLeftDown( wxMouseEvent& event )
 
     wxPoint p = event.GetPosition();
 
-    const GissLocation* loc = findStation(p);
+    const Station4* loc = findStation(p);
 
     if (loc)
     {
