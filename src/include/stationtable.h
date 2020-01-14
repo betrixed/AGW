@@ -29,7 +29,7 @@ public:
 
     virtual int 	GetNumberCols ()
     {
-        return 10;
+        return colLabels_.size();
     }
     virtual bool IsEmptyCell( int row, int col )
     {

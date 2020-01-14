@@ -257,12 +257,8 @@ SeriesPtr seriesFromFile(const char* path)
     std::ifstream jstream(path);
     if (jstream.is_open())
     {
-        Json::Reader  jsonrdr;
         Json::Value   jser;
-        if (!jsonrdr.parse(jstream,jser))
-        {
-            throw MsgException("Json parse error");
-        }
+        jstream >> jser;
         result = readJSONSeries(jser);
     }
     return result;

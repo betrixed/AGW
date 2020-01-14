@@ -33,7 +33,7 @@ const std::string LocCreateSql =
     "latit REAL,"
     "longt REAL,"
     "elevt REAL,"
-    "Name VARCHAR(50),"
+    "name VARCHAR(50),"
     "PRIMARY KEY (stationid)"
 ");";
 const std::string SetCreateSql =
@@ -45,42 +45,41 @@ const std::string SetCreateSql =
 const std::string SetBelongSql =
 "CREATE TABLE memberstation ("
     "stationid CHAR(11) NOT NULL,"
-    "setid VARCHAR(50),"
+    "setid VARCHAR(50) NOT NULL,"
     "PRIMARY KEY (stationid,setid)"
 ");";
 
 /** hold number of valid values for a year */
 const std::string GissYearSQL  =
 "CREATE TABLE gissyear ("
-     "dataid    INTEGER AUTO_INCREMENT NOT NULL,"
+     "dataid    INTEGER PRIMARY KEY,"
      "stationid CHAR(11) NOT NULL,"
      "year      INTEGER NOT NULL,"
      "measure   INTEGER NOT NULL,"  // 0 - avg, 1 = min, 2 = max
-     "valuect   INTEGER NOT NULL,"
-     "PRIMARY KEY (dataid)"
+     "valuesct    INTEGER NOT NULL"
 ");";
 
-const std::string GissYearIndex = "create index data_ix on gissyear (stationid, year, measure);";
+const std::string GissYearIndex = "create unique index data_ix on gissyear (stationid, year, measure);";
 
 const std::string MonthTempCreateSql =
 "CREATE TABLE gisstemp ("
     "dataid    INTEGER NOT NULL,"
-    "month     INTEGER NOT NULL,"
+    "monthid     INTEGER NOT NULL,"
     "value     REAL,"
-    "DMFlag CHAR(1),"
-    "QCFlag CHAR(1),"
-    "DSFlag CHAR(1),"
-    "PRIMARY KEY (dataid, monthId)"
+    "dmflag CHAR(1),"
+    "qcflag CHAR(1),"
+    "dsflag CHAR(1),"
+    "PRIMARY KEY (dataid, monthid)"
 ");";
 
 const std::string ZeroBaseSql =
 "CREATE TABLE zerobase ("
     "stationid CHAR(11) NOT NULL,"
     "measure  INTEGER NOT NULL,"  // 0 - avg, 1 = min, 2 = max
-    "month     INTEGER NOT NULL," // 1-12 AVG,   13-24 MIN, 25-36 MAX
+    "monthid     INTEGER NOT NULL," // 1-12 AVG,   13-24 MIN, 25-36 MAX
     "average    REAL,"
-    "valuect    REAL,"
-    "PRIMARY KEY (stationid,month)"
+    "valuesct    REAL,"
+    "PRIMARY KEY (stationid,monthid)"
 ");";
 
 const std::string StationCreateSql =
@@ -135,123 +134,65 @@ void Database::init()
     }
 }
 
-bool
-Database::getGissLocRowId(const std::string& locCode, DBRowId& id)
-{
-    Statement s(*this, "SELECT LocId FROM gissloc WHERE LocCode = ?");
-    s.bind(locCode,1);
-    bool result = s.next();
-    if (!result)
-    {
-        Statement ins(*this,"INSERT INTO gissloc (LocCode) VALUES (?)");
-        ins.bind(locCode,1);
-        if (ins.execute())
-        {
-            id = this->lastRowId();
-            return true;
-        }
-    }else{
-        id = s.getRowId(0);
-        return true;
-    }
-    return false;
-}
-
-static DBRowId BaseStationID(const std::string& stationId, uint32_t year, MTEMP measure)
-{ /* StationID is 27 bits : Country-10 + WMO-17
-	 Lower is 30 bits : Station-Other-ID-10 + Year-14 + Measure-2 + Month-4 */
-    uint32_t ctCode;
-    uint32_t whoCode;
-    uint32_t noCode;
-    uint64_t rowId;
-
-    std::istringstream buf(stationId.substr(0,3));
-    buf >> ctCode;
-    buf.clear();
-
-    buf.str(stationId.substr(3,5));
-    buf >> whoCode;
-    buf.clear();
-
-    buf.str(stationId.substr(8,3));
-    buf >> noCode;
-
-    // make the low 32 bits
-    noCode = (noCode << 14) + (year & 0x03FFF);
-    noCode = ((noCode << 2) + (measure & 0x03)) << 4;
-    rowId = ((uint64_t)((ctCode << 17) + whoCode) << 32) + noCode;
-    return rowId;
-
-}
-
-
-void MonthTemp::setId(const std::string& stationId, uint32_t year, MTEMP measure, int monthNum)
-{
-    this->id = BaseStationID(stationId, year, measure);
-    this->monthId = monthNum;
-}
-
 // Load a single record from setId (if it exists)
 bool MonthTemp::load(SqliteDB &sdb)
 {
-    Statement query(sdb, "select Value,DMFlag,QCFlag,DSFlag from gisstemp where codeId = ? and monthId = ?");
-    query.bindRowId(id,1);
+    Statement query(sdb, "select value,dmflag,qcflag,dsflag from gisstemp where dataid = ? and monthid = ?");
+    query.bindRowId(dataid,1);
+    query.bind((long)monthid,2);
     if (query.execute())
     {
         query.get(0,this->value);
-        query.get(1,this->dmFlag);
-        query.get(2,this->qcFlag);
-        query.get(3,this->dsFlag);
+        query.get(1,this->dmflag);
+        query.get(2,this->qcflag);
+        query.get(3,this->dsflag);
         return true;
     }
     return false;
 }
 
-
-void GissYear::setId(const std::string& stationId, uint32_t year, MTEMP measure)
-{
-    this->stationid = stationid;
-    this->measure = measure;
-    this->year = year;
-}
 
 // save doesn't know if the record already exists or not and tries an insert or replace
 bool MonthTemp::save(SqliteDB &sdb)
 {
-    Statement query(sdb, "insert or replace into gisstemp(codeId,Value,DMFlag,QCFlag,DSFlag,monthId) values (?,?,?,?,?,?)");
+    Statement query(sdb, "insert or replace into gisstemp(dataid, monthid, value, dmflag,qcflag,dsflag) values (?,?,?,?,?,?)");
 
-    query.bindRowId(this->id,1);
-    query.bind(this->value,2);
-    query.bind(this->dmFlag,3);
-    query.bind(this->qcFlag,4);
-    query.bind(this->dsFlag,5);
-    query.bindRowId(this->monthId,6);
+    query.bindRowId(this->dataid,1);
+    query.bind((long)this->monthid,2);
+    query.bind(this->value,3);
+    query.bind(this->dmflag,4);
+    query.bind(this->qcflag,5);
+    query.bind(this->dsflag,6);
+
     return query.execute();
 
 }
  // Update assumes record exists
 bool MonthTemp::update(SqliteDB &sdb)
 {
-    Statement query(sdb, "update gisstemp set Value = ?,DMFlag = ?,QCFlag = ?,DSFlag = ? where codeId = ? and monthId = ?");
+    Statement query(sdb, "update gisstemp set value = ?,dmflag = ?,qcfFlag = ?,dsflag = ? where dataid = ? and monthid = ?");
     query.bind(this->value,1);
-    query.bind(this->dmFlag,2);
-    query.bind(this->qcFlag,3);
-    query.bind(this->dsFlag,4);
-    query.bindRowId(this->id,5);
-    query.bindRowId(this->monthId,6);
+    query.bind(this->dmflag,2);
+    query.bind(this->qcflag,3);
+    query.bind(this->dsflag,4);
+    query.bindRowId(this->dataid,5);
+    query.bindRowId(this->monthid,6);
     return query.execute();
 }
 
 // Load a single record from setId (if it exists)
-bool GissYear::load(SqliteDB &sdb)
+bool GissYear::loadById(SqliteDB &sdb, DBRowId id)
 {
-    Statement query(sdb, "select year,measure,valuesCt from gissyear where stationid = ?");
-    query.bind(stationid,1);
+    Statement query(sdb, "select stationid, year,measure,valuesct from gissyear where dataid = ? ");
+    query.bindRowId(id,1);
+
     if (query.execute())
     {
-        this->year = query.getInt32(0);
-        this->measure = query.getInt32(1);
-        this->valuesCt = query.getInt32(2);
+        dataid = id;
+        query.get(0, this->stationid);
+        this->year = query.getInt32(1);
+        this->measure = query.getInt32(2);
+        this->valuesct = query.getInt32(3);
         return true;
     }
     return false;
@@ -260,24 +201,24 @@ bool GissYear::load(SqliteDB &sdb)
 // save doesn't know if the record already exists or not and tries an insert or replace
 bool GissYear::save(SqliteDB &sdb)
 {
-    Statement query(sdb, "insert into gissyear(stationid,year,measure,valuesct) values (?,?,?,?,?)");
+    Statement query(sdb, "insert or replace into gissyear(stationid,year,measure,valuesct) values (?,?,?,?)");
 
     query.bind(stationid,1);
     query.bind((long) this->year,2);
     query.bind((long) this->measure,3);
-    query.bind((long) this->valuesCt,4);
-    return query.execute();
-
+    query.bind((long) this->valuesct,4);
+    auto result = query.execute();
+    if (result) {
+        dataid = sdb.lastRowId();
+    }
 }
  // Update assumes record exists
-bool GissYear::update(SqliteDB &sdb)
+bool GissYear::updateValuesCt(SqliteDB &sdb, DBRowId id, uint32_t ct)
 {
-    Statement query(sdb, "update gissyear set year = ?, measure = ?, valuesCt = ? where stationid = ?");
+    Statement query(sdb, "update gissyear set valuesct = ? where dataid = ?");
 
-    query.bind((long)this->year,1);
-    query.bind((long)this->measure,2);
-    query.bind((long)this->valuesCt,3);
-    query.bind(this->stationid,4);
+    query.bind((long)ct,1);
+    query.bindRowId(id,2);
     return query.execute();
 }
 
@@ -309,7 +250,7 @@ bool Station4::save(SqliteDB &sdb)
     std::stringstream ss;
 
     ss << "insert or replace into gissloc("
-        "stationid, latit,longt,elevt,code,name, Geometry"
+        "stationid, latit,longt,elevt,name, Geometry"
 		") values (?,?,?,?,?,"
 		<< "MakePoint(" << this->long_ << "," << this->lat_ << ",4326)"
 		<< ")";
@@ -334,7 +275,7 @@ bool Station4::set(Statement& qy)
   qy.get(1,this->lat_);
   qy.get(2,this->long_);
   qy.get(3,this->elev_);
-  qy.get(5,this->name_);
+  qy.get(4,this->name_);
   return true;
 }
 

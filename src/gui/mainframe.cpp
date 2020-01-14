@@ -61,6 +61,13 @@
 
 #include "threadwork.hpp"
 
+inline std::string trim(const std::string &s)
+{
+   auto wsfront=std::find_if_not(s.begin(),s.end(),[](int c){return std::isspace(c);});
+   auto wsback=std::find_if_not(s.rbegin(),s.rend(),[](int c){return std::isspace(c);}).base();
+   return (wsback<=wsfront ? std::string() : std::string(wsfront,wsback));
+}
+
 using namespace agw;
 /*s
  * MainFrame type definition
@@ -188,14 +195,14 @@ wxThread::ExitCode ImportGissThread::Entry()
             hasNext = (chars.size() > 114);
             if (hasNext)
             {
+                auto line = chars.ToStdString();
+                auto stationCode = line.substr(0,11);
 
-                auto stationCode = chars.substr(0,11).ToStdString();
+                auto yearText = line.substr(11,4);
+                long yearNum = std::stol(yearText);
 
-                auto yearText = chars.substr(11,4);
-                long yearNum;
-                yearText.ToLong(&yearNum);
 
-                auto measure = chars.substr(15,4);
+                auto measure = line.substr(15,4);
                 MTEMP startIX = TAVG;
                 if (measure=="TMIN")
                 {
@@ -211,10 +218,11 @@ wxThread::ExitCode ImportGissThread::Entry()
                 try {
                     // make foreigns key for station-year
                     GissYear yr;
-                    yr.setId(stationCode, yearNum, startIX); // station, year, measure
                     yr.stationid = stationCode;
                     yr.year = yearNum;
-
+                    yr.measure = startIX;
+                    yr.valuesct = 0;
+                    yr.save(sdb_);
                     if (lineCount == 0)
                     {
 
@@ -228,29 +236,25 @@ wxThread::ExitCode ImportGissThread::Entry()
                     {
 
                         auto offset = 19 + i * 8;
-                        auto valueStr = chars.substr(offset,5);
+                        auto valueStr = line.substr(offset,5);
                         if (valueStr != "-9999")
                         {
                             validCount++;
                             offset += 5;
-                            mt.dmFlag = chars.at(offset);
-                            mt.qcFlag = chars.at(offset+1);
-                            mt.dsFlag = chars.at(offset+2);
-                            if (valueStr.ToDouble(&mt.value))
-                            {
-                                mt.value /= 100.0;
-                                mt.setId(stationCode,yearNum,startIX,i+1);
-                                mt.save(sdb_);
-                            }
+                            mt.dmflag = line.at(offset);
+                            mt.qcflag = line.at(offset+1);
+                            mt.dsflag = line.at(offset+2);
+                            mt.value = std::stod(valueStr);
+                            mt.value /= 100.0;
+                            mt.dataid = yr.dataid;
+                            mt.monthid = i+1;
+                            mt.save(sdb_);
                         }
                     }
                     if (validCount > 0)
                     {
-
-                        yr.valuesCt = validCount;
-                        yr.measure = startIX;
-                        yr.year = yearNum;
-                        yr.save(sdb_);
+                        yr.valuesct = validCount;
+                        yr.updateValuesCt(sdb_, yr.dataid, yr.valuesct);
                         updateCt++;
                     }
                     if (lineCount >= 2000)
@@ -804,33 +808,21 @@ void  MainFrame::EndDBProgress()
         hasNext = (chars.size() > 0);
         if (hasNext)
         {
-            auto stationCode = chars.substr(0,11).ToStdString();
+            std::string line = chars.ToStdString();
+            auto stationCode = line.substr(0,11);
 
-            auto latitudeStr = chars.substr(12,8);
-			auto longitudeStr = chars.substr(21,9);
-			auto elevationStr = chars.substr(31,6);
-			auto nameStr = chars.substr(38,30);
+            auto latitudeStr = line.substr(12,8);
+			auto longitudeStr = line.substr(21,9);
+			auto elevationStr = line.substr(31,6);
+			auto nameStr = line.substr(38,30);
 
-			/*auto elevationGridStr = chars.substr(69,4);
-			auto popClassStr = chars.substr(73,1);
-			auto popSizeStr = chars.substr(74,5);
-			auto popLightsStr = chars.substr(106,1);
-			auto vegetationStr = chars.substr(90,16);
-
-            vegetationStr.Trim(true);
-            popSizeStr.Trim(true);
-            */
-
-
-            //int validCount = 0;
 			Station4	rec;
 
-			rec.setId(stationCode);
-			latitudeStr.ToDouble(&rec.lat_);
-			longitudeStr.ToDouble(&rec.long_);
-			elevationStr.ToDouble(&rec.elev_);
-
-			rec.name_ = nameStr;
+			rec.stationid = stationCode;
+			rec.lat_ = std::stod(latitudeStr);
+			rec.long_ = std::stod(longitudeStr);
+			rec.elev_ = std::stod(elevationStr);
+			rec.name_ = trim(nameStr);
 			long temp;
 
 
@@ -872,8 +864,8 @@ void  MainFrame::EndDBProgress()
         sdb_.commit();
         lineCount = 0;
     }
-    wxLogMessage("Updated %d records", updateCt);
 
+/* Not necessary.  Done on record save
     if (updateCt > 0)
     {
         sdb_.begin();
@@ -881,6 +873,7 @@ void  MainFrame::EndDBProgress()
         sdb_.commit();
         wxLogMessage("Geometry updated", updateCt);
     }
+*/
     sdb_.close();
 
     UpdateProgress(-1);

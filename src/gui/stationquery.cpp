@@ -55,7 +55,6 @@ BEGIN_EVENT_TABLE( StationQuery, wxPanel )
     EVT_BUTTON( ID_BTN_DOWN, StationQuery::OnBtnDownClick )
     EVT_BUTTON( ID_BTN_DELETE, StationQuery::OnBtnDeleteClick )
     EVT_BUTTON( ID_COUNTRY_BTN, StationQuery::OnCountryBtnClick )
-    EVT_BUTTON( ID_BTN_VEGE, StationQuery::OnBtnVegeClick )
 ////@end StationQuery event table entries
 
 END_EVENT_TABLE()
@@ -157,9 +156,6 @@ void StationQuery::Init()
     mSizerCountry = NULL;
     mBoxCountry = NULL;
     mCountryName = NULL;
-    mSizerVege = NULL;
-    mBoxVege = NULL;
-    mTextVege = NULL;
 ////@end StationQuery member initialisation
 
     myFrame = nullptr;
@@ -196,7 +192,6 @@ void StationQuery::CreateControls()
     wxArrayString mBoxQTypeStrings;
     mBoxQTypeStrings.Add(_("&Spatial"));
     mBoxQTypeStrings.Add(_("&Random"));
-    mBoxQTypeStrings.Add(_("&Vegetation"));
     mBoxQTypeStrings.Add(_("&All"));
     mBoxQType = new wxRadioBox( itemPanel1, ID_BOX_QTYPE, _("Types in \"AND\""), wxDefaultPosition, wxDefaultSize, mBoxQTypeStrings, 1, wxRA_SPECIFY_ROWS );
     mBoxQType->SetSelection(0);
@@ -274,23 +269,10 @@ void StationQuery::CreateControls()
     wxButton* itemButton30 = new wxButton( itemPanel1, ID_COUNTRY_BTN, _("..."), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
     mSizerCountry->Add(itemButton30, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    mSizerVege = new wxBoxSizer(wxHORIZONTAL);
-    mBossVSizer->Add(mSizerVege, 0, wxGROW|wxALL, 5);
-
-    mBoxVege = new wxCheckBox( itemPanel1, ID_BOX_VEGE, _("Vegetation Type is"), wxDefaultPosition, wxDefaultSize, 0 );
-    mBoxVege->SetValue(false);
-    mSizerVege->Add(mBoxVege, 0, wxGROW|wxALL, 5);
-
-    mTextVege = new wxTextCtrl( itemPanel1, ID_TEXT_VEGE, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
-    mSizerVege->Add(mTextVege, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
-
-    wxButton* itemButton34 = new wxButton( itemPanel1, ID_BTN_VEGE, _("..."), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
-    mSizerVege->Add(itemButton34, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
-
-    wxStaticLine* itemStaticLine35 = new wxStaticLine( itemPanel1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
-    itemStaticLine35->SetForegroundColour(wxColour(150, 123, 54));
-    itemStaticLine35->SetBackgroundColour(wxColour(152, 209, 42));
-    mBossVSizer->Add(itemStaticLine35, 0, wxGROW|wxLEFT|wxRIGHT, 2);
+    wxStaticLine* itemStaticLine31 = new wxStaticLine( itemPanel1, wxID_STATIC, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
+    itemStaticLine31->SetForegroundColour(wxColour(150, 123, 54));
+    itemStaticLine31->SetBackgroundColour(wxColour(152, 209, 42));
+    mBossVSizer->Add(itemStaticLine31, 0, wxGROW|wxLEFT|wxRIGHT, 2);
 
     // Connect events and objects
     itemPanel1->Connect(ID_STATIONQUERY, wxEVT_DESTROY, wxWindowDestroyEventHandler(StationQuery::OnDestroy), NULL, this);
@@ -342,8 +324,6 @@ wxIcon StationQuery::GetIconResource( const wxString& name )
  const std::string JDoc::RANDOM("random");
  const std::string JDoc::COUNTRY("country");
  const std::string JDoc::QSEQ("qseq");
-
-const std::string JDoc::VEGETATION("vege");
 const std::string JDoc::SQL_OP("sql-op");
 const std::string JDoc::QDISPLAY("query-type");
 
@@ -366,13 +346,7 @@ bool StationQuery::GetAsJSON(Json::Value& root)
     int sel = mBoxQType->GetSelection();
     root[JDoc::QDISPLAY] = (sel == 0) ? "spatial" : "random";
 
-    if (mBoxVege->IsChecked())
-    {
-        if (textValue(mTextVege,value))
-        {
-            root[JDoc::VEGETATION] = value;
-        }
-    }
+
     if (mBoxNameLike->IsChecked())
     {
         if (textValue(txtLike,value))
@@ -496,17 +470,7 @@ void StationQuery::LoadFromJSON(const Json::Value& root)
             mSQL << "(" << "codeId in (SELECT codeId from gissloc ORDER BY RANDOM() LIMIT "
                     << randomCt << "))";
         }
-        if (root.isMember(JDoc::VEGETATION))
-        {
-            mBoxVege->SetValue(true);
-            std::string value = root[JDoc::VEGETATION].asString();
-            mTextVege->SetValue(value);
 
-            if (ct > 0)
-                mSQL << " AND ";
-            ct++;
-            mSQL << "(Vegetation = '"  << value << "')";
-        }
         if (root.isMember(JDoc::COUNTRY))
         {
             mBoxCountry->SetValue(true);
@@ -645,13 +609,11 @@ void StationQuery::SetQueryType(int sel)
     bool isLat = (sel==0) || (sel==3);
     bool isCountry = (sel==0) || (sel==3);
     bool isStation = (sel==0) || (sel==3);
-    bool isVege = (sel==2) || (sel==3);
 
     mBossVSizer->Show(mSizerRandom, isRandom, true);//random
     mBossVSizer->Show(sizerLatBand, isLat, true);//latitude
     mBossVSizer->Show(mSizerCountry, isCountry, true);//random
     mBossVSizer->Show(mSizerStation, isStation, true);//random
-    mBossVSizer->Show(mSizerVege, isVege, true);//random
 
     mBossVSizer->Layout();
     this->Update();
@@ -662,42 +624,5 @@ void StationQuery::SetQueryType(int sel)
 }
 
 
-/*
- * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTN_VEGE
- */
 
-void StationQuery::OnBtnVegeClick( wxCommandEvent& event )
-{
-
-    event.Skip(false);
-
-    Database* dbp = getDB();
-
-    if (!dbp)
-        return;
-
-    Database& sdb = *dbp;
-
-    Statement query(sdb, "select distinct VEGETATION from gissloc order by VEGETATION");
-
-    wxArrayString  strList;
-    std::string name;
-
-    while(query.next())
-    {
-         query.get(0,name);
-         strList.Add(name);
-    }
-    VegeListDlg dlg(this);
-
-    dlg.mVegeList->InsertItems(strList,0);
-
-    if (dlg.ShowModal() == wxID_OK)
-    {
-        int select = dlg.mVegeList->GetSelection();
-        if (select != wxNOT_FOUND)
-            this->mTextVege->SetValue(dlg.mVegeList->GetString(select));
-    }
-
-}
 

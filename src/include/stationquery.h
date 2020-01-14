@@ -92,9 +92,6 @@ public:
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_COUNTRY_BTN
     void OnCountryBtnClick( wxCommandEvent& event );
 
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BTN_VEGE
-    void OnBtnVegeClick( wxCommandEvent& event );
-
 ////@end StationQuery event handler declarations
 
 ////@begin StationQuery member function declarations
@@ -131,9 +128,6 @@ public:
     wxBoxSizer* mSizerCountry;
     wxCheckBox* mBoxCountry;
     wxTextCtrl* mCountryName;
-    wxBoxSizer* mSizerVege;
-    wxCheckBox* mBoxVege;
-    wxTextCtrl* mTextVege;
     /// Control identifiers
     enum {
         ID_STATIONQUERY = -1,
@@ -152,10 +146,7 @@ public:
         ID_RANDOM_COUNT = 10004,
         ID_BOX_COUNTRY = 10005,
         ID_COUNTRY_NAME = 10006,
-        ID_COUNTRY_BTN = 10010,
-        ID_BOX_VEGE = 10016,
-        ID_TEXT_VEGE = 10017,
-        ID_BTN_VEGE = 10018
+        ID_COUNTRY_BTN = 10010
     };
 ////@end StationQuery member variables
     bool  GetAsJSON(Json::Value& json);

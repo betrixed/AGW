@@ -446,7 +446,7 @@ wxIcon StationSets::GetIconResource( const wxString& name )
 bool StationSets::SetExists(const std::string& name)
 {
     std::string sql = "SELECT count(*) from stationset"
-                " WHERE setName = ?";
+                " WHERE setid = ?";
 
     Statement qry(db_, sql);
     qry.bind(name,1);
@@ -524,7 +524,7 @@ void StationSets::OnQueryNewClick( wxCommandEvent& event )
 
 void StationSets::ReadSetNames()
 {
-    std::string sql = "select setName from stationset order by setName";
+    std::string sql = "select setid from stationset order by setid";
 
     if (!db_.isOpen())
     {
@@ -547,7 +547,7 @@ void StationSets::ReadSetNames()
 
 void StationSets::SelectSetName(const wxString& value, bool readMembers)
 {
-    std::string sql = "select queryJSON from stationset where setName = ?";
+    std::string sql = "select queryJSON from stationset where setid = ?";
 
     Statement iq (db_, sql);
 
@@ -630,7 +630,7 @@ bool StationSets::AddMembers(const std::string& sql)
     {
         DBRowId row = qy.getRowId(0);
 
-        std::string mergeSql = "insert or replace memberstation (setName, codeId) values (? ?)";
+        std::string mergeSql = "insert or replace memberstation (setid, stationid) values (? ?)";
         Statement qmerge(db_,mergeSql);
         qmerge.bind(setName,1);
         qmerge.bindRowId(row,2);
@@ -671,7 +671,7 @@ void StationSets::RefreshMembers()
 
 
     std::string sql = "select A.* from gissloc A join memberstation B"
-                        " where A.codeId = B.codeId and B.setName = ?"
+                        " where A.stationid = B.stationid and B.setid = ?"
                         " order by A.name"
                         ;
 
@@ -702,7 +702,7 @@ void StationSets::RefreshMembers()
 
 void StationSets::DeleteMembers(const wxString& setName)
 {
-    std::string sql = "delete from memberstation where setName = ?";
+    std::string sql = "delete from memberstation where setid = ?";
     Statement dq (db_, sql);
 
     dq.bind(setName, 1);
@@ -715,7 +715,7 @@ void StationSets::DeleteSet(const wxString& setName)
 {
     DeleteMembers(setName);
 
-    std::string sql = "delete from stationset where setName = ?";
+    std::string sql = "delete from stationset where setid = ?";
     Statement dq (db_, sql);
 
     dq.bind(setName, 1);
@@ -798,7 +798,7 @@ void StationSets::OnRunQueryClick( wxCommandEvent& event )
     wxLogMessage("JSON = %s", json.c_str());
 
     try {
-        Statement qsave(db_, "insert or replace into stationset (setName, queryJSON) values (?, ?)");
+        Statement qsave(db_, "insert or replace into stationset (setid, queryJSON) values (?, ?)");
 
         qsave.bind(setName, 1);
         qsave.bind(json,2);
@@ -842,8 +842,8 @@ void StationSets::OnRunQueryClick( wxCommandEvent& event )
         this->DeleteMembers(setName);
         std::stringstream moveSQL;
 
-        moveSQL << "insert into memberstation ";
-        moveSQL << "SELECT '" << theSet << "', codeId from " << set_table;
+        moveSQL << "insert into memberstation (setid, stationid) ";
+        moveSQL << "SELECT '" << theSet << "', stationid from " << set_table;
         sql = moveSQL.str();
 
         try {
@@ -1018,7 +1018,7 @@ std::string StationSets::MakeSQL(const std::string& tableName)
     std::string whereClause;
 
     sql << "create table " << tableName << " as ";
-    sql << "SELECT codeId from gissloc ";
+    sql << "SELECT stationid from gissloc ";
 
     auto wlist = mVSizer->GetChildren();
     int cct = 0;
@@ -1136,15 +1136,15 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
     std::string sql =
     " SELECT AVG(T.value - A.base) as anomoly, Y.year as year"
     "   FROM gissyear Y, gisstemp T,"
-        " ( SELECT B.locId, R.monthId, AVG(R.Value) as base"
+        " ( SELECT B.stationid, R.monthid, AVG(R.value) as base"
             " FROM gisstemp R, gissyear B "
-            " WHERE B.YEAR >= ? and B.YEAR <= ? "
-            " and R.codeId = B.codeId and B.measure = ?"
-            " and B.locID in ( Select codeId from memberstation WHERE setName = ? )"
-            " group by B.locId, R.monthId ) A"
-    " WHERE Y.locId = A.locID and A.monthId = T.monthID"
+            " WHERE B.year >= ? and B.year <= ? "
+            " and R.dataid = B.dataid and B.measure = ?"
+            " and B.stationid in ( Select stationid from memberstation WHERE setid = ? )"
+            " group by B.stationid, R.monthid ) A"
+    " WHERE Y.stationid = A.stationid and A.monthid = Y.monthid"
     " and Y.measure = ?"
-    " and Y.codeId = T.codeId";
+    " and Y.dataid = T.dataid";
 
     std::string groupBy =  " GROUP by Y.year ORDER BY year";
 
@@ -1424,23 +1424,23 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
     }
 
      std::string select_sql =
-    " SELECT AVG(T.value - A.base) as anomoly, Y.year as year, T.MonthId as month"
+    " SELECT AVG(T.value - A.base) as anomoly, Y.year as year, Y.monthid"
     "   FROM gissyear Y, gisstemp T,"
-        " ( SELECT B.locId, R.monthId, AVG(R.Value) as base"
+        " ( SELECT B.stationid, B.monthid, AVG(R.value) as base"
             " FROM gisstemp R, gissyear B "
-            " WHERE B.YEAR >= ? and B.YEAR <= ? "
-            " and R.codeId = B.codeId and B.measure = ?"
-            " and B.locID in ( Select codeId from memberstation WHERE setName = ? )"
-            " group by B.locId, R.monthId ) A"
-    " WHERE Y.locId = A.locID and A.monthId = T.monthID"
+            " WHERE B.year >= ? and B.year <= ? "
+            " and R.dataid = B.dataid and B.measure = ?"
+            " and B.stationid in ( Select stationid from memberstation WHERE setid = ? )"
+            " group by B.stationid, B.monthid ) A"
+    " WHERE Y.stationid = A.stationid and A.monthid = Y.monthid"
     " and Y.measure = ?"
-    " and Y.codeId = T.codeId";
+    " and Y.dataid = T.dataid";
 
     std::string sql;
     {
         std::stringstream querySql;
 
-        querySql << select_sql << " and Y.year in ( " << yearlist << " ) " << " GROUP by Y.year, T.MonthId ORDER BY year, month";
+        querySql << select_sql << " and Y.year in ( " << yearlist << " ) " << " GROUP by Y.year, Y.monthid ORDER BY year, monthid";
         sql = querySql.str();
     }
     int choice = mMeasure2->GetSelection();
@@ -1556,10 +1556,10 @@ void StationSets::OnTimeSeriesClick( wxCommandEvent& event )
     std::vector<uint>       zeroMonth;
 
     // using same statement with different bindings for each query
-    Statement qtemp(db_, "select B.year, A.monthId, A.Value from gissyear B"
-                            " join gisstemp A on A.codeId = B.codeId"
-                            " where B.locId = ? and B.measure = ?"
-                            " order by year, monthId");
+    Statement qtemp(db_, "select B.year, B.monthid, A.value from gissyear B"
+                            " join gisstemp A on A.dataid = B.dataid"
+                            " where B.stationid = ? and B.measure = ?"
+                            " order by year, monthid");
 
     std::vector<std::string> measures;
 

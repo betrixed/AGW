@@ -70,29 +70,27 @@ public:
     std::string stationid;
     uint32_t measure;
     uint32_t year;
-    uint32_t valuesCt;
+    uint32_t valuesct;
 
-    void setId(const std::string& stationId, uint32_t year, MTEMP measure);
-
-	GissYear() : year(0), valuesCt(0)
+	GissYear() : measure(0), year(0), valuesct(0)
 	{
 	}
-	bool load(SqliteDB &db);
+	bool loadById(SqliteDB &db, DBRowId id);
+	bool loadByStation(SqliteDB &db, const std::string& id, uint32_t year, uint32_t measure);
 	bool save(SqliteDB &db);
-    bool update(SqliteDB &db);
+    bool updateValuesCt(SqliteDB &db, DBRowId id, uint32_t ct);
 
 };
 
 class MonthTemp {
 public:
-    DBRowId id;
-    int    monthId;
+    DBRowId dataid;
+    int    monthid;
     double value;
-    char   dmFlag;
-    char    qcFlag;
-    char    dsFlag;
+    char   dmflag;
+    char    qcflag;
+    char    dsflag;
 
-    void setId(const std::string& stationId, uint32_t year, MTEMP measure, int monthNum);
 	bool load(SqliteDB &db);
 	bool save(SqliteDB &db);
     bool update(SqliteDB &db);
@@ -114,7 +112,6 @@ public:
     bool getSeriesNames(std::vector<std::string>& values);
     bool getSeriesData(long rowid, const std::string& tableName, std::vector<float>& data, std::vector<double>& xdata);
 
-    bool getGissLocRowId(const std::string& locCode, DBRowId& id);
     void generateBaseline();
 
 

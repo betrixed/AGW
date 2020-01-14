@@ -89,7 +89,7 @@ int DataLayer::setDisplay(lua_State* L)
             break;
         case LUA_TNUMBER:
             if (lua_isinteger(L,-1))
-                root[key] = lua_tointeger(L,-1);
+                root[key] = (long) lua_tointeger(L,-1);
             else
                 root[key] = lua_tonumber(L,-1);
             break;

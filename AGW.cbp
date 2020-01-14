@@ -15,7 +15,7 @@
 					<Add option="-std=c++14" />
 					<Add option="-g" />
 					<Add directory="src/include" />
-					<Add directory="src/msw-include" />
+					<Add directory="src/jsoncpp" />
 				</Compiler>
 				<Linker>
 					<Add library="sqlite3" />
@@ -34,7 +34,7 @@
 					<Add option="-O2" />
 					<Add option="-std=c++14" />
 					<Add directory="src/include" />
-					<Add directory="src/msw-include" />
+					<Add directory="src/jsoncpp" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -65,7 +65,6 @@
 		<Unit filename="src/data/fromlua.cpp" />
 		<Unit filename="src/data/geometry.cpp" />
 		<Unit filename="src/data/globaltemp.cpp" />
-		<Unit filename="src/data/jsoncpp.cpp" />
 		<Unit filename="src/data/legend.cpp" />
 		<Unit filename="src/data/linearscale.cpp" />
 		<Unit filename="src/data/lsqlite3.c">
@@ -155,6 +154,7 @@
 		<Unit filename="src/include/trendfitdlg.h" />
 		<Unit filename="src/include/vegedlg.h" />
 		<Unit filename="src/include/wxCSV.hpp" />
+		<Unit filename="src/jsoncpp/jsoncpp.cpp" />
 		<Unit filename="src/lua-5.3.2/src/lapi.c">
 			<Option compilerVar="CC" />
 			<Option compiler="gcc" use="1" buildCommand="$compiler $includes -c $file -o $object" />

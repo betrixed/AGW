@@ -194,15 +194,9 @@ void PlotLua::readFile(const std::string& path)
 
 void PlotLua::readStream(std::istream& s)
 {
-
-    std::unique_ptr<Json::Reader> rdr(new Json::Reader());
     Json::Value   jplot;
     try {
-        if (!rdr->parse(s,jplot))
-        {
-            wxLogMessage("Json parse error");
-            return;
-        }
+        s >> jplot;
         readJson(jplot);
     }
     catch(std::exception& ex)

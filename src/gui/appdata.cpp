@@ -170,9 +170,7 @@ void AppData::readUserConfig()
 
     std::ifstream ifs(jpath);
 
-    Json::Reader jr;
-
-    jr.parse(ifs,user_);
+    ifs >> user_;
 
 }
 
@@ -217,9 +215,7 @@ void AppData::readConfig()
 
     std::ifstream injson(jsonPath);
 
-    Json::Reader    jsonrdr;
-
-    jsonrdr.parse(injson, root_);
+    injson >> root_;
 
 }
 void AppData::readScript(const std::string& path)
