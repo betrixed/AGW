@@ -1140,9 +1140,9 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
             " FROM gisstemp R, gissyear B "
             " WHERE B.year >= ? and B.year <= ? "
             " and R.dataid = B.dataid and B.measure = ?"
-            " and B.stationid in ( Select stationid from memberstation WHERE setid = ? )"
+            " and B.stationid in ( SELECT stationid from memberstation WHERE setid = ? )"
             " group by B.stationid, R.monthid ) A"
-    " WHERE Y.stationid = A.stationid and A.monthid = Y.monthid"
+    " WHERE Y.stationid = A.stationid and A.monthid = T.monthid"
     " and Y.measure = ?"
     " and Y.dataid = T.dataid";
 
@@ -1204,17 +1204,9 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
     int choice = mMeasure->GetSelection();
     if (choice == wxNOT_FOUND)
         choice = 0;
-    std::string label;
 
-    std::string measure = mMeasure->GetString(choice).ToStdString();
-    {
-        std::stringstream ss;
-
-        ss << setName << " " << measure;
-
-        label = ss.str();
-
-    }
+    MTEMP measure = (MTEMP) choice;
+    std::string label = GissYear::measureStr(measure);
 
     int32_t minYear, maxYear;
     SeriesPtr ydata;
@@ -1229,9 +1221,9 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
         Statement qy(db_, sql);
         qy.bind(baseYearFrom,1);
         qy.bind(baseYearTo,2);
-        qy.bind(measure, 3);
+        qy.bind((long)measure, 3);
         qy.bind(setName, 4);
-        qy.bind(measure, 5);
+        qy.bind((long) measure, 5);
 
         while (qy.next())
         {
@@ -1256,7 +1248,7 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
                 wxLogMessage("New Plot %s", label.c_str());
                 ydata = std::make_shared<FloatSeries>();
 
-                ydata->setLabel(measure);
+                ydata->setLabel(label);
 
                 xdata = std::make_shared<FloatSeries>();
                 xdata->setLabel("year");
@@ -1424,15 +1416,15 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
     }
 
      std::string select_sql =
-    " SELECT AVG(T.value - A.base) as anomoly, Y.year as year, Y.monthid"
+    " SELECT AVG(T.value - A.base) as anomoly, Y.year as year, T.monthid as month"
     "   FROM gissyear Y, gisstemp T,"
-        " ( SELECT B.stationid, B.monthid, AVG(R.value) as base"
+        " ( SELECT B.stationid, R.monthid, AVG(R.value) as base"
             " FROM gisstemp R, gissyear B "
             " WHERE B.year >= ? and B.year <= ? "
             " and R.dataid = B.dataid and B.measure = ?"
-            " and B.stationid in ( Select stationid from memberstation WHERE setid = ? )"
-            " group by B.stationid, B.monthid ) A"
-    " WHERE Y.stationid = A.stationid and A.monthid = Y.monthid"
+            " and B.stationid in ( SELECT stationid from memberstation WHERE setid = ? )"
+            " group by B.stationid, R.monthid ) A"
+    " WHERE Y.stationid = A.stationid and A.monthid = T.monthid"
     " and Y.measure = ?"
     " and Y.dataid = T.dataid";
 
@@ -1440,23 +1432,17 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
     {
         std::stringstream querySql;
 
-        querySql << select_sql << " and Y.year in ( " << yearlist << " ) " << " GROUP by Y.year, Y.monthid ORDER BY year, monthid";
+        querySql << select_sql << " and Y.year in ( " << yearlist << " ) "
+                << " GROUP by Y.year, T.monthid ORDER BY year, month";
         sql = querySql.str();
     }
     int choice = mMeasure2->GetSelection();
+
     if (choice == wxNOT_FOUND)
         choice = 0;
-    std::string label;
 
-    std::string measure = mMeasure->GetString(choice).ToStdString();
-    {
-        std::stringstream ss;
-
-        ss << setName << " " << measure;
-
-        label = ss.str();
-
-    }
+    MTEMP measure = (MTEMP) choice;
+    //std::string label = GissYear::measureStr(measure);
 
     double anomaly;
     int    year;
@@ -1475,9 +1461,9 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
         Statement qy(db_, sql);
         qy.bind(baseYearFrom,1);
         qy.bind(baseYearTo,2);
-        qy.bind(measure, 3);
+        qy.bind((long)measure, 3);
         qy.bind(setName, 4);
-        qy.bind(measure, 5);
+        qy.bind((long)measure, 5);
 
         while (qy.next())
         {
@@ -1556,19 +1542,19 @@ void StationSets::OnTimeSeriesClick( wxCommandEvent& event )
     std::vector<uint>       zeroMonth;
 
     // using same statement with different bindings for each query
-    Statement qtemp(db_, "select B.year, B.monthid, A.value from gissyear B"
+    Statement qtemp(db_, "select B.year, A.monthid, A.value from gissyear B"
                             " join gisstemp A on A.dataid = B.dataid"
                             " where B.stationid = ? and B.measure = ?"
                             " order by year, monthid");
 
-    std::vector<std::string> measures;
+    std::vector<std::uint32_t> measures;
 
     if (mTAVG->IsChecked())
-        measures.push_back("TAVG");
+        measures.push_back(TAVG);
     if (mTMIN->IsChecked())
-        measures.push_back("TMIN");
+        measures.push_back(TMIN);
     if (mTMAX->IsChecked())
-        measures.push_back("TMAX");
+        measures.push_back(TMAX);
 
     uint minMonth = UINT_MAX;
     uint maxMonth = 0;
@@ -1581,15 +1567,15 @@ void StationSets::OnTimeSeriesClick( wxCommandEvent& event )
             auto fin = measures.end();
             for( ; mit != fin; mit++)
             {
-                std::string theMeasure = (*mit);
+                auto theMeasure = (*mit);
                 qtemp.bind(loc->stationid, 1);
-                qtemp.bind(theMeasure,2);
+                qtemp.bind((long)theMeasure,2);
 
                 SeriesPtr data = std::make_shared<FloatSeries>();
                 timeData.push_back(data);
                 FloatSeries& fref = *(static_cast<FloatSeries*> (data.get()));
                 std::stringstream ss;
-                ss << theMeasure << " " << loc->name_;
+                ss << GissYear::measureStr(MTEMP(theMeasure)) << " " << loc->name_;
                 data->setLabel(ss.str());
                 uint zeroMonthIndex = 0;
                 uint lastGoodIndex = 0;

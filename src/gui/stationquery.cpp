@@ -467,7 +467,7 @@ void StationQuery::LoadFromJSON(const Json::Value& root)
             if (ct > 0)
                     mSQL << " AND ";
             ct++;
-            mSQL << "(" << "codeId in (SELECT codeId from gissloc ORDER BY RANDOM() LIMIT "
+            mSQL << "(" << "stationid in (SELECT stationid from gissloc ORDER BY RANDOM() LIMIT "
                     << randomCt << "))";
         }
 
@@ -482,7 +482,7 @@ void StationQuery::LoadFromJSON(const Json::Value& root)
             if (ct > 0)
                     mSQL << " AND ";
             ct++;
-            mSQL << "(codeId in (SELECT G.codeId from gissloc G, country C"
+            mSQL << "(stationid in (SELECT G.stationid from gissloc G, country C"
                     " where Contains(C.Geometry,G.Geometry)"
                     "and C.LONG_NAME = '" << value << "'))";
         }

@@ -79,7 +79,7 @@ public:
 	bool loadByStation(SqliteDB &db, const std::string& id, uint32_t year, uint32_t measure);
 	bool save(SqliteDB &db);
     bool updateValuesCt(SqliteDB &db, DBRowId id, uint32_t ct);
-
+    static std::string measureStr(MTEMP val);
 };
 
 class MonthTemp {

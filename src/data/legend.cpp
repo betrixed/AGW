@@ -90,7 +90,7 @@ void LegendLayer::drawInBox(wxDC& dc,const wxRect& box)
         wxPenStyle pstyle = indexToPenStyle(dl.lineStyle_);
         int half = height/2;
 
-        if (dl.lineWidth_ > 0 && pstyle != wxPENSTYLE_TRANSPARENT)
+        if ((dl.lineWidth_ > 0) && (pstyle != wxPENSTYLE_TRANSPARENT))
         {
 
 

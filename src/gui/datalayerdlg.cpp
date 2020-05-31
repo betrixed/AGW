@@ -24,7 +24,7 @@
 
 ////@begin includes
 #include "wx/imaglist.h"
-#include "../include/linestylecombo.h"
+#include "linestylecombo.h"
 ////@end includes
 #include "plotxy.h"
 #include "datalayerdlg.h"
@@ -245,7 +245,7 @@ void DataLayerDlg::CreateControls()
     wxStaticText* itemStaticText29 = new wxStaticText( itemPanel24, wxID_STATIC, _("Thickness"), wxDefaultPosition, wxDefaultSize, 0 );
     itemFlexGridSizer26->Add(itemStaticText29, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    mLineThick = new wxSpinCtrl( itemPanel24, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 4, 1 );
+    mLineThick = new wxSpinCtrl( itemPanel24, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 4, 1 );
     itemFlexGridSizer26->Add(mLineThick, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxStaticText* itemStaticText31 = new wxStaticText( itemPanel24, wxID_STATIC, _("Colour"), wxDefaultPosition, wxDefaultSize, 0 );

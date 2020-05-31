@@ -56,6 +56,10 @@
 		<Linker>
 			<Add option="`wx-config --libs all`" />
 		</Linker>
+		<ExtraCommands>
+			<Add before="echo $PATH" />
+			<Add before="which wx-config" />
+		</ExtraCommands>
 		<Unit filename="LICENSE.txt" />
 		<Unit filename="README.md" />
 		<Unit filename="src/data/app_lua.cpp" />

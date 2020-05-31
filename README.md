@@ -33,4 +33,7 @@ Progress
 2016/03/30 - HL 1987 algorithm - Fixed bug where number of threads changes result weightings
             - Station sort ordering was reversed, database query row order fixed.
 
+2019/03/27 -- Cloned archive to check compilability and latest climate data, on Linux
+
+
 

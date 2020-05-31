@@ -198,6 +198,19 @@ bool GissYear::loadById(SqliteDB &sdb, DBRowId id)
     return false;
 }
 
+// static
+std::string  GissYear::measureStr(MTEMP val)
+{
+    switch(val) {
+case TAVG:
+        return std::string("Average month temperature");
+case TMIN:
+    return std::string("Minimum month temperature");
+case TMAX:
+    return std::string("Maximum month temperature");
+    }
+    return std::string("Invalid MTEMP for measureStr");
+}
 // save doesn't know if the record already exists or not and tries an insert or replace
 bool GissYear::save(SqliteDB &sdb)
 {
@@ -211,6 +224,7 @@ bool GissYear::save(SqliteDB &sdb)
     if (result) {
         dataid = sdb.lastRowId();
     }
+    return result;
 }
  // Update assumes record exists
 bool GissYear::updateValuesCt(SqliteDB &sdb, DBRowId id, uint32_t ct)

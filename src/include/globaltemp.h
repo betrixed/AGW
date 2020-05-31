@@ -36,7 +36,7 @@ namespace agw {
         bool asMonthAnomaly(const std::vector<float>& monthAvg,  FloatSeries& rTemp, DateYearMonth& rYear);
 
                 // initialize from query
-        void initFromLocation(Database& db, DBRowId locId, int yearStart = -1, int yearEnd = -1);
+        void initFromLocation(Database& db, const std::string& stationid, int yearStart = -1, int yearEnd = -1);
 
         void add(int year, int month, double value);
 
@@ -84,12 +84,12 @@ namespace agw {
     // Holder of cached station data
     class MergeSite {
     public:
-        DBRowId     codeId_;
+        std::string stationid;
         int         yearsCt_;
         TSPtr    data_;
         double      long_;
         double      lat_; // cache location of this
-        MergeSite(DBRowId id);
+        MergeSite(const std::string& id);
 
     };
     typedef std::shared_ptr<MergeSite> SitePtr;
@@ -149,7 +149,7 @@ namespace agw {
         wxCriticalSection       critQ_;
         std::deque<AreaPtr>     jobList_;    // to be processed
         std::vector<AreaPtr>    areaList_;   // all of them
-        std::unordered_map<DBRowId,SitePtr> site_cache_;
+        std::unordered_map<std::string,SitePtr> site_cache_;
         TrendPtr                h_south;
         TrendPtr                h_north;
         TrendPtr                globe;
@@ -174,7 +174,7 @@ namespace agw {
 
         void openDB(const std::string& path);
 
-        bool getSite(DBRowId site, SitePtr& setMe);
+        bool getSite(const std::string& site, SitePtr& setMe);
         bool getArea(AreaPtr& doArea);
         void fillCache();
 

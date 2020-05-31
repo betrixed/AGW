@@ -245,17 +245,17 @@ void MergeSeries::setWeight(double nWeight)
         weight_.assign(n, nWeight);
 }
 // year range inclusive if set
-void TimeSeries::initFromLocation(Database& db, DBRowId locId,
+void TimeSeries::initFromLocation(Database& db, const std::string& stationId,
                     int yearStart, int yearEnd)
 {
 
    std::stringstream yss;
 
-   yss << "select Y.Year, T.MonthId, T.Value"
+   yss << "select Y.year, T.monthid, T.value"
         " from gisstemp T, gissyear Y"
-        " where Y.codeId = T.codeId"
-        " and Y.locId = ?"
-        " and Y.measure = 'TAVG'";
+        " where Y.dataid = T.dataid"
+        " and Y.stationid = ?"
+        " and Y.measure = 0";
 
     if (yearStart >= 0)
     {
@@ -265,11 +265,11 @@ void TimeSeries::initFromLocation(Database& db, DBRowId locId,
     {
         yss << " and Y.year <= ?";
     }
-    yss << " order by Year, MonthId";
+    yss << " order by year, monthid";
 
     Statement td(db, yss.str());
 
-    td.bindRowId(locId,1);
+    td.bind(stationId,1);
     if (yearStart >= 0)
     {
         td.bind(long(yearStart),2);
@@ -438,9 +438,9 @@ bool TimeSeries::averageDiff(const TimeSeries& mdata, int& commonYears, double& 
     return false;
 }
 
-bool getSite(DBRowId site, SitePtr& setMe);
+bool getSite(const std::string& site, SitePtr& setMe);
 
-MergeSite::MergeSite(DBRowId id) : codeId_(id), yearsCt_(0)
+MergeSite::MergeSite(const std::string& id) : stationid(id), yearsCt_(0)
 {
 }
 
@@ -457,27 +457,27 @@ bool compareYears(FoundPtr const& s1, FoundPtr const&  s2)
 std::string stationQuery(int startYear, int minYears)
 {
     std::stringstream ss;
-    ss << "select count(Y.year) as totalYears, Y.locId, S.Longitude, S.Latitude"
-               " from gissyear Y join gissloc S on S.codeId = Y.locId"
-               " where Y.measure = 'TAVG'"
+    ss << "select count(Y.year) as totalyears, S.stationid, S.longt, S.latit"
+               " from gissyear Y join gissloc S on S.stationid = Y.stationid"
+               " where Y.measure = 0"
            << " and Y.year >= " << startYear
-           << " group by Y.locId, S.Latitude, S.Longitude"
-           << " having totalYears >=  " <<  minYears
-           << " order by totalYears desc";
+           << " group by Y.stationid, S.latit, S.longt"
+           << " having totalyears >=  " <<  minYears
+           << " order by totalyears desc";
     return ss.str();
 }
 std::string radiusQuery(double clong, double clat, double cradius)
 {
     std::stringstream ss;
-    ss << "select distinct A.codeID,"
+    ss << "select distinct A.stationid,"
           " ST_Distance(A.Geometry, MakePoint("
           << clong
           << ","
           << clat
-          << ", 4326)) as SDistance"
-            " from gissloc A where SDistance < "
+          << ", 4326)) as sdistance"
+            " from gissloc A where sdistance < "
           << cradius
-          << " order by SDistance";
+          << " order by sdistance";
 
           return ss.str();
 }
@@ -725,7 +725,7 @@ GlobalTempArea::GlobalTempArea(WorkThread* myworker) : worker_(myworker)
     gridLat_ = AppData::instance().getGlobal("grid80");
 }
 
-bool GlobalTempArea::getSite(DBRowId site, SitePtr& setMe)
+bool GlobalTempArea::getSite(const std::string& site, SitePtr& setMe)
 {
     auto zit = site_cache_.find(site);
     if (zit != site_cache_.end())
@@ -785,7 +785,7 @@ AreaThread::Entry()
 
                 while(stm.next())
                 {
-                    DBRowId id = stm.getRowId(0);
+                    std::string id = stm.getText(0);
                     SitePtr  sp_1;
                     if (gta_->getSite(id, sp_1))
                     {
@@ -900,20 +900,20 @@ void GlobalTempArea::fillCache()
     while(ystm.next())
     {
         int yearsCt = ystm.getInt32(0);
-        DBRowId locId = ystm.getRowId(1);
+        std::string stationid = ystm.getText(1);
 
-        SitePtr site = std::make_shared<MergeSite>(locId);
+        SitePtr site = std::make_shared<MergeSite>(stationid);
         site->yearsCt_ = yearsCt;
         site->long_ = ystm.getDouble(2);
         site->lat_ = ystm.getDouble(3);
 
         TSPtr tp = std::make_shared<TimeSeries>();
 
-        tp->initFromLocation(db_, locId, 1880); // TODO - allow edit of series minimum year
+        tp->initFromLocation(db_, stationid, 1880); // TODO - allow edit of series minimum year
 
         site->data_ = tp;
 
-        site_cache_.insert(std::pair<DBRowId, SitePtr>(locId,site));
+        site_cache_.insert(std::pair<std::string, SitePtr>(stationid,site));
         rowct++;
         //this->UpdateProgress( int(100.0 * rowct / 10000.0));
     }
