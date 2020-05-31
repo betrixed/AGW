@@ -192,7 +192,7 @@ struct sdb_vm {
 
 /* called with db,sql text on the lua stack */
 static sdb_vm *newvm(lua_State *L, sdb *db) {
-    sdb_vm *svm = (sdb_vm*)lua_newuserdata(L, sizeof(sdb_vm));
+    sdb_vm *svm = (sdb_vm*)lua_newuserdatauv(L, sizeof(sdb_vm), 1);
 
     luaL_getmetatable(L, sqlite_vm_meta);
     lua_setmetatable(L, -2);        /* set metatable */
@@ -613,7 +613,7 @@ static int dbvm_bind_names(lua_State *L) {
 ** Creates a new 'table' and leaves it in the stack
 */
 static sdb *newdb (lua_State *L) {
-    sdb *db = (sdb*)lua_newuserdata(L, sizeof(sdb));
+    sdb *db = (sdb*)lua_newuserdatauv(L, sizeof(sdb), 1);
     db->L = L;
     db->db = NULL;  /* database handle is currently `closed' */
     db->func = NULL;
@@ -731,7 +731,7 @@ typedef struct {
 } lcontext;
 
 static lcontext *lsqlite_make_context(lua_State *L) {
-    lcontext *ctx = (lcontext*)lua_newuserdata(L, sizeof(lcontext));
+    lcontext *ctx = (lcontext*)lua_newuserdatauv(L, sizeof(lcontext),1);
     lua_rawgeti(L, LUA_REGISTRYINDEX, sqlite_ctx_meta_ref);
     lua_setmetatable(L, -2);
     ctx->ctx = NULL;

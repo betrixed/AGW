@@ -99,8 +99,9 @@ void DataLayer::renderDC(wxDC& dc, PixelWorld& px)
 }
 void LineFit::renderDC(wxDC& dc, PixelWorld& px)
 {
-    if (lineWidth_ <= 0)
+    if (lineWidth_ <= 0) {
         return;
+    }
 	Series& xdata = *(xdata_);
 	Series& ydata = *(ydata_);
 	auto savepen = dc.GetPen();

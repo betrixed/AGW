@@ -7,7 +7,7 @@
 
 #include "plotptr.h"
 #include "plotsymbol.h"
-#include "lua.hpp"
+//#include "lua.hpp"
 // first 4 are middle of borders
 // second 4 are corners
 

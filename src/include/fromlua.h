@@ -1,8 +1,13 @@
 #ifndef H_FromLuaH
 #define H_FromLuaH
 
-#include <lua.hpp>
+//#include <lua.hpp>
+extern "C" {
+#include "src/lua/lua.h"
+#include "src/lua/lauxlib.h"
+}
 #include <string>
+
 
 #define FPUNUSED(x)
 

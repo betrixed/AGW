@@ -12,8 +12,8 @@
 #include <wx/datetime.h>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <exception>
-#include <lua.hpp>
-
+//#include <lua.hpp>
+#include "fromlua.h"
 
 namespace agw {
     class SeriesException : public std::exception {

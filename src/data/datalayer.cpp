@@ -272,7 +272,7 @@ static LineFit* PlotLayer_sptrLineFit(lua_State* L)
 PlotLayer_sptr* LineFit::pushLineFit(lua_State* L)
 {
     size_t nbytes = sizeof(PlotLayer_sptr);
-    void *a = lua_newuserdata(L, nbytes);
+    void *a = lua_newuserdatauv(L, nbytes, 1);
 
     PlotLayer_sptr* mem = new (a) PlotLayer_sptr();  // new blank shared pointer placement syntax=
     luaL_setmetatable(L, LF_LUA);
@@ -303,7 +303,7 @@ int LineFit::getYOffset(lua_State* L)
 PlotLayer_sptr* DataLayer::pushLayer(lua_State* L)
 {
     size_t nbytes = sizeof(PlotLayer_sptr);
-    void *a = lua_newuserdata(L, nbytes);
+    void *a = lua_newuserdatauv(L, nbytes, 1);
 
     PlotLayer_sptr* mem = new (a) PlotLayer_sptr();  // new blank shared pointer placement syntax=
     luaL_setmetatable(L, DL_LUA);
