@@ -104,6 +104,9 @@ public:
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_GO_DERIVE
     void OnGoDeriveClick( wxCommandEvent& event );
 
+    /// wxEVT_COMMAND_RADIOBOX_SELECTED event handler for ID_SEL_BASE
+    void OnSelBaseSelected( wxCommandEvent& event );
+
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_PLUS_YEAR
     void OnPlusYearClick( wxCommandEvent& event );
 
@@ -150,6 +153,8 @@ public:
     wxTextCtrl* mYearFrom;
     wxTextCtrl* mYearTo;
     wxChoice* mMeasure2;
+    wxRadioBox* radboxReal;
+    wxStaticBox* boxBaseDiff;
     wxTextCtrl* mBaseStart2;
     wxTextCtrl* mBaseEnd2;
     wxTextCtrl* mYearToAdd;
@@ -189,6 +194,8 @@ public:
         ID_GO_DERIVE = 10013,
         ID_TAB_YEAR = 10022,
         ID_CHOICE_M2 = 10023,
+        ID_SEL_BASE = 10041,
+        wxID_BASE_DIFF = 10043,
         ID_BASE_START2 = 10024,
         ID_BASE_END2 = 10025,
         ID_YEAR_TO_ADD = 10026,
