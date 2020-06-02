@@ -5,7 +5,7 @@
 #include <wx/filefn.h>
 #include <cstdint>
 #include <sstream>
-
+#include <map>
 
 /*
 spatialite setup:
@@ -29,13 +29,18 @@ create table cntrylist as select distinct country from stationcountry;
 */
 const std::string LocCreateSql =
 "CREATE TABLE gissloc ("
-    "stationid CHAR(11) NOT NULL,"
+    "id INTEGER PRIMARY KEY,"
+    "stationid CHAR(11) NOT NULL UNIQUE,"
     "latit REAL,"
     "longt REAL,"
     "elevt REAL,"
     "name VARCHAR(50),"
-    "PRIMARY KEY (stationid)"
+    "startdate DATE,"
+    "enddate DATE"
 ");";
+
+const std::string AddXYSql = "select AddGeometryColumn('gissloc', 'Geometry', 4326, 'POINT', 'XY')";
+
 const std::string SetCreateSql =
 "CREATE TABLE stationset ("
     "setid VARCHAR(50) PRIMARY KEY,"
@@ -49,22 +54,25 @@ const std::string SetBelongSql =
     "PRIMARY KEY (stationid,setid)"
 ");";
 
-/** hold number of valid values for a year */
+/** hold number of valid values for a year.
+dataid allows link to gisstemp.
+Alternate unique key is sid,year,measure.
+ */
 const std::string GissYearSQL  =
 "CREATE TABLE gissyear ("
      "dataid    INTEGER PRIMARY KEY,"
-     "stationid CHAR(11) NOT NULL,"
+     "sid       INTEGER NOT NULL,"
      "year      INTEGER NOT NULL,"
      "measure   INTEGER NOT NULL,"  // 0 - avg, 1 = min, 2 = max
-     "valuesct    INTEGER NOT NULL"
+     "valuesct  INTEGER NOT NULL,"  // a year might not (yet) have all months
+     "UNIQUE(sid, year, measure)"
 ");";
 
-const std::string GissYearIndex = "create unique index data_ix on gissyear (stationid, year, measure);";
 
 const std::string MonthTempCreateSql =
 "CREATE TABLE gisstemp ("
     "dataid    INTEGER NOT NULL,"
-    "monthid     INTEGER NOT NULL,"
+    "monthid   INTEGER NOT NULL,"
     "value     REAL,"
     "dmflag CHAR(1),"
     "qcflag CHAR(1),"
@@ -74,29 +82,55 @@ const std::string MonthTempCreateSql =
 
 const std::string ZeroBaseSql =
 "CREATE TABLE zerobase ("
-    "stationid CHAR(11) NOT NULL,"
-    "measure  INTEGER NOT NULL,"  // 0 - avg, 1 = min, 2 = max
+    "sid         INTEGER NOT NULL,"
     "monthid     INTEGER NOT NULL," // 1-12 AVG,   13-24 MIN, 25-36 MAX
-    "average    REAL,"
+    "measure     INTEGER NOT NULL,"  // 0 - avg, 1 = min, 2 = max
+    "average     REAL,"
     "valuesct    REAL,"
-    "PRIMARY KEY (stationid,monthid)"
+    "PRIMARY KEY (sid, monthid,measure)"
 ");";
 
-const std::string StationCreateSql =
-"CREATE TABLE station ("
-    "id INTEGER PRIMARY KEY,"
-    "name  TEXT NOT NULL,"
-    "lat   REAL,"
-    "long  REAL,"
-    "altit REAL,"
-    "startdate DATE,"
-    "enddate DATE"
+const std::string DailyCreateSql =
+"CREATE TABLE daily ("
+    "sid     INTEGER NOT NULL,"
+    "obsdate DATE NOT NULL,"
+    "tmin    REAL NOT NULL,"
+    "tmax    REAL NOT NULL,"
+    "pptn    REAL NOT NULL,"
+    "PRIMARY KEY(sid, obsdate)"
 ");";
+
+
+static std::vector< std::string > sql_names =
+                    {"gissloc", "addxyindex", "stationset", "memberstation", "gissyear" ,  "gisstemp",
+                   "zerobase",  "daily", "add_geometry", "year_index" };
+
+static std::map<std::string, std::string> db_named_sql =
+   { {"gissloc",LocCreateSql},
+   { "addxyindex", AddXYSql},
+        {"stationset",SetCreateSql},
+        {"memberstation",SetBelongSql},
+        {"gissyear",GissYearSQL} ,
+        {"gisstemp",MonthTempCreateSql},
+                   {"zerobase",ZeroBaseSql},
+                   {"daily",DailyCreateSql} };
+
 
 Database::Database()
 {
+
 }
 
+void Database::execNamedSQL(const std::string& name) {
+    auto sql = db_named_sql[name];
+    execute_or_throw(sql);
+}
+
+void Database::ensureTableExists(const std::string& name) {
+    if (!tableExists(name)) {
+        execNamedSQL(name);
+    }
+}
 void Database::init()
 {
     if (this->isOpen())
@@ -107,11 +141,10 @@ void Database::init()
         {
 			try {
 				begin();
-				execute(LocCreateSql);
-				execute("select AddGeometryColumn('gissloc', 'Geometry', 4326, 'POINT', 'XY')");
-				execute(GissYearSQL);
-				execute(GissYearIndex);
-				execute(MonthTempCreateSql);
+				execNamedSQL("gissloc");
+				execNamedSQL("addxyindex");
+				execNamedSQL("gissyear");
+				execNamedSQL("gisstemp");
 				if (commit())
 					wxLogMessage("GISS Tables Created");
 			}
@@ -121,12 +154,9 @@ void Database::init()
 				wxLogMessage("DBException: %s", ex->msg());
 			}
         }
-        if (!tableExists("stationset"))
-        {
-            execute(SetCreateSql);
-            execute(SetBelongSql);
-            wxLogMessage("Station Sets installed");
-        }
+        ensureTableExists("stationset");
+        ensureTableExists("memberstation");
+        wxLogMessage("Station Sets installed");
 
     }
     else {
@@ -183,13 +213,13 @@ bool MonthTemp::update(SqliteDB &sdb)
 // Load a single record from setId (if it exists)
 bool GissYear::loadById(SqliteDB &sdb, DBRowId id)
 {
-    Statement query(sdb, "select stationid, year,measure,valuesct from gissyear where dataid = ? ");
+    Statement query(sdb, "select sid, year,measure,valuesct from gissyear where dataid = ? ");
     query.bindRowId(id,1);
 
     if (query.execute())
     {
         dataid = id;
-        query.get(0, this->stationid);
+        query.get(0, this->sid);
         this->year = query.getInt32(1);
         this->measure = query.getInt32(2);
         this->valuesct = query.getInt32(3);
@@ -214,9 +244,9 @@ case TMAX:
 // save doesn't know if the record already exists or not and tries an insert or replace
 bool GissYear::save(SqliteDB &sdb)
 {
-    Statement query(sdb, "insert or replace into gissyear(stationid,year,measure,valuesct) values (?,?,?,?)");
+    Statement query(sdb, "insert or replace into gissyear(sid,year,measure,valuesct) values (?,?,?,?)");
 
-    query.bind(stationid,1);
+    query.bindRowId( this->sid,1);
     query.bind((long) this->year,2);
     query.bind((long) this->measure,3);
     query.bind((long) this->valuesct,4);
@@ -252,6 +282,24 @@ bool GissLocStats::update(SqliteDB &sdb)
    return false;
 }
 
+ DBRowId
+ Station4::GetPrimaryKey(SqliteDB& sdb, const std::string& stationId)
+ {
+    DBRowId result;
+
+    Statement query(sdb, "select id from gissloc where stationid = ?");
+    query.bind(stationId,1);
+    if (query.next()) {
+        query.get(0,result);
+        return result;
+    }
+    std::stringstream ss;
+    ss << "insert into gissloc (stationid) values (?)";
+    Statement nrow(sdb,ss.str());
+    nrow.bind(stationId,1);
+    nrow.execute_or_throw();
+    return sdb.lastRowId();
+ }
 
 void Station4::setId(const std::string& stationId)
 {
@@ -260,14 +308,19 @@ void Station4::setId(const std::string& stationId)
 
 bool Station4::save(SqliteDB &sdb)
 {
-
+    if (this->id_ == 0) {
+        this->id_ = Station4::GetPrimaryKey(sdb, this->stationid);
+    }
     std::stringstream ss;
 
-    ss << "insert or replace into gissloc("
-        "stationid, latit,longt,elevt,name, Geometry"
-		") values (?,?,?,?,?,"
-		<< "MakePoint(" << this->long_ << "," << this->lat_ << ",4326)"
-		<< ")";
+    ss << "update gissloc set stationid = ? , latit = ?, longt = ?, elevt = ?,"
+        " name = ?, startdate = ?, enddate = ?,";
+    ss << " Geometry = MakePoint(" << this->long_ << "," << this->lat_ << ",4326)";
+    ss << " where id = ? ";
+
+//		") values (?,?,?,?,?,"
+//		<< "MakePoint(" << this->long_ << "," << this->lat_ << ",4326)"
+//		<< ")";
 
     Statement query(sdb,ss.str());
     query.bind(this->stationid,1);
@@ -275,6 +328,9 @@ bool Station4::save(SqliteDB &sdb)
 	query.bind(this->long_,3);
 	query.bind(this->elev_,4);
 	query.bind(this->name_,5);
+	query.bind(this->startDate_,6);
+	query.bind(this->endDate_,7);
+	query.bindRowId(this->id_,8);
     return query.execute();
 }
 
@@ -285,11 +341,14 @@ bool Station4::deleteSelf(Station4* prec)
 }
 bool Station4::set(Statement& qy)
 {
-  qy.get(0,this->stationid);
-  qy.get(1,this->lat_);
-  qy.get(2,this->long_);
-  qy.get(3,this->elev_);
-  qy.get(4,this->name_);
+  qy.get(0,this->id_);
+  qy.get(1,this->stationid);
+  qy.get(2,this->lat_);
+  qy.get(3,this->long_);
+  qy.get(4,this->elev_);
+  qy.get(5,this->name_);
+  this->startDate_ = qy.getDateTime(6);
+  this->endDate_ = qy.getDateTime(7);
   return true;
 }
 

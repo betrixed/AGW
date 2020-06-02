@@ -173,6 +173,10 @@ wxThread::ExitCode ImportGissThread::Entry()
     sdb_.open();
 
     Database::AutoClose onScopeExit(sdb_);
+
+    DBRowId currentStationId;
+    std::string currentStationCode;
+
     int updateCt = 0;
     try {
         wxTextInputStream   text(input_stream, ',');
@@ -198,6 +202,10 @@ wxThread::ExitCode ImportGissThread::Entry()
                 auto line = chars.ToStdString();
                 auto stationCode = line.substr(0,11);
 
+                if (stationCode != currentStationCode) {
+                    currentStationCode = stationCode;
+                    currentStationId = Station4::GetPrimaryKey(sdb_,stationCode);
+                }
                 auto yearText = line.substr(11,4);
                 long yearNum = std::stol(yearText);
 
@@ -218,7 +226,11 @@ wxThread::ExitCode ImportGissThread::Entry()
                 try {
                     // make foreigns key for station-year
                     GissYear yr;
-                    yr.stationid = stationCode;
+                    // problem stationCode is a string.
+                    // SQL record gissloc primary key is integer.
+                    //
+                    // Need to look up primary key, or create a record
+                    yr.sid = currentStationId;
                     yr.year = yearNum;
                     yr.measure = startIX;
                     yr.valuesct = 0;
@@ -584,8 +596,10 @@ static void showRow(wxArrayString& row)
  {
     return this->ap_->getDB();
  }
+
  bool MainFrame::ImportCSV(const wxString& filepath)
  {
+     return false;
  }
 
 
@@ -823,8 +837,6 @@ void  MainFrame::EndDBProgress()
 			rec.long_ = std::stod(longitudeStr);
 			rec.elev_ = std::stod(elevationStr);
 			rec.name_ = trim(nameStr);
-			long temp;
-
 
             try {
                 if (lineCount == 0)

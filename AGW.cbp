@@ -16,6 +16,7 @@
 					<Add option="-g" />
 					<Add directory="src/include" />
 					<Add directory="src/jsoncpp" />
+					<Add directory="include" />
 				</Compiler>
 				<Linker>
 					<Add library="sqlite3" />
@@ -35,6 +36,7 @@
 					<Add option="-std=c++14" />
 					<Add directory="src/include" />
 					<Add directory="src/jsoncpp" />
+					<Add directory="include" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -64,6 +66,7 @@
 		<Unit filename="README.md" />
 		<Unit filename="src/data/app_lua.cpp" />
 		<Unit filename="src/data/autoaxis.cpp" />
+		<Unit filename="src/data/dailyobs.cpp" />
 		<Unit filename="src/data/database.cpp" />
 		<Unit filename="src/data/datalayer.cpp" />
 		<Unit filename="src/data/fromlua.cpp" />
@@ -105,6 +108,7 @@
 		<Unit filename="src/gui/selectseries.cpp" />
 		<Unit filename="src/gui/seriesframe.cpp" />
 		<Unit filename="src/gui/seriesgrid.cpp" />
+		<Unit filename="src/gui/stationdailydata.cpp" />
 		<Unit filename="src/gui/stationquery.cpp" />
 		<Unit filename="src/gui/stationsets.cpp" />
 		<Unit filename="src/gui/testwindowapp.cpp" />
@@ -115,6 +119,7 @@
 		<Unit filename="src/include/areaavgtempdlg.h" />
 		<Unit filename="src/include/axisdlg.h" />
 		<Unit filename="src/include/countrylistdlg.h" />
+		<Unit filename="src/include/dailyobs.h" />
 		<Unit filename="src/include/database.hpp" />
 		<Unit filename="src/include/datalayerdlg.h" />
 		<Unit filename="src/include/fromlua.h" />
@@ -150,6 +155,7 @@
 		<Unit filename="src/include/seriesframe.h" />
 		<Unit filename="src/include/seriesgrid.h" />
 		<Unit filename="src/include/sqlitedb.hpp" />
+		<Unit filename="src/include/stationdailydata.h" />
 		<Unit filename="src/include/stationquery.h" />
 		<Unit filename="src/include/stationsets.h" />
 		<Unit filename="src/include/stationtable.h" />

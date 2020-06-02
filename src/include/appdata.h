@@ -75,6 +75,7 @@ extern const wxString STD_PLOT_FILES;
         wxString          userDataDir_;  // where to put database and reference files.
         wxString          startWorkDir_;  // where we started
         wxString          appDataDir_;   // read-only data
+        wxString          ghcnDaily_; // path to daily data stationuser_user_ files
         Database          db_;          // original and main copy - can clone
         TestWindowApp*    theApp;       // The GUI boss
         MainFrame*        mFrame;       // GUI main window
@@ -152,6 +153,10 @@ extern const wxString STD_PLOT_FILES;
         {
             return lastScriptDir_;
         }
+
+        // access to user configuration values
+        std::string get(const std::string& key);
+        void set(const std::string& key, const std::string& value);
 
         void  readOSInfo();
 

@@ -42,16 +42,21 @@ No quality classifiers.
 */
 class Station4 {
 public:
+    DBRowId id_; // primary key
     std::string stationid; // original station code
     double  lat_;   //1
     double  long_;  //2
     double  elev_;
     std::string name_;
+    wxDateTime  startDate_;
+    wxDateTime  endDate_;
 
+    int colCount() const { return 8; }
 
-    int colCount() const { return 10; }
-
-	static DBRowId MakeRowId(const std::string& stationId);
+    Station4() : id_(0), lat_(0.0), long_(0.0), elev_(0.0)
+    {
+    }
+	static DBRowId GetPrimaryKey(SqliteDB& sdb, const std::string& stationId);
     void setId(const std::string& stationId);
 	bool save(SqliteDB &sdb);
     bool set(Statement& s);
@@ -67,12 +72,12 @@ enum MTEMP : uint32_t {
 class GissYear {
 public:
     DBRowId     dataid;
-    std::string stationid;
-    uint32_t measure;
-    uint32_t year;
-    uint32_t valuesct;
+    DBRowId     sid;
+    uint32_t    measure;
+    uint32_t    year;
+    uint32_t    valuesct;
 
-	GissYear() : measure(0), year(0), valuesct(0)
+	GissYear() : dataid(0), sid(0), measure(0), year(0), valuesct(0)
 	{
 	}
 	bool loadById(SqliteDB &db, DBRowId id);
@@ -91,6 +96,10 @@ public:
     char    qcflag;
     char    dsflag;
 
+    MonthTemp() : dataid(0), monthid(0), value(0.0), dmflag(0), qcflag(0), dsflag(0)
+        {
+
+        }
 	bool load(SqliteDB &db);
 	bool save(SqliteDB &db);
     bool update(SqliteDB &db);
@@ -105,15 +114,14 @@ public:
     Database();
     void init();
 
-    bool hasImportFile(const std::string& filepath);
-    bool importMaxTemp(wxCSV& rdr, const std::string& fileroot);
-	bool importMinTemp(wxCSV& rdr, const std::string& fileroot);
-    bool importRainfall(wxCSV& rdr, const std::string& fileroot);
-    bool getSeriesNames(std::vector<std::string>& values);
-    bool getSeriesData(long rowid, const std::string& tableName, std::vector<float>& data, std::vector<double>& xdata);
+    //bool hasImportFile(const std::string& filepath);
+    //bool getSeriesNames(std::vector<std::string>& values);
+    //bool getSeriesData(long rowid, const std::string& tableName, std::vector<float>& data, std::vector<double>& xdata);
 
     void generateBaseline();
 
+    void execNamedSQL(const std::string& name);
+    void ensureTableExists(const std::string& name);
 
     virtual bool open();
 

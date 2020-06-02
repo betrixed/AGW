@@ -75,6 +75,7 @@ BEGIN_EVENT_TABLE( StationSets, wxFrame )
     EVT_BUTTON( ID_MINUS_YEAR, StationSets::OnMinusYearClick )
     EVT_BUTTON( ID_PLOT_YEARS, StationSets::OnPlotYearsClick )
     EVT_BUTTON( ID_TIME_SERIES, StationSets::OnTimeSeriesClick )
+    EVT_BUTTON( ID_STATION_DATA, StationSets::OnStationDataClick )
 ////@end StationSets event table entries
 
 END_EVENT_TABLE()
@@ -186,7 +187,7 @@ void StationSets::CreateControls()
     menuBar->Append(menuDerive, _("View"));
     itemFrame1->SetMenuBar(menuBar);
 
-    wxSplitterWindow* itemSplitterWindow9 = new wxSplitterWindow( itemFrame1, ID_SPLIT_SETS, wxDefaultPosition, wxSize(100, 100), wxSP_3DBORDER|wxSP_3DSASH|wxNO_BORDER );
+    wxSplitterWindow* itemSplitterWindow9 = new wxSplitterWindow( itemFrame1, ID_SPLIT_SETS, wxDefaultPosition, wxSize(150, 100), wxSP_3DBORDER|wxSP_3DSASH|wxNO_BORDER );
     itemSplitterWindow9->SetMinimumPaneSize(0);
     itemSplitterWindow9->SetSashGravity(0.2);
 
@@ -199,7 +200,7 @@ void StationSets::CreateControls()
     itemBoxSizer11->Add(itemStaticText12, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxArrayString listSetStrings;
-    listSet = new wxListBox( itemPanel10, SET_LIST, wxDefaultPosition, wxDefaultSize, listSetStrings, wxLB_SINGLE|wxNO_BORDER );
+    listSet = new wxListBox( itemPanel10, SET_LIST, wxDefaultPosition, wxSize(200, -1), listSetStrings, wxLB_SINGLE|wxNO_BORDER );
     itemBoxSizer11->Add(listSet, 1, wxGROW|wxALL, 5);
 
     mRrun = new wxButton( itemPanel10, ID_RUN_QUERY, _("Update"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -352,20 +353,22 @@ void StationSets::CreateControls()
     mBaseEnd2 = new wxTextCtrl( itemStaticBoxSizer53->GetStaticBox(), ID_BASE_END2, _("1980"), wxDefaultPosition, wxDefaultSize, 0 );
     itemStaticBoxSizer53->Add(mBaseEnd2, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxStaticBox* itemStaticBoxSizer58Static = new wxStaticBox(itemPanel47, wxID_ANY, _("Add years to graph"));
+    wxStaticBox* itemStaticBoxSizer58Static = new wxStaticBox(itemPanel47, wxID_ANY, _("Year ranges"));
     wxStaticBoxSizer* itemStaticBoxSizer58 = new wxStaticBoxSizer(itemStaticBoxSizer58Static, wxHORIZONTAL);
     itemBoxSizer48->Add(itemStaticBoxSizer58, 1, wxGROW|wxALL, 5);
-    wxStaticText* itemStaticText59 = new wxStaticText( itemStaticBoxSizer58->GetStaticBox(), wxID_STATIC, _("Year"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemStaticBoxSizer58->Add(itemStaticText59, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer1 = new wxBoxSizer(wxVERTICAL);
+    itemStaticBoxSizer58->Add(itemBoxSizer1, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxStaticText* itemStaticText2 = new wxStaticText( itemStaticBoxSizer58->GetStaticBox(), wxID_STATIC, _("Range YYYY-YYYY"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer1->Add(itemStaticText2, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    mYearToAdd = new wxTextCtrl( itemStaticBoxSizer58->GetStaticBox(), ID_YEAR_TO_ADD, _("2015"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemStaticBoxSizer58->Add(mYearToAdd, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    mYearToAdd = new wxTextCtrl( itemStaticBoxSizer58->GetStaticBox(), ID_YEAR_TO_ADD, _("2010-2019"), wxDefaultPosition, wxSize(150, -1), 0 );
+    itemBoxSizer1->Add(mYearToAdd, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxButton* itemButton61 = new wxButton( itemStaticBoxSizer58->GetStaticBox(), ID_PLUS_YEAR, _("+"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
     itemStaticBoxSizer58->Add(itemButton61, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxArrayString mYearListStrings;
-    mYearList = new wxListBox( itemStaticBoxSizer58->GetStaticBox(), ID_LIST_YEARS, wxDefaultPosition, wxSize(80, -1), mYearListStrings, wxLB_SINGLE );
+    mYearList = new wxListBox( itemStaticBoxSizer58->GetStaticBox(), ID_LIST_YEARS, wxDefaultPosition, wxSize(150, -1), mYearListStrings, wxLB_SINGLE );
     itemStaticBoxSizer58->Add(mYearList, 0, wxGROW|wxALL, 5);
 
     wxButton* itemButton63 = new wxButton( itemStaticBoxSizer58->GetStaticBox(), ID_MINUS_YEAR, _("-"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
@@ -384,7 +387,7 @@ void StationSets::CreateControls()
     itemPanel66->SetSizer(itemBoxSizer67);
 
     wxBoxSizer* itemBoxSizer68 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer67->Add(itemBoxSizer68, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    itemBoxSizer67->Add(itemBoxSizer68, 0, wxGROW|wxALL, 5);
     wxButton* itemButton69 = new wxButton( itemPanel66, ID_TIME_SERIES, _("Plot Time Series"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
     itemBoxSizer68->Add(itemButton69, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
@@ -400,6 +403,12 @@ void StationSets::CreateControls()
     mTMAX->SetValue(false);
     itemBoxSizer68->Add(mTMAX, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
+    wxButton* itemButton1 = new wxButton( itemPanel66, ID_STATION_DATA, _("Station Daily Data"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer68->Add(itemButton1, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer67->Add(itemBoxSizer2, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+
     mGrid_ = new wxGrid( itemPanel66, ID_SET_GRID, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
     mGrid_->SetDefaultColSize(50);
     mGrid_->SetDefaultRowSize(25);
@@ -410,7 +419,7 @@ void StationSets::CreateControls()
 
     mBook_->AddPage(itemPanel66, _("Stations"));
 
-    itemSplitterWindow9->SplitVertically(itemPanel10, mBook_, 100);
+    itemSplitterWindow9->SplitVertically(itemPanel10, mBook_, 150);
 
 ////@end StationSets content construction
 }
@@ -1451,6 +1460,7 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
     std::vector<float> months = {1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.};
     std::vector<PlotLayer_sptr>  years;
     std::string sql;
+    std::string dropcommand;
 
     SeriesPtr xdata = std::make_shared<FloatSeries>(months,SeriesUnit::DATE_MONTH_NUM, "Month");
     SeriesPtr ydata;
@@ -1478,7 +1488,7 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
             base_name = ss.str();
         }
         // Drop existing anomaly table
-        std::string dropcommand = "drop table if exists " + base_name;
+        dropcommand = "drop table if exists " + base_name;
         db_.execute(dropcommand);
 
         // create temporary anomaly base table
@@ -1515,66 +1525,70 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
              "SELECT AVG(T.value) as TMEAN, COUNT(*) as NT, "
              " SUM(T.value) as SVAL, SUM(T.value * T.value) as SSVAL, "
             "  MIN(Y.year) as FROMYEAR, MAX(Y.year) as TOYEAR, T.monthid as month"
-            "   FROM gissyear Y, gisstemp T
+            "   FROM gissyear Y, gisstemp T, memberstation A"
             " WHERE Y.measure = ?"
             " and Y.dataid = T.dataid"
             " and Y.year >= ? and Y.year <= ?"
+            " and Y.stationid = A.stationid and A.setid = ?"
              " GROUP BY T.monthid ORDER BY  month";
     }
 
-        // For each year range, get the average difference, and standard deviation to base
-        long fromYear, toYear;
-        wxString range;
+    // For each year range, get the average difference, and standard deviation to base
+    long fromYear, toYear;
+    wxString range;
 
-        for(int i = 0; i < (int)mYearList->GetCount(); i++)
+    for(int i = 0; i < (int)mYearList->GetCount(); i++)
+    {
+
+        range = mYearList->GetString(i);
+        GetYearRange(range, fromYear, toYear);
+
+        Statement q2(db_, sql);
+        q2.bind((long)measure, 1);
+        q2.bind(fromYear,2);
+        q2.bind(toYear,3);
+        if (useReal == AVG_REAL_TEMP)
+            q2.bind(setName,4);
+        // Get a result for each month
+        PlotLayer_sptr yearplot = std::make_shared<DataLayer>();
+        DataLayer* play = static_cast<DataLayer*>(yearplot.get());
+
+        ydata = std::make_shared<FloatSeries>();
+        std::string yearStr = range.ToStdString();
+        ydata->setLabel(yearStr);
+        ydata->setSize(12);
+        for (int i = 0; i < 12; i++)
+            ydata->set(i, nanFloat);
+        while (q2.next())
         {
+            int n, miny, maxy;
+            double tavg,tsum, tsum2, monthid;
 
-            range = mYearList->GetString(i);
-            GetYearRange(range, fromYear, toYear);
-
-            Statement q2(db_, sql);
-            q2.bind((long)measure, 1);
-            q2.bind(fromYear,2);
-            q2.bind(toYear,3);
-            // Get a result for each month
-            PlotLayer_sptr yearplot = std::make_shared<DataLayer>();
-            DataLayer* play = static_cast<DataLayer*>(yearplot.get());
-
-            ydata = std::make_shared<FloatSeries>();
-            std::string yearStr = range.ToStdString();
-            ydata->setLabel(yearStr);
-            ydata->setSize(12);
-            for (int i = 0; i < 12; i++)
-                ydata->set(i, nanFloat);
-            while (q2.next())
-            {
-                int n, miny, maxy;
-                double tavg,tsum, tsum2, monthid;
-
-                q2.get(0, tavg);
-                q2.get(1, n);
-                q2.get(2, tsum);
-                q2.get(3, tsum2);
-                q2.get(4, miny);
-                q2.get(5, maxy);
-                q2.get(6, monthid);
-                if (n > 0) {
-                    double check_avg = tsum / n;
-                }
-                ydata->set(monthid-1, tavg);
-
+            q2.get(0, tavg);
+            q2.get(1, n);
+            q2.get(2, tsum);
+            q2.get(3, tsum2);
+            q2.get(4, miny);
+            q2.get(5, maxy);
+            q2.get(6, monthid);
+            if (n > 0) {
+                double check_avg = tsum / n;
             }
+            ydata->set(monthid-1, tavg);
 
-            play->ydata_ = ydata;
-            play->xdata_ = xdata;
-            play->label_ = yearStr;
-            play->legendText_  = yearStr;
-            years.push_back(yearplot);
+        }
 
-        } // loop of year range list
-            // clean up
+        play->ydata_ = ydata;
+        play->xdata_ = xdata;
+        play->label_ = yearStr;
+        play->legendText_  = yearStr;
+        years.push_back(yearplot);
+
+    } // loop of year range list
+        // clean up
+    if (useReal != AVG_REAL_TEMP)
         db_.execute(dropcommand);
-    } // if measure
+
     /*
     catch(DBException& ex)
     {
@@ -1623,7 +1637,7 @@ void StationSets::OnTimeSeriesClick( wxCommandEvent& event )
     // using same statement with different bindings for each query
     Statement qtemp(db_, "select B.year, A.monthid, A.value from gissyear B"
                             " join gisstemp A on A.dataid = B.dataid"
-                            " where B.stationid = ? and B.measure = ?"
+                            " where B.sid = ? and B.measure = ?"
                             " order by year, monthid");
 
     std::vector<std::uint32_t> measures;
@@ -1647,7 +1661,7 @@ void StationSets::OnTimeSeriesClick( wxCommandEvent& event )
             for( ; mit != fin; mit++)
             {
                 auto theMeasure = (*mit);
-                qtemp.bind(loc->stationid, 1);
+                qtemp.bindRowId(loc->id_, 1);
                 qtemp.bind((long)theMeasure,2);
 
                 SeriesPtr data = std::make_shared<FloatSeries>();
@@ -1697,6 +1711,8 @@ void StationSets::OnTimeSeriesClick( wxCommandEvent& event )
                 qtemp.reset();
             }
         }
+        if (zeroMonth.size() == 0)
+            return;
     }
     catch(DBException &ex)
     {
@@ -1808,5 +1824,18 @@ void StationSets::OnSelBaseSelected( wxCommandEvent& event )
 {
     auto value = radboxReal->GetSelection();
     event.Skip();
+}
+
+
+/*
+ * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_STATION_DATA
+ */
+
+void StationSets::OnStationDataClick( wxCommandEvent& event )
+{
+////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_STATION_DATA in StationSets.
+    // Before editing this code, remove the block markers.
+    event.Skip();
+////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_STATION_DATA in StationSets.
 }
 

@@ -154,6 +154,16 @@ std::string AppData::getUserConfigPath()
     return jpath.ToStdString();
 }
 
+std::string AppData::get(const std::string& key)
+{
+    return user_[key].asString();
+}
+
+void AppData::set(const std::string& key, const std::string& value)
+{
+    user_[key] = value;
+}
+
 void AppData::readUserConfig()
 {
     std::string jpath = getUserConfigPath();

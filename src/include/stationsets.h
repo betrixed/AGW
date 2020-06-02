@@ -44,7 +44,7 @@ class wxGrid;
 #define SYMBOL_STATIONSETS_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
 #define SYMBOL_STATIONSETS_TITLE _("StationSets")
 #define SYMBOL_STATIONSETS_IDNAME ID_STATIONSETS
-#define SYMBOL_STATIONSETS_SIZE wxSize(500, 400)
+#define SYMBOL_STATIONSETS_SIZE wxSize(700, 500)
 #define SYMBOL_STATIONSETS_POSITION wxDefaultPosition
 ////@end control identifiers
 
@@ -118,6 +118,9 @@ public:
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_TIME_SERIES
     void OnTimeSeriesClick( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_STATION_DATA
+    void OnStationDataClick( wxCommandEvent& event );
 
 ////@end StationSets event handler declarations
 
@@ -208,6 +211,7 @@ public:
         ID_BOX_TAVG = 10038,
         ID_BOX_TMIN = 10039,
         ID_BOX_TMAX = 10040,
+        ID_STATION_DATA = 10042,
         ID_SET_GRID = 10002
     };
 ////@end StationSets member variables
