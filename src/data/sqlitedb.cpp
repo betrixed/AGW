@@ -15,6 +15,10 @@ std::string trim(const std::string &s)
    return (wsback<=wsfront ? std::string() : std::string(wsfront,wsback));
 }
 
+int64_t    Statement::getInt64(int zpos) {
+    return sqlite3_column_int64(h_,zpos);
+}
+
 int32_t Statement::getInt32(int zpos)
 {
     return sqlite3_column_int(h_,zpos);
@@ -261,7 +265,7 @@ bool Statement::bindRowId(DBRowId value, int pos)
 
 bool Statement::bind(long value, int pos)
 {
-    code_ = sqlite3_bind_int(h_, pos, value);
+    code_ = sqlite3_bind_int64(h_, pos, value);
     return (code_ == SQLITE_OK);
 }
 

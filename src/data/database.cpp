@@ -43,15 +43,17 @@ const std::string AddXYSql = "select AddGeometryColumn('gissloc', 'Geometry', 43
 
 const std::string SetCreateSql =
 "CREATE TABLE stationset ("
-    "setid VARCHAR(50) PRIMARY KEY,"
+    "id      INTEGER PRIMARY KEY,"
+    "ss_name VARCHAR(50) NOT NULL UNIQUE,"
+    "ss_count INTEGER NOT NULL,"
     "queryJSON  TEXT"
 ");";
 
 const std::string SetBelongSql =
 "CREATE TABLE memberstation ("
-    "stationid CHAR(11) NOT NULL,"
-    "setid VARCHAR(50) NOT NULL,"
-    "PRIMARY KEY (stationid,setid)"
+    "ss_id INTEGER NOT NULL,"
+    "sid   INTEGER NOT NULL,"
+    "PRIMARY KEY (ss_id,sid)"
 ");";
 
 /** hold number of valid values for a year.
@@ -269,17 +271,78 @@ bool GissYear::updateValuesCt(SqliteDB &sdb, DBRowId id, uint32_t ct)
 bool GissLocStats::update(SqliteDB &sdb)
 {
    Statement query(sdb, "SELECT MIN(year) as minYear, MAX(year) as maxYear, COUNT(distinct year) as numYears"
-                        " FROM gissyear where locId = ?"
+                        " FROM gissyear where sid = ?"
                         );
    query.bindRowId(this->locId,1);
    if (query.next())
    {
-       query.get(0, this->minYear);
-       query.get(1, this->maxYear);
-       query.get(2, this->numYears);
+       this->minYear = query.getInt32(0);
+       this->maxYear = query.getInt32(1);
+       this->numYears = query.getInt32(2);
        return true;
    }
    return false;
+}
+
+void
+StationSet::set(Statement& s) {
+    this->id_ = s.getRowId(0);
+    s.get(1, this->ss_name_);
+    this->ss_count_ = s.getInt32(2);
+    s.get(3, this->queryJSON_);
+}
+
+void
+StationSet::create(SqliteDB& sdb)
+{
+    Statement query(sdb, "insert into stationset (ss_name,ss_count,queryJSON)"
+                    " values(?,?,?)");
+    query.bind(ss_name_,1);
+    query.bind((long)ss_count_,2);
+    query.bind(queryJSON_,3);
+    query.execute_or_throw();
+    id_ = sdb.lastRowId();
+}
+
+void
+StationSet::save(SqliteDB& sdb)
+{
+    Statement query(sdb, "UPDATE stationset set ss_name = ?, ss_count = ?, queryJSON = ?"
+                    " WHERE id = ?" );
+    query.bind(ss_name_,1);
+    query.bind((long)ss_count_,2);
+    query.bind(queryJSON_,3);
+    query.bindRowId(id_,4);
+    query.execute_or_throw();
+}
+
+void
+StationSet::deleteMembers(SqliteDB& sdb)
+{
+    Statement dq (sdb, "delete from memberstation where ss_id = ?");
+    dq.bindRowId(id_, 1);
+    dq.execute();
+}
+
+void StationSet::deleteSelf(SqliteDB& sdb)
+{
+    deleteMembers(sdb);
+    Statement dq (sdb, "delete from stationset where id = ?");
+    dq.bindRowId(id_, 1);
+    id_ = 0;
+    dq.execute_or_throw();
+}
+
+bool
+StationSet::loadByName(SqliteDB& sdb, const std::string& name)
+{
+    Statement query(sdb, "select * from stationset where ss_name = ?");
+    query.bind(name,1);
+    if (query.next()) {
+        this->set(query);
+        return true;
+    }
+    return false;
 }
 
  DBRowId

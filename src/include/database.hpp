@@ -69,13 +69,39 @@ enum MTEMP : uint32_t {
     TMAX = 2
 };
 
+class StationSet {
+    DBRowId      id_;
+    int32_t     ss_count_;
+    std::string  ss_name_;
+    std::string  queryJSON_;
+public:
+    StationSet() : id_(0), ss_count_(0)
+    {
+    }
+
+    bool loadByName(SqliteDB& sdb, const std::string& name);
+    void set(Statement& s);
+    void create(SqliteDB& sdb);
+    void save(SqliteDB& sdb);
+    void deleteSelf(SqliteDB& sdb);
+    void deleteMembers(SqliteDB& sdb);
+
+    void setName(const std::string& s) { ss_name_ = s;}
+    void setJSON(const std::string& s) { queryJSON_ = s;}
+    void setCount(int32_t ct) { ss_count_ = ct;}
+
+    const std::string& getName() const { return ss_name_; }
+    const std::string& getJSON() const { return queryJSON_; }
+    DBRowId getRowId() const { return id_; }
+    int getCount() const { return ss_count_; }
+};
 class GissYear {
 public:
     DBRowId     dataid;
     DBRowId     sid;
-    uint32_t    measure;
-    uint32_t    year;
-    uint32_t    valuesct;
+    int32_t    measure;
+    int32_t    year;
+    int32_t    valuesct;
 
 	GissYear() : dataid(0), sid(0), measure(0), year(0), valuesct(0)
 	{

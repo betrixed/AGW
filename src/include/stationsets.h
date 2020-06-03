@@ -218,11 +218,10 @@ public:
     bool SetExists(const std::string& name);
     void ReadSetNames();
     void RefreshMembers();
-    bool AddMembers(const std::string& sql);
+
     bool GetSetName(std::string& name);
     void Removing(wxWindow* q);
 
-    void DeleteMembers(const wxString& setName);
     void DeleteSet(const wxString& setName);
     void ClearPanels();
 
@@ -236,7 +235,7 @@ public:
     void DropSetTable(const std::string& tableName);
     void packQueryList();
 
-    std::string MakeSQL(const std::string& tableName);
+    std::string MakeSQL();
 
     Database        db_;
     std::string    selectedSet_;

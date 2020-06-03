@@ -148,7 +148,7 @@ public:
     char   getChar(int zpos); // first character of a text type like CHAR(1)
     double getDouble(int zpos);
     int32_t getInt32(int zpos);
-
+    int64_t getInt64(int zpos);
     void get(int zpos, std::string& value);
     void get(int zpos, double& value);
     void get(int zpos, DBRowId& rowid);

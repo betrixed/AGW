@@ -469,7 +469,7 @@ wxIcon StationSets::GetIconResource( const wxString& name )
 bool StationSets::SetExists(const std::string& name)
 {
     std::string sql = "SELECT count(*) from stationset"
-                " WHERE setid = ?";
+                " WHERE ss_name = ?";
 
     Statement qry(db_, sql);
     qry.bind(name,1);
@@ -547,7 +547,7 @@ void StationSets::OnQueryNewClick( wxCommandEvent& event )
 
 void StationSets::ReadSetNames()
 {
-    std::string sql = "select setid from stationset order by setid";
+    std::string sql = "select ss_name from stationset order by ss_name";
 
     if (!db_.isOpen())
     {
@@ -570,7 +570,7 @@ void StationSets::ReadSetNames()
 
 void StationSets::SelectSetName(const wxString& value, bool readMembers)
 {
-    std::string sql = "select queryJSON from stationset where setid = ?";
+    std::string sql = "select queryJSON from stationset where ss_name = ?";
 
     Statement iq (db_, sql);
 
@@ -641,31 +641,6 @@ void StationSets::OnSetListSelected( wxCommandEvent& event )
 
 }
 
-bool StationSets::AddMembers(const std::string& sql)
-{
-    std::string setName;
-
-    if (!GetSetName(setName))
-        return false;
-    Statement qy(db_, sql);
-    int ct = 0;
-    while(qy.next())
-    {
-        DBRowId row = qy.getRowId(0);
-
-        std::string mergeSql = "insert or replace memberstation (setid, stationid) values (? ?)";
-        Statement qmerge(db_,mergeSql);
-        qmerge.bind(setName,1);
-        qmerge.bindRowId(row,2);
-        qmerge.execute();
-        ct++;
-    }
-    wxLogMessage("%d rows merged", ct);
-
-    RefreshMembers();
-
-    return true;
-}
 
 std::string space2underscore(std::string text) {
     for(std::string::iterator it = text.begin(); it != text.end(); ++it) {
@@ -693,8 +668,8 @@ void StationSets::RefreshMembers()
 {
 
 
-    std::string sql = "select A.* from gissloc A join memberstation B"
-                        " where A.stationid = B.stationid and B.setid = ?"
+    std::string sql = "select A.* from gissloc A, memberstation B, stationset S"
+                        " where A.id = B.sid and B.ss_id = S.id and S.ss_name = ?"
                         " order by A.name"
                         ;
 
@@ -723,28 +698,19 @@ void StationSets::RefreshMembers()
 }
 
 
-void StationSets::DeleteMembers(const wxString& setName)
-{
-    std::string sql = "delete from memberstation where setid = ?";
-    Statement dq (db_, sql);
 
-    dq.bind(setName, 1);
-
-    dq.execute();
-
-}
 
 void StationSets::DeleteSet(const wxString& setName)
 {
-    DeleteMembers(setName);
+    StationSet ss_rec;
 
-    std::string sql = "delete from stationset where setid = ?";
-    Statement dq (db_, sql);
-
-    dq.bind(setName, 1);
-
+    if (!ss_rec.loadByName(db_,setName.ToStdString()))
+    {
+         wxLogMessage("Station set not found: %s",setName.c_str());
+         return;
+    }
     try {
-        dq.execute_or_throw();
+        ss_rec.deleteSelf(db_);
     }
     catch(DBException &ex)
     {
@@ -820,40 +786,45 @@ void StationSets::OnRunQueryClick( wxCommandEvent& event )
     std::string json = js.str();
     wxLogMessage("JSON = %s", json.c_str());
 
+    StationSet ss_rec;
+
     try {
-        Statement qsave(db_, "insert or replace into stationset (setid, queryJSON) values (?, ?)");
-
-        qsave.bind(setName, 1);
-        qsave.bind(json,2);
-
-        qsave.execute();
+        if (!ss_rec.loadByName(db_,setName)) {
+            ss_rec.setName(setName);
+            ss_rec.setJSON(json);
+            ss_rec.create(db_);
+        }
+        else {
+            ss_rec.setJSON(json);
+            ss_rec.deleteMembers(db_);
+            ss_rec.save(db_);
+        }
+        wxLogMessage("Saved Set %s as JSON", setName.c_str());
     }
     catch(DBException& ex)
     {
-        wxLogMessage("Sqlite3 exception: %s",ex.msg());
+        wxLogMessage("Station Set save fail: %s",ex.msg());
     }
-    wxLogMessage("Saved Set %s as JSON", setName.c_str());
+
     ReadSetNames();
     SelectSetName(setName, false);
 
     std::string theSet = setName;
-    std::string set_table = "set_" + theSet;
+    //std::string set_table = "set_id_" + std::string.to_string(ss_rec.id_);
 
-    std::string sql = MakeSQL(set_table);
+    std::string sql = MakeSQL(); // the SQL to create the station_ids
 
-    wxLogMessage("Running SQL : %s" , sql.c_str());
+    //wxLogMessage("Running SQL : %s" , sql.c_str());
 
-    DropSetTable(set_table);
+    //DropSetTable(set_table);
     //DeleteMembers(); // Backup members first?, or execute to a temporary table?
     int results = 0;
     try {
-        db_.execute_or_throw(sql);
-        Statement qct(db_,"select count(*) from " + set_table);
+        Statement qct(db_,"select count(distinct(id)) " + sql);
         if (qct.next())
         {
-
             qct.get(0,results);
-            wxLogMessage("%d rows created", results);
+            wxLogMessage("There are %d distinct rows", results);
         }
     }
     catch(DBException& ex)
@@ -862,11 +833,11 @@ void StationSets::OnRunQueryClick( wxCommandEvent& event )
     }
     if (results > 0)
     {
-        this->DeleteMembers(setName);
+
         std::stringstream moveSQL;
 
-        moveSQL << "insert into memberstation (setid, stationid) ";
-        moveSQL << "SELECT '" << theSet << "', stationid from " << set_table;
+        moveSQL << "insert into memberstation (ss_id, sid) ";
+        moveSQL << "SELECT distinct " << ss_rec.getRowId() << ", id " << sql;
         sql = moveSQL.str();
 
         try {
@@ -877,6 +848,9 @@ void StationSets::OnRunQueryClick( wxCommandEvent& event )
             wxLogMessage("Sqlite3 exception: %s",ex.msg());
         }
         this->RefreshMembers();
+    }
+    else {
+        wxLogMessage("No stations fit criteria %s", sql.c_str());
     }
 }
 /*
@@ -1034,14 +1008,15 @@ void StationSets::ClearPanels()
 }
 
 
-std::string StationSets::MakeSQL(const std::string& tableName)
+std::string StationSets::MakeSQL()
 {
     std::stringstream sql;
     std::stringstream where;
     std::string whereClause;
 
-    sql << "create table " << tableName << " as ";
-    sql << "SELECT stationid from gissloc ";
+    /* return incomplete SQL, without extraction fields
+    */
+    sql << " from gissloc ";
 
     auto wlist = mVSizer->GetChildren();
     int cct = 0;
@@ -1188,16 +1163,22 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
     // need a base year range (inclusive), and a measurement type
     // all anomalies then averaged over a year for the location set
 
+    StationSet sset;
+
+    if (!sset.loadByName(db_,setName)) {
+        wxLogMessage("Missing station set name %s", setName.c_str());
+        return;
+    }
     std::string sql =
     " SELECT AVG(T.value - A.base) as anomoly, Y.year as year"
     "   FROM gissyear Y, gisstemp T,"
-        " ( SELECT B.stationid, R.monthid, AVG(R.value) as base"
-            " FROM gisstemp R, gissyear B "
+        " ( SELECT B.sid, R.monthid, AVG(R.value) as base"
+            " FROM gisstemp R, "
+             "gissyear B join memberstation S on S.sid = B.sid and S.ss_id = ?"
             " WHERE B.year >= ? and B.year <= ? "
             " and R.dataid = B.dataid and B.measure = ?"
-            " and B.stationid in ( SELECT stationid from memberstation WHERE setid = ? )"
-            " group by B.stationid, R.monthid ) A"
-    " WHERE Y.stationid = A.stationid and A.monthid = T.monthid"
+            " group by B.sid, R.monthid ) A"
+    " WHERE Y.sid = A.sid and A.monthid = T.monthid"
     " and Y.measure = ?"
     " and Y.dataid = T.dataid";
 
@@ -1274,10 +1255,10 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
 
     try {
         Statement qy(db_, sql);
-        qy.bind(baseYearFrom,1);
-        qy.bind(baseYearTo,2);
-        qy.bind((long)measure, 3);
-        qy.bind(setName, 4);
+        qy.bindRowId(sset.getRowId(), 1);
+        qy.bind(baseYearFrom,2);
+        qy.bind(baseYearTo,3);
+        qy.bind((long)measure, 4);
         qy.bind((long) measure, 5);
 
         while (qy.next())
@@ -1448,6 +1429,11 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
 
     if (!GetSetName(setName))
         return;
+
+    StationSet sset;
+    if (!sset.loadByName(db_,setName)) {
+        return;
+    }
     int choice = mMeasure2->GetSelection();
 
     if (choice == wxNOT_FOUND)
@@ -1491,20 +1477,25 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
         dropcommand = "drop table if exists " + base_name;
         db_.execute(dropcommand);
 
+        // if going to use every station for the query, there is no point in joining
+        // to gissloc or memberstation to exlude any station, and the join will be too big anyway.
+
+        // detect ALL condition
         // create temporary anomaly base table
         std::string select_sql = "CREATE TABLE " + base_name +
-            " AS SELECT B.stationid, R.monthid, AVG(R.value) as base"
-            " FROM gisstemp R, gissyear B "
+            " AS SELECT B.sid, R.monthid, AVG(R.value) as base"
+            " FROM gisstemp R, "
+            " gissyear B join memberstation S on S.sid = B.sid and S.ss_id = ?"
             " WHERE B.year >= ? and B.year <= ? "
             " and R.dataid = B.dataid and B.measure = ?"
-            " and B.stationid in ( SELECT stationid from memberstation WHERE setid = ? )"
-            " group by B.stationid, R.monthid";
+            " group by B.sid, R.monthid";
         {
             Statement q_base(db_, select_sql);
-            q_base.bind(baseYearFrom,1);
-            q_base.bind(baseYearTo,2);
-            q_base.bind((long)measure, 3);
-            q_base.bind(setName,4);
+             q_base.bindRowId(sset.getRowId(),1);
+            q_base.bind(baseYearFrom,2);
+            q_base.bind(baseYearTo,3);
+            q_base.bind((long)measure, 4);
+
             isgood = q_base.execute();
         }
         sql =
@@ -1513,7 +1504,7 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
             "  MIN(Y.year) as FROMYEAR, MAX(Y.year) as TOYEAR, T.monthid as month"
             "   FROM gissyear Y, gisstemp T,"
                 + base_name + " A "
-            " WHERE Y.stationid = A.stationid and A.monthid = T.monthid"
+            " WHERE Y.sid = A.sid and A.monthid = T.monthid"
             " and Y.measure = ?"
             " and Y.dataid = T.dataid"
             " and Y.year >= ? and Y.year <= ?"
@@ -1524,12 +1515,12 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
         sql =
              "SELECT AVG(T.value) as TMEAN, COUNT(*) as NT, "
              " SUM(T.value) as SVAL, SUM(T.value * T.value) as SSVAL, "
-            "  MIN(Y.year) as FROMYEAR, MAX(Y.year) as TOYEAR, T.monthid as month"
-            "   FROM gissyear Y, gisstemp T, memberstation A"
+            " MIN(Y.year) as FROMYEAR, MAX(Y.year) as TOYEAR, T.monthid as month"
+            " FROM gisstemp T,"
+            " gissyear Y join memberstation S on S.sid = Y.sid and S.ss_id = ?"
             " WHERE Y.measure = ?"
             " and Y.dataid = T.dataid"
             " and Y.year >= ? and Y.year <= ?"
-            " and Y.stationid = A.stationid and A.setid = ?"
              " GROUP BY T.monthid ORDER BY  month";
     }
 
@@ -1544,11 +1535,17 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
         GetYearRange(range, fromYear, toYear);
 
         Statement q2(db_, sql);
-        q2.bind((long)measure, 1);
-        q2.bind(fromYear,2);
-        q2.bind(toYear,3);
-        if (useReal == AVG_REAL_TEMP)
-            q2.bind(setName,4);
+        int bindIndex = 1;
+        if (useReal == AVG_REAL_TEMP) {
+            q2.bindRowId(sset.getRowId(),bindIndex);
+            bindIndex++;
+        }
+        q2.bind((long)measure, bindIndex);
+        bindIndex++;
+        q2.bind(fromYear,bindIndex);
+        bindIndex++;
+        q2.bind(toYear,bindIndex);
+
         // Get a result for each month
         PlotLayer_sptr yearplot = std::make_shared<DataLayer>();
         DataLayer* play = static_cast<DataLayer*>(yearplot.get());
