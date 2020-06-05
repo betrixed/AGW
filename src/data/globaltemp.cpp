@@ -245,7 +245,7 @@ void MergeSeries::setWeight(double nWeight)
         weight_.assign(n, nWeight);
 }
 // year range inclusive if set
-void TimeSeries::initFromLocation(Database& db, const std::string& stationId,
+void TimeSeries::initFromLocation(Database& db, DBRowId sid,
                     int yearStart, int yearEnd)
 {
 
@@ -254,7 +254,7 @@ void TimeSeries::initFromLocation(Database& db, const std::string& stationId,
    yss << "select Y.year, T.monthid, T.value"
         " from gisstemp T, gissyear Y"
         " where Y.dataid = T.dataid"
-        " and Y.stationid = ?"
+        " and Y.sid = ?"
         " and Y.measure = 0";
 
     if (yearStart >= 0)
@@ -269,7 +269,7 @@ void TimeSeries::initFromLocation(Database& db, const std::string& stationId,
 
     Statement td(db, yss.str());
 
-    td.bind(stationId,1);
+    td.bindRowId(sid,1);
     if (yearStart >= 0)
     {
         td.bind(long(yearStart),2);
@@ -438,9 +438,9 @@ bool TimeSeries::averageDiff(const TimeSeries& mdata, int& commonYears, double& 
     return false;
 }
 
-bool getSite(const std::string& site, SitePtr& setMe);
+bool getSite(DBRowId site, SitePtr& setMe);
 
-MergeSite::MergeSite(const std::string& id) : stationid(id), yearsCt_(0)
+MergeSite::MergeSite(DBRowId id) : sid_(id), yearsCt_(0)
 {
 }
 
@@ -457,11 +457,11 @@ bool compareYears(FoundPtr const& s1, FoundPtr const&  s2)
 std::string stationQuery(int startYear, int minYears)
 {
     std::stringstream ss;
-    ss << "select count(Y.year) as totalyears, S.stationid, S.longt, S.latit"
-               " from gissyear Y join gissloc S on S.stationid = Y.stationid"
+    ss << "select count(Y.year) as totalyears, S.id, S.longt, S.latit"
+               " from gissyear Y join gissloc S on S.id = Y.sid"
                " where Y.measure = 0"
            << " and Y.year >= " << startYear
-           << " group by Y.stationid, S.latit, S.longt"
+           << " group by Y.sid, S.latit, S.longt"
            << " having totalyears >=  " <<  minYears
            << " order by totalyears desc";
     return ss.str();
@@ -469,7 +469,7 @@ std::string stationQuery(int startYear, int minYears)
 std::string radiusQuery(double clong, double clat, double cradius)
 {
     std::stringstream ss;
-    ss << "select distinct A.stationid,"
+    ss << "select distinct A.id,"
           " ST_Distance(A.Geometry, MakePoint("
           << clong
           << ","
@@ -725,9 +725,9 @@ GlobalTempArea::GlobalTempArea(WorkThread* myworker) : worker_(myworker)
     gridLat_ = AppData::instance().getGlobal("grid80");
 }
 
-bool GlobalTempArea::getSite(const std::string& site, SitePtr& setMe)
+bool GlobalTempArea::getSite(DBRowId id, SitePtr& setMe)
 {
-    auto zit = site_cache_.find(site);
+    auto zit = site_cache_.find(id);
     if (zit != site_cache_.end())
     {
         setMe = zit->second;
@@ -785,7 +785,7 @@ AreaThread::Entry()
 
                 while(stm.next())
                 {
-                    std::string id = stm.getText(0);
+                    DBRowId id = stm.getRowId(0);
                     SitePtr  sp_1;
                     if (gta_->getSite(id, sp_1))
                     {
@@ -900,20 +900,20 @@ void GlobalTempArea::fillCache()
     while(ystm.next())
     {
         int yearsCt = ystm.getInt32(0);
-        std::string stationid = ystm.getText(1);
+        DBRowId sid = ystm.getRowId(1);
 
-        SitePtr site = std::make_shared<MergeSite>(stationid);
+        SitePtr site = std::make_shared<MergeSite>(sid);
         site->yearsCt_ = yearsCt;
         site->long_ = ystm.getDouble(2);
         site->lat_ = ystm.getDouble(3);
 
         TSPtr tp = std::make_shared<TimeSeries>();
 
-        tp->initFromLocation(db_, stationid, 1880); // TODO - allow edit of series minimum year
+        tp->initFromLocation(db_, sid, 1880); // TODO - allow edit of series minimum year
 
         site->data_ = tp;
 
-        site_cache_.insert(std::pair<std::string, SitePtr>(stationid,site));
+        site_cache_.insert(std::pair<DBRowId, SitePtr>(sid,site));
         rowct++;
         //this->UpdateProgress( int(100.0 * rowct / 10000.0));
     }

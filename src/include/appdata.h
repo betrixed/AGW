@@ -80,7 +80,8 @@ extern const wxString STD_PLOT_FILES;
         TestWindowApp*    theApp;       // The GUI boss
         MainFrame*        mFrame;       // GUI main window
         Json::Value       root_;        // shared JSON configuration data
-        Json::Value        user_;        // JSON user configuration
+
+        Json::Value      user_;
 
         wxString          lastPlotDir_;        // remember plots location
         wxString          lastScriptDir_;
@@ -155,8 +156,8 @@ extern const wxString STD_PLOT_FILES;
         }
 
         // access to user configuration values
-        std::string get(const std::string& key);
-        void set(const std::string& key, const std::string& value);
+        bool userValue(const std::string& key, std::string& value) const;
+        void setUserValue(const std::string& key, const std::string& value);
 
         void  readOSInfo();
 

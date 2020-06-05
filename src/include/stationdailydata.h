@@ -30,6 +30,7 @@
 class wxSpinButton;
 ////@end forward declarations
 
+class AppData;
 /*!
  * Control identifiers
  */
@@ -46,6 +47,7 @@ class wxSpinButton;
 /*!
  * StationDailyData class declaration
  */
+
 
 class StationDailyData: public wxFrame
 {
@@ -99,8 +101,10 @@ public:
 ////@end StationDailyData member variables
 
     wxString stationId;
+    AppData*        ap_;
 
-    void SetStationId(const wxString& name);
+    void SetStationId(const wxString& name, const wxString& fullpath);
+    static wxString DailyObsFile(const wxString& name);
 
 };
 

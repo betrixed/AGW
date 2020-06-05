@@ -138,10 +138,9 @@ bool getJSONArrayString(wxArrayString& data, Json::Value& jarr)
 void AppData::saveUserConfig()
 {
     std::string jpath = getUserConfigPath();
+    std::ofstream outjson(jpath);
 
-    std::ofstream os(jpath);
-
-    os << user_ << std::endl;
+    outjson << user_;
 }
 
 std::string AppData::getUserConfigPath()
@@ -154,12 +153,16 @@ std::string AppData::getUserConfigPath()
     return jpath.ToStdString();
 }
 
-std::string AppData::get(const std::string& key)
+bool AppData::userValue(const std::string& key, std::string& value) const
 {
-    return user_[key].asString();
+   if (user_.isMember(key)) {
+    value = user_[key].asString();
+    return true;
+   }
+   return false;
 }
 
-void AppData::set(const std::string& key, const std::string& value)
+void AppData::setUserValue(const std::string& key, const std::string& value)
 {
     user_[key] = value;
 }
@@ -167,8 +170,7 @@ void AppData::set(const std::string& key, const std::string& value)
 void AppData::readUserConfig()
 {
     std::string jpath = getUserConfigPath();
-
-    wxLogMessage("JSON user config path: %s", jpath.c_str() );
+    wxLogMessage("user config path: %s", jpath.c_str() );
 
     if (!wxFileExists(jpath))
     {

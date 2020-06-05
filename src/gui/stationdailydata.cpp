@@ -28,7 +28,11 @@
 ////@begin XPM images
 ////@end XPM images
 
-
+#include "wxCSV.hpp"
+#include <wx/regex.h>
+#include <wx/wfstream.h>
+#include <wx/arrstr.h>
+#include <unordered_map>
 /*
  * StationDailyData type definition
  */
@@ -195,14 +199,126 @@ wxIcon StationDailyData::GetIconResource( const wxString& name )
 ////@end StationDailyData icon retrieval
 }
 
-void StationDailyData::SetStationId(const wxString& name)
+
+
+
+static std::vector<std::string> csv_header =
+    {
+        "STATION", "DATE", "LATITUDE", "LONGITUDE",
+        "ELEVATION", "NAME",
+        "PRCP", "PRCP_ATTRIBUTES",
+        "TMAX", "TMAX_ATTRIBUTES",
+        "TMIN", "TMIN_ATTRIBUTES",
+        "DATX", "DATX_ATTRIBUTES",
+        "MDTX", "MIDX_ATTRIBUTES"
+    };
+
+
+wxString
+StationDailyData::DailyObsFile(const wxString& name) {
+    AppData& app = AppData::instance();
+    std::string path;
+    if(!app.userValue("ghcn-daily", path)) {
+        wxLogError("Configure directly path for ghcn-daily");
+        return wxEmptyString;
+    }
+    wxString filepath = path.c_str();
+    filepath <<   "/" <<  name << ".csv";
+    if (wxFileExists(filepath)) {
+        return filepath;
+    }
+    return wxEmptyString;
+}
+
+// return unquoted character if required
+static wxString unquote(const wxString& value) {
+    wxString result;
+    wxString::const_iterator it = value.begin();;
+    wxString::const_iterator eit = value.end();
+    const wchar_t dquote = '\"';
+    wchar_t  char_end = 0x00;
+
+    if (it != eit)
+    {
+        if (*it == dquote ) {
+            it++;
+            char_end = dquote;
+        }
+        while((it != eit) && (*it != char_end)) {
+            result << *it;
+            it++;
+        }
+    }
+    return result;
+}
+void StationDailyData::SetStationId(const wxString& name, const wxString& filepath)
 {
     stationId = name;
-    auto app = AppData::instance();
 
-    auto path = app.get("ghcn-daily");
+    wxFileInputStream input_stream(filepath);
+    double fileLength = input_stream.GetLength();
+    if (!input_stream.IsOk())
+    {
+        wxLogError("Cannot open file '%s'.", filepath.utf8_str());
+        return;
+    }
+    wxTextInputStream   text(input_stream, ',');
+    wxCSV rdr(&text, ',');
+    wxArrayString row;
+    int tmax_column = -1;
+    int date_column = -1;
+    int tmin_column  = -1;
+    int prcp_column = -1;
+    std::unordered_map<std::string, int> col_names;
 
-    wxString filename = path  + "/" + stationId + ".csv";
+    if(rdr.next(row))
+    {
+        // check headers
+        for(int ix = 0; ix < (int)row.GetCount(); ix++) {
+            auto check = row[ix];
+            std::string key(check.utf8_str());
+            col_names.insert({key, ix});
+        }
+    }
+    tmax_column = col_names["TMAX"];
+    tmin_column = col_names["TMIN"];
+    prcp_column = col_names["PRCP"];
+    date_column = col_names["DATE"];
 
+    wxString tmax_str;
+    wxString tmin_str;
+    wxString prcp_str;
+    wxString date_str;
+    wxString day_str;
+    wxString month_str;
+    wxString year_str;
+
+    wxRegEx  dexp;
+    dexp.Compile("(\\d\\d\\d\\d)\\-(\\d\\d)\\-(\\d\\d)",wxRE_ADVANCED);
+
+
+    wxLogMessage("Columns %d %d %d %d",date_column,prcp_column, tmax_column,tmin_column );
+    wxString line_str;
+    while (rdr.next(row)) {
+        tmax_str = row[tmax_column];
+
+
+        if (tmax_str.size() > 0) {
+            date_str = row[date_column];
+            if (dexp.Matches(date_str) && dexp.GetMatchCount() == 4) {
+                year_str = dexp.GetMatch(date_str,1);
+                month_str = dexp.GetMatch(date_str,2);
+                day_str = dexp.GetMatch(date_str,3);
+            }
+            else {
+                continue;
+            }
+            tmin_str = row[tmin_column];
+            prcp_str = row[prcp_column];
+            line_str = year_str << "/" << month_str << "/" << day_str;
+            line_str << " " << tmin_str << " " << tmax_str << " " << prcp_str << "\n";
+            txtDailyData->AppendText(line_str);
+        }
+    }
 
 }

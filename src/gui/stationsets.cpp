@@ -49,6 +49,8 @@
 ////@end XPM images
 
 
+#include "stationdailydata.h"
+
 /*
  * StationSets type definition
  */
@@ -1830,9 +1832,23 @@ void StationSets::OnSelBaseSelected( wxCommandEvent& event )
 
 void StationSets::OnStationDataClick( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_STATION_DATA in StationSets.
-    // Before editing this code, remove the block markers.
+
     event.Skip();
-////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_STATION_DATA in StationSets.
+
+    auto rows = mGrid_->GetSelectedRows();
+    if (rows.GetCount() > 0) {
+        LocTable* base = dynamic_cast<LocTable*>(mGrid_->GetTable());
+        Station4* loc = base->getRecord(rows[0]);
+
+        wxString fullpath = StationDailyData::DailyObsFile(loc->stationid);
+        if (!fullpath.IsEmpty()) {
+            auto mf = ap_->mainFrame();
+            auto setview = new StationDailyData(mf);
+            setview->SetStationId(loc->stationid, fullpath);
+            setview->Show();
+        }
+
+    }
+
 }
 
