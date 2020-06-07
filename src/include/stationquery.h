@@ -92,6 +92,9 @@ public:
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_COUNTRY_BTN
     void OnCountryBtnClick( wxCommandEvent& event );
 
+    /// wxEVT_COMMAND_CHOICE_SELECTED event handler for ID_LOC_FIELDS
+    void OnLocFieldsSelected( wxCommandEvent& event );
+
 ////@end StationQuery event handler declarations
 
 ////@begin StationQuery member function declarations
@@ -128,6 +131,13 @@ public:
     wxBoxSizer* mSizerCountry;
     wxCheckBox* mBoxCountry;
     wxTextCtrl* mCountryName;
+    wxCheckBox* mCheckRadius;
+    wxTextCtrl* mRadius;
+    wxTextCtrl* mPtLong;
+    wxTextCtrl* mPtLat;
+    wxCheckBox* mCheckSQL;
+    wxChoice* mFieldNames;
+    wxTextCtrl* mYourSQL;
     /// Control identifiers
     enum {
         ID_STATIONQUERY = -1,
@@ -146,7 +156,14 @@ public:
         ID_RANDOM_COUNT = 10004,
         ID_BOX_COUNTRY = 10005,
         ID_COUNTRY_NAME = 10006,
-        ID_COUNTRY_BTN = 10010
+        ID_COUNTRY_BTN = 10010,
+        ID_CHECK_RADIUS = 10016,
+        ID_CIRC_RADIUS = 10019,
+        ID_PT_LONG = 10017,
+        ID_PT_LAT = 10018,
+        ID_AND_SQL = 10020,
+        ID_LOC_FIELDS = 10022,
+        ID_YOUR_SQL = 10021
     };
 ////@end StationQuery member variables
     bool  GetAsJSON(Json::Value& json);
@@ -177,6 +194,8 @@ public:
     static const std::string VEGETATION;
     static const std::string SQL_OP;
     static const std::string QDISPLAY;
+    static const std::string CIRCLE;
+    static const std::string ANY_SQL;
 };
 
 #endif

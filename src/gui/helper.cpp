@@ -468,6 +468,16 @@ std::string indexToPenName(int ix)
     return ch->GetString(sel).ToStdString();
 }
 
+void setDouble(wxTextCtrl* txt, double val)
+{
+
+    std::stringstream ss;
+
+    ss << val;
+
+    txt->SetValue(ss.str());
+}
+
  void setChoice(wxChoice* ch,const wxString& value)
 {
     int sel = ch->FindString(value);

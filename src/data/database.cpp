@@ -165,6 +165,22 @@ void Database::init()
         wxLogMessage("Failed to open %s", filepath_.c_str());
     }
 }
+/*
+    DBRowId dataid;
+    int    monthid;
+    double value;
+    char   dmflag;
+    char    qcflag;
+    char    dsflag;
+*/
+
+bool
+MonthTemp::loadByMonth(SqliteDB &sdb, DBRowId qdataid, int32_t qmonthid)
+{
+    dataid = qdataid;
+    monthid = qmonthid;
+    return load(sdb);
+}
 
 // Load a single record from setId (if it exists)
 bool MonthTemp::load(SqliteDB &sdb)
@@ -172,7 +188,7 @@ bool MonthTemp::load(SqliteDB &sdb)
     Statement query(sdb, "select value,dmflag,qcflag,dsflag from gisstemp where dataid = ? and monthid = ?");
     query.bindRowId(dataid,1);
     query.bind((long)monthid,2);
-    if (query.execute())
+    if (query.next())
     {
         query.get(0,this->value);
         query.get(1,this->dmflag);
@@ -211,7 +227,53 @@ bool MonthTemp::update(SqliteDB &sdb)
     query.bindRowId(this->monthid,6);
     return query.execute();
 }
+/*
+     "dataid    INTEGER PRIMARY KEY,"
+     "sid       INTEGER NOT NULL,"
+     "year      INTEGER NOT NULL,"
+     "measure   INTEGER NOT NULL,"  // 0 - avg, 1 = min, 2 = max
+     "valuesct  INTEGER NOT NULL,"  // a year might not (yet) have all months
+     "UNIQUE(sid, year, measure)"
+*/
 
+// static
+std::string  GissYear::measureStr(MTEMP val)
+{
+    switch(val) {
+case TAVG:
+        return std::string("Averaged Daily");
+case TMIN:
+    return std::string("Avg. Minimum Daily");
+case TMAX:
+    return std::string("Avg. Maximum Daily");
+case MMAX:
+    return std::string("Highest Maximum");
+case MMIN:
+    return std::string("Lowest Minimum");
+    }
+    return std::string("Invalid MTEMP for measureStr");
+}
+
+bool GissYear::loadByStation(SqliteDB& sdb, DBRowId qsid,
+                             int32_t qyear, int32_t qmeasure) {
+    Statement query(sdb, "select dataid, valuesct from gissyear"
+                    " where sid=? and measure=? and year=?");
+    query.bindRowId(qsid,1);
+    query.bind((long)qmeasure,2);
+    query.bind((long)qyear,3);
+    if (query.next())
+    {
+        this->dataid = query.getRowId(0);
+        this->valuesct = query.getInt32(1);
+
+        this->year = qyear;
+        this->measure = qmeasure;
+        this->sid = qsid;
+        return true;
+    }
+    return false;
+
+}
 // Load a single record from setId (if it exists)
 bool GissYear::loadById(SqliteDB &sdb, DBRowId id)
 {
@@ -230,41 +292,56 @@ bool GissYear::loadById(SqliteDB &sdb, DBRowId id)
     return false;
 }
 
-// static
-std::string  GissYear::measureStr(MTEMP val)
+
+
+bool GissYear::create(SqliteDB &sdb)
 {
-    switch(val) {
-case TAVG:
-        return std::string("Average month temperature");
-case TMIN:
-    return std::string("Minimum month temperature");
-case TMAX:
-    return std::string("Maximum month temperature");
-    }
-    return std::string("Invalid MTEMP for measureStr");
-}
-// save doesn't know if the record already exists or not and tries an insert or replace
-bool GissYear::save(SqliteDB &sdb)
-{
-    Statement query(sdb, "insert or replace into gissyear(sid,year,measure,valuesct) values (?,?,?,?)");
+     Statement query(sdb, "insert into gissyear(sid,year,measure,valuesct) values (?,?,?,?)");
 
     query.bindRowId( this->sid,1);
     query.bind((long) this->year,2);
     query.bind((long) this->measure,3);
     query.bind((long) this->valuesct,4);
-    auto result = query.execute();
+    bool result = query.execute();
     if (result) {
         dataid = sdb.lastRowId();
     }
     return result;
 }
+
+bool GissYear::save(SqliteDB &sdb) {
+    if (dataid == 0) {
+        GissYear temp;
+        if (!temp.loadByStation(sdb,sid,year,measure)) {
+            return create(sdb);
+        }
+        else {
+            dataid = temp.dataid;
+        }
+    }
+    return update(sdb);
+}
+bool GissYear::update(SqliteDB &sdb)
+{
+
+    Statement query(sdb, "update gissyear set sid=?,year=?,measure=?,valuesct=? "
+                    " where dataid = ?"
+                    );
+
+    query.bindRowId( this->sid,1);
+    query.bind((long) this->year,2);
+    query.bind((long) this->measure,3);
+    query.bind((long) this->valuesct,4);
+    query.bindRowId( this->dataid, 5);
+    return query.execute();
+}
  // Update assumes record exists
-bool GissYear::updateValuesCt(SqliteDB &sdb, DBRowId id, uint32_t ct)
+bool GissYear::updateValuesCt(SqliteDB &sdb, int32_t ct)
 {
     Statement query(sdb, "update gissyear set valuesct = ? where dataid = ?");
 
     query.bind((long)ct,1);
-    query.bindRowId(id,2);
+    query.bindRowId(dataid,2);
     return query.execute();
 }
 
@@ -344,6 +421,35 @@ StationSet::loadByName(SqliteDB& sdb, const std::string& name)
     }
     return false;
 }
+/*
+
+ "id INTEGER PRIMARY KEY,"
+    "stationid CHAR(11) NOT NULL UNIQUE,"
+    "latit REAL,"
+    "longt REAL,"
+    "elevt REAL,"
+    "name VARCHAR(50),"
+    "startdate DATE,"
+    "enddate DATE"
+    */
+bool
+Station4::loadByCode(SqliteDB& sdb, const std::string& qstationid) {
+    Statement query(sdb, "select id, latit, longt, elevt "
+            " name, startdate, enddate from gissloc where stationid = ?");
+    query.bind(qstationid,1);
+    if (query.next()) {
+        this->stationid = qstationid;
+        id_ = query.getRowId(0);
+        query.get(1,lat_);
+        query.get(2,long_);
+        query.get(3,elev_);
+        query.get(4,name_);
+        startDate_ = query.getDateTime(5);
+        endDate_ = query.getDateTime(6);
+        return true;
+    }
+    return false;
+}
 
  DBRowId
  Station4::GetPrimaryKey(SqliteDB& sdb, const std::string& stationId)
@@ -378,7 +484,7 @@ bool Station4::save(SqliteDB &sdb)
 
     ss << "update gissloc set stationid = ? , latit = ?, longt = ?, elevt = ?,"
         " name = ?, startdate = ?, enddate = ?,";
-    ss << " Geometry = MakePoint(" << this->long_ << "," << this->lat_ << ",4326)";
+    ss << " Geometry = GeomFromText('POINT(" << this->long_ << "," << this->lat_ << ")',4326)";
     ss << " where id = ? ";
 
 //		") values (?,?,?,?,?,"

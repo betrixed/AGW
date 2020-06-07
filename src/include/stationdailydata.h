@@ -104,7 +104,7 @@ public:
     AppData*        ap_;
 
     void SetStationId(const wxString& name, const wxString& fullpath);
-    static wxString DailyObsFile(const wxString& name);
+    static wxString FullPath(const wxString& stationid);
 
 };
 

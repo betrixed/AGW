@@ -163,8 +163,9 @@ public:
     wxTextCtrl* mYearToAdd;
     wxListBox* mYearList;
     wxCheckBox* mTAVG;
-    wxCheckBox* mTMIN;
+    wxCheckBox* mMMAX;
     wxCheckBox* mTMAX;
+    wxCheckBox* mTMIN;
     wxGrid* mGrid_;
     /// Control identifiers
     enum {
@@ -209,9 +210,10 @@ public:
         ID_MEMBER_GRID = 10032,
         ID_TIME_SERIES = 10037,
         ID_BOX_TAVG = 10038,
-        ID_BOX_TMIN = 10039,
-        ID_BOX_TMAX = 10040,
+        ID_BOX_MMAX = 10044,
         ID_STATION_DATA = 10042,
+        ID_BOX_TMAX = 10040,
+        ID_BOX_TMIN = 10039,
         ID_SET_GRID = 10002
     };
 ////@end StationSets member variables

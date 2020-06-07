@@ -99,6 +99,6 @@ bool longValue(wxTextCtrl* txt, long& value);
 bool doubleValue(wxTextCtrl* txt, double& value);
 bool textValue(wxTextCtrl* txt, std::string& value);
 bool wxStringValue(wxTextCtrl* txt, wxString& value);
-
+void setDouble(wxTextCtrl* txt, double val);
 
 #endif // _H_HELPER

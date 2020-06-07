@@ -266,7 +266,7 @@ wxThread::ExitCode ImportGissThread::Entry()
                     if (validCount > 0)
                     {
                         yr.valuesct = validCount;
-                        yr.updateValuesCt(sdb_, yr.dataid, yr.valuesct);
+                        yr.updateValuesCt(sdb_,yr.valuesct);
                         updateCt++;
                     }
                     if (lineCount >= 2000)

@@ -56,6 +56,8 @@ public:
     Station4() : id_(0), lat_(0.0), long_(0.0), elev_(0.0)
     {
     }
+    bool loadByCode(SqliteDB& sdb, const std::string& stationid);
+
 	static DBRowId GetPrimaryKey(SqliteDB& sdb, const std::string& stationId);
     void setId(const std::string& stationId);
 	bool save(SqliteDB &sdb);
@@ -66,7 +68,9 @@ public:
 enum MTEMP : uint32_t {
     TAVG = 0,
     TMIN = 1,
-    TMAX = 2
+    TMAX = 2,
+    MMIN = 3,
+    MMAX = 4
 };
 
 class StationSet {
@@ -107,9 +111,11 @@ public:
 	{
 	}
 	bool loadById(SqliteDB &db, DBRowId id);
-	bool loadByStation(SqliteDB &db, const std::string& id, uint32_t year, uint32_t measure);
+	bool loadByStation(SqliteDB &db, DBRowId sid, int32_t year, int32_t measure);
+	bool create(SqliteDB &db);
+	bool update(SqliteDB &db);
 	bool save(SqliteDB &db);
-    bool updateValuesCt(SqliteDB &db, DBRowId id, uint32_t ct);
+    bool updateValuesCt(SqliteDB &db,int32_t ct);
     static std::string measureStr(MTEMP val);
 };
 
@@ -122,6 +128,7 @@ public:
     char    qcflag;
     char    dsflag;
 
+
     MonthTemp() : dataid(0), monthid(0), value(0.0), dmflag(0), qcflag(0), dsflag(0)
         {
 
@@ -129,7 +136,7 @@ public:
 	bool load(SqliteDB &db);
 	bool save(SqliteDB &db);
     bool update(SqliteDB &db);
-
+    bool loadByMonth(SqliteDB &db, DBRowId dataid, int32_t monthid);
 };
 
 class wxCSV;

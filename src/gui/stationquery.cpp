@@ -55,6 +55,7 @@ BEGIN_EVENT_TABLE( StationQuery, wxPanel )
     EVT_BUTTON( ID_BTN_DOWN, StationQuery::OnBtnDownClick )
     EVT_BUTTON( ID_BTN_DELETE, StationQuery::OnBtnDeleteClick )
     EVT_BUTTON( ID_COUNTRY_BTN, StationQuery::OnCountryBtnClick )
+    EVT_CHOICE( ID_LOC_FIELDS, StationQuery::OnLocFieldsSelected )
 ////@end StationQuery event table entries
 
 END_EVENT_TABLE()
@@ -156,6 +157,13 @@ void StationQuery::Init()
     mSizerCountry = NULL;
     mBoxCountry = NULL;
     mCountryName = NULL;
+    mCheckRadius = NULL;
+    mRadius = NULL;
+    mPtLong = NULL;
+    mPtLat = NULL;
+    mCheckSQL = NULL;
+    mFieldNames = NULL;
+    mYourSQL = NULL;
 ////@end StationQuery member initialisation
 
     myFrame = nullptr;
@@ -230,12 +238,12 @@ void StationQuery::CreateControls()
     sizerLatBand = new wxBoxSizer(wxHORIZONTAL);
     mBossVSizer->Add(sizerLatBand, 0, wxGROW|wxALL, 5);
 
-    mBoxLatitude = new wxCheckBox( itemPanel1, ID_BOX_LATITUDE, _("Latitude band from"), wxDefaultPosition, wxDefaultSize, 0 );
+    mBoxLatitude = new wxCheckBox( itemPanel1, ID_BOX_LATITUDE, _("Latitude Range"), wxDefaultPosition, wxDefaultSize, 0 );
     mBoxLatitude->SetValue(false);
     sizerLatBand->Add(mBoxLatitude, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     txtLatSouth = new wxTextCtrl( itemPanel1, ID_SOUTH_LAT, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
-    sizerLatBand->Add(txtLatSouth, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    sizerLatBand->Add(txtLatSouth, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxStaticText* itemStaticText21 = new wxStaticText( itemPanel1, wxID_STATIC, _("to"), wxDefaultPosition, wxDefaultSize, 0 );
     sizerLatBand->Add(itemStaticText21, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
@@ -273,6 +281,50 @@ void StationQuery::CreateControls()
     itemStaticLine31->SetForegroundColour(wxColour(150, 123, 54));
     itemStaticLine31->SetBackgroundColour(wxColour(152, 209, 42));
     mBossVSizer->Add(itemStaticLine31, 0, wxGROW|wxLEFT|wxRIGHT, 2);
+
+    wxBoxSizer* itemBoxSizer1 = new wxBoxSizer(wxHORIZONTAL);
+    mBossVSizer->Add(itemBoxSizer1, 0, wxGROW|wxALL, 5);
+
+    mCheckRadius = new wxCheckBox( itemPanel1, ID_CHECK_RADIUS, _("Circle - Radius km."), wxDefaultPosition, wxDefaultSize, 0 );
+    mCheckRadius->SetValue(false);
+    itemBoxSizer1->Add(mCheckRadius, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    mRadius = new wxTextCtrl( itemPanel1, ID_CIRC_RADIUS, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer1->Add(mRadius, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    wxStaticText* itemStaticText5 = new wxStaticText( itemPanel1, wxID_STATIC, _("Long."), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer1->Add(itemStaticText5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    mPtLong = new wxTextCtrl( itemPanel1, ID_PT_LONG, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer1->Add(mPtLong, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    wxStaticText* itemStaticText7 = new wxStaticText( itemPanel1, wxID_STATIC, _("Lat."), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer1->Add(itemStaticText7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    mPtLat = new wxTextCtrl( itemPanel1, ID_PT_LAT, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer1->Add(mPtLat, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    wxBoxSizer* itemBoxSizer4 = new wxBoxSizer(wxHORIZONTAL);
+    mBossVSizer->Add(itemBoxSizer4, 0, wxGROW|wxALL, 5);
+
+    mCheckSQL = new wxCheckBox( itemPanel1, ID_AND_SQL, _("SQL"), wxDefaultPosition, wxDefaultSize, 0 );
+    mCheckSQL->SetValue(false);
+    itemBoxSizer4->Add(mCheckSQL, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    wxArrayString mFieldNamesStrings;
+    mFieldNamesStrings.Add(_("id"));
+    mFieldNamesStrings.Add(_("stationid"));
+    mFieldNamesStrings.Add(_("name"));
+    mFieldNamesStrings.Add(_("latit"));
+    mFieldNamesStrings.Add(_("longt"));
+    mFieldNamesStrings.Add(_("elev"));
+    mFieldNamesStrings.Add(_("startdate"));
+    mFieldNamesStrings.Add(_("enddate"));
+    mFieldNames = new wxChoice( itemPanel1, ID_LOC_FIELDS, wxDefaultPosition, wxDefaultSize, mFieldNamesStrings, 0 );
+    itemBoxSizer4->Add(mFieldNames, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    mYourSQL = new wxTextCtrl( itemPanel1, ID_YOUR_SQL, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE );
+    itemBoxSizer4->Add(mYourSQL, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     // Connect events and objects
     itemPanel1->Connect(ID_STATIONQUERY, wxEVT_DESTROY, wxWindowDestroyEventHandler(StationQuery::OnDestroy), NULL, this);
@@ -326,12 +378,14 @@ wxIcon StationQuery::GetIconResource( const wxString& name )
  const std::string JDoc::QSEQ("qseq");
 const std::string JDoc::SQL_OP("sql-op");
 const std::string JDoc::QDISPLAY("query-type");
+const std::string JDoc::CIRCLE("circle");
+const std::string JDoc::ANY_SQL("any-sql");
 
 bool StationQuery::GetAsJSON(Json::Value& root)
 {
     std::string value;
 
-    double d1, d2;
+    double d1, d2, d3;
 
     long nval;
 
@@ -352,6 +406,27 @@ bool StationQuery::GetAsJSON(Json::Value& root)
         if (textValue(txtLike,value))
         {
             root[JDoc::NAME_LIKE] = value;
+        }
+    }
+    if (mCheckRadius->IsChecked()) {
+        bool hasRadius = doubleValue(mRadius,d3);
+        bool hasLat = doubleValue(mPtLat,d2);
+        bool hasLong = doubleValue(mPtLong,d1);
+
+        if (hasRadius && hasLat && hasLong) {
+            Json::Value circle(Json::objectValue);
+            circle["long"] = d1;
+            circle["lat"] = d2;
+            circle["radius"] = d3;
+            root[JDoc::CIRCLE] = circle;
+        }
+    }
+    if (mCheckSQL->IsChecked()) {
+
+        auto content = mYourSQL->GetValue();
+        if (content.size() > 0) {
+            Json::Value mysql = content.ToStdString();
+            root[JDoc::ANY_SQL] = mysql;
         }
     }
     if (mBoxLatitude->IsChecked())
@@ -400,7 +475,7 @@ bool  StationQuery::GetSetName(std::string& value)
 void StationQuery::LoadFromJSON(const Json::Value& root)
 {
     std::stringstream mSQL;
-
+    /* construct a where ---- clause  */
     mSQL << " ";
 
     int ct = 0;
@@ -423,7 +498,7 @@ void StationQuery::LoadFromJSON(const Json::Value& root)
             setChoice(opName, value);
         }
         int sel = 0;
-        if (root.isMember("query-type"))
+        if (root.isMember(JDoc::QDISPLAY))
         {
             std::string value = root["query-type"].asString();
             if (value == "random")
@@ -436,7 +511,39 @@ void StationQuery::LoadFromJSON(const Json::Value& root)
         {
             editDescription->SetValue(root[JDoc::DESCRIBE].asString());
         }
+        if (root.isMember(JDoc::ANY_SQL)) {
+            mCheckSQL->SetValue(true);
+            const Json::Value& sval = root[JDoc::ANY_SQL];
+            std::string value = sval.asString();
+            mYourSQL->SetValue(value);
+            if(value.size() > 0) {
+                if (ct > 0)
+                    mSQL << " AND ";
+                ct++;
+                mSQL << "(" << value << ")";
+            }
+        }
+        if (root.isMember(JDoc::CIRCLE))
+        {
+            mCheckRadius->SetValue(true);
+            const Json::Value& jcircle = root[JDoc::CIRCLE];
+            if (jcircle.isObject()) {
+                double longt = jcircle["long"].asDouble();
+                double latt = jcircle["lat"].asDouble();
+                double radius = jcircle["radius"].asDouble();
 
+                setDouble(mPtLong,longt);
+                setDouble(mPtLat,latt);
+                setDouble(mRadius,radius);
+
+                if (ct > 0)
+                    mSQL << " AND ";
+                ct++;
+
+                mSQL << " ( ST_Distance(MakePoint(" << longt << "," << latt << ",4326),Geometry,1) < " << radius*1000.0 << ")";
+            }
+
+        }
         if (root.isMember(JDoc::LAT_BAND))
         {
             mBoxLatitude->SetValue(true);
@@ -446,16 +553,13 @@ void StationQuery::LoadFromJSON(const Json::Value& root)
                 double d1 = jpair[0].asDouble();
                 double d2 = jpair[1].asDouble();
 
-                wxString v1, v2;
+                setDouble(txtLatSouth, d1);
+                setDouble(txtLatNorth, d2);
 
-                v1 << d1;
-                v2 << d2;
-                txtLatSouth->SetValue(v1);
-                txtLatNorth->SetValue(v2);
                 if (ct > 0)
                     mSQL << " AND ";
                 ct++;
-                mSQL << "(Latitude >= " << d1 << " AND Latitude <= " << d2 << ")";
+                mSQL << "(latit >= " << d1 << " AND latit <= " << d2 << ")";
             }
         }
         if (root.isMember(JDoc::RANDOM))
@@ -624,5 +728,15 @@ void StationQuery::SetQueryType(int sel)
 }
 
 
+/*
+ * wxEVT_COMMAND_CHOICE_SELECTED event handler for ID_LOC_FIELDS
+ */
 
+void StationQuery::OnLocFieldsSelected( wxCommandEvent& event )
+{
+////@begin wxEVT_COMMAND_CHOICE_SELECTED event handler for ID_LOC_FIELDS in StationQuery.
+    // Before editing this code, remove the block markers.
+    event.Skip();
+////@end wxEVT_COMMAND_CHOICE_SELECTED event handler for ID_LOC_FIELDS in StationQuery.
+}
 

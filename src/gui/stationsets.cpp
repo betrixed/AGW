@@ -162,8 +162,9 @@ void StationSets::Init()
     mYearToAdd = NULL;
     mYearList = NULL;
     mTAVG = NULL;
-    mTMIN = NULL;
+    mMMAX = NULL;
     mTMAX = NULL;
+    mTMIN = NULL;
     mGrid_ = NULL;
 ////@end StationSets member initialisation
 }
@@ -255,6 +256,8 @@ void StationSets::CreateControls()
     mMeasureStrings.Add(_("TAVG"));
     mMeasureStrings.Add(_("TMIN"));
     mMeasureStrings.Add(_("TMAX"));
+    mMeasureStrings.Add(_("MMIN"));
+    mMeasureStrings.Add(_("MMAX"));
     mMeasure = new wxChoice( itemStaticBoxSizer27->GetStaticBox(), ID_MEASURE, wxDefaultPosition, wxDefaultSize, mMeasureStrings, 0 );
     mMeasure->SetStringSelection(_("TAVG"));
     itemStaticBoxSizer27->Add(mMeasure, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
@@ -329,6 +332,8 @@ void StationSets::CreateControls()
     mMeasure2Strings.Add(_("TAVG"));
     mMeasure2Strings.Add(_("TMIN"));
     mMeasure2Strings.Add(_("TMAX"));
+    mMeasure2Strings.Add(_("MMIN"));
+    mMeasure2Strings.Add(_("MMAX"));
     mMeasure2 = new wxChoice( itemStaticBoxSizer49->GetStaticBox(), ID_CHOICE_M2, wxDefaultPosition, wxDefaultSize, mMeasure2Strings, 0 );
     mMeasure2->SetStringSelection(_("TAVG"));
     itemStaticBoxSizer49->Add(mMeasure2, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
@@ -390,23 +395,29 @@ void StationSets::CreateControls()
 
     wxBoxSizer* itemBoxSizer68 = new wxBoxSizer(wxHORIZONTAL);
     itemBoxSizer67->Add(itemBoxSizer68, 0, wxGROW|wxALL, 5);
-    wxButton* itemButton69 = new wxButton( itemPanel66, ID_TIME_SERIES, _("Plot Time Series"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
-    itemBoxSizer68->Add(itemButton69, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxGridSizer* itemGridSizer1 = new wxGridSizer(2, 3, 0, 0);
+    itemBoxSizer68->Add(itemGridSizer1, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton2 = new wxButton( itemPanel66, ID_TIME_SERIES, _("Plot Time Series"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
+    itemGridSizer1->Add(itemButton2, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     mTAVG = new wxCheckBox( itemPanel66, ID_BOX_TAVG, _("TAVG"), wxDefaultPosition, wxDefaultSize, 0 );
     mTAVG->SetValue(false);
-    itemBoxSizer68->Add(mTAVG, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemGridSizer1->Add(mTAVG, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    mTMIN = new wxCheckBox( itemPanel66, ID_BOX_TMIN, _("TMIN"), wxDefaultPosition, wxDefaultSize, 0 );
-    mTMIN->SetValue(false);
-    itemBoxSizer68->Add(mTMIN, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    mMMAX = new wxCheckBox( itemPanel66, ID_BOX_MMAX, _("MMAX"), wxDefaultPosition, wxDefaultSize, 0 );
+    mMMAX->SetValue(false);
+    itemGridSizer1->Add(mMMAX, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    wxButton* itemButton5 = new wxButton( itemPanel66, ID_STATION_DATA, _("Station Daily Data"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizer1->Add(itemButton5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     mTMAX = new wxCheckBox( itemPanel66, ID_BOX_TMAX, _("TMAX"), wxDefaultPosition, wxDefaultSize, 0 );
     mTMAX->SetValue(false);
-    itemBoxSizer68->Add(mTMAX, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemGridSizer1->Add(mTMAX, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton1 = new wxButton( itemPanel66, ID_STATION_DATA, _("Station Daily Data"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer68->Add(itemButton1, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    mTMIN = new wxCheckBox( itemPanel66, ID_BOX_TMIN, _("TMIN"), wxDefaultPosition, wxDefaultSize, 0 );
+    mTMIN->SetValue(false);
+    itemGridSizer1->Add(mTMIN, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxHORIZONTAL);
     itemBoxSizer67->Add(itemBoxSizer2, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
@@ -1252,7 +1263,7 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
 
     double anomaly;
     int32_t year;
-    auto mainf = (MainFrame*)this->GetParent();
+    //auto mainf = (MainFrame*)this->GetParent();
     int ct = 0;
 
     try {
@@ -1570,9 +1581,9 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
             q2.get(4, miny);
             q2.get(5, maxy);
             q2.get(6, monthid);
-            if (n > 0) {
-                double check_avg = tsum / n;
-            }
+            //if (n > 0) {
+            //    double check_avg = tsum / n;
+            //}
             ydata->set(monthid-1, tavg);
 
         }
@@ -1647,7 +1658,8 @@ void StationSets::OnTimeSeriesClick( wxCommandEvent& event )
         measures.push_back(TMIN);
     if (mTMAX->IsChecked())
         measures.push_back(TMAX);
-
+    if (mMMAX->IsChecked())
+        measures.push_back(MMAX);
     uint minMonth = UINT_MAX;
     uint maxMonth = 0;
 
@@ -1840,12 +1852,17 @@ void StationSets::OnStationDataClick( wxCommandEvent& event )
         LocTable* base = dynamic_cast<LocTable*>(mGrid_->GetTable());
         Station4* loc = base->getRecord(rows[0]);
 
-        wxString fullpath = StationDailyData::DailyObsFile(loc->stationid);
+        wxString fullpath = StationDailyData::FullPath(loc->stationid);
         if (!fullpath.IsEmpty()) {
             auto mf = ap_->mainFrame();
             auto setview = new StationDailyData(mf);
+            setview->ap_ = ap_;
+
             setview->SetStationId(loc->stationid, fullpath);
             setview->Show();
+        }
+        else {
+            wxLogMessage(wxString::Format("File path not found %s", loc->stationid));
         }
 
     }

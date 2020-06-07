@@ -33,6 +33,7 @@
 #include <wx/wfstream.h>
 #include <wx/arrstr.h>
 #include <unordered_map>
+#include <limits>
 /*
  * StationDailyData type definition
  */
@@ -215,19 +216,14 @@ static std::vector<std::string> csv_header =
 
 
 wxString
-StationDailyData::DailyObsFile(const wxString& name) {
+StationDailyData::FullPath(const wxString& stationid) {
     AppData& app = AppData::instance();
     std::string path;
     if(!app.userValue("ghcn-daily", path)) {
         wxLogError("Configure directly path for ghcn-daily");
         return wxEmptyString;
     }
-    wxString filepath = path.c_str();
-    filepath <<   "/" <<  name << ".csv";
-    if (wxFileExists(filepath)) {
-        return filepath;
-    }
-    return wxEmptyString;
+    return wxString::Format("%s/%s.csv", path.c_str(), stationid);
 }
 
 // return unquoted character if required
@@ -251,6 +247,9 @@ static wxString unquote(const wxString& value) {
     }
     return result;
 }
+
+//Feed some extra statistics into the GissYear, GissTemp sections in a
+//single pass through a daily station text file
 void StationDailyData::SetStationId(const wxString& name, const wxString& filepath)
 {
     stationId = name;
@@ -295,10 +294,36 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
 
     wxRegEx  dexp;
     dexp.Compile("(\\d\\d\\d\\d)\\-(\\d\\d)\\-(\\d\\d)",wxRE_ADVANCED);
-
+    long yearval;
+    long monthval;
+    long dateindex;
+    long bucketindex = 0;
+    int32_t byearval;
+    int32_t bmonthval;
 
     wxLogMessage("Columns %d %d %d %d",date_column,prcp_column, tmax_column,tmin_column );
     wxString line_str;
+    SqliteDB& sdb = ap_->getDB();
+
+    double tmaxsum,tminsum,tmaxsqsum,tminsqsum, tavgsum, tavgsqsum;
+    double tmax_d, tmin_d, tavg_d;
+    double mmax, mmin;
+    long ndays = 0;
+    long yearout, monthout;
+    wxString output;
+    GissYear gissyear;
+    GissYear mmaxyear;
+    GissYear tmaxyear;
+
+    MonthTemp gisstemp;
+    MonthTemp mmaxtemp;
+    MonthTemp tmaxtemp;
+
+    Station4 gissloc;
+    std::string stationid(name.utf8_str());
+
+    gissloc.loadByCode(sdb,stationid);
+
     while (rdr.next(row)) {
         tmax_str = row[tmax_column];
 
@@ -309,15 +334,111 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
                 year_str = dexp.GetMatch(date_str,1);
                 month_str = dexp.GetMatch(date_str,2);
                 day_str = dexp.GetMatch(date_str,3);
+                year_str.ToCLong(&yearval,10);
+                month_str.ToCLong(&monthval,10);
+                //yearval = std::strtol(year_str.utf8_str(),nullptr,10);
+                //monthval = std::strtol(month_str.utf8_str(),nullptr,10);
+                dateindex = yearval*12 + (monthval-1);
             }
             else {
                 continue;
             }
             tmin_str = row[tmin_column];
             prcp_str = row[prcp_column];
-            line_str = year_str << "/" << month_str << "/" << day_str;
-            line_str << " " << tmin_str << " " << tmax_str << " " << prcp_str << "\n";
+            //line_str = year_str << "/" << month_str << "/" << day_str;
+            //line_str << " " << tmin_str << " " << tmax_str << " " << prcp_str << "\n";
             txtDailyData->AppendText(line_str);
+            if (bucketindex != dateindex) {
+                // output averaged values
+                yearout = bucketindex / 12;
+                monthout = bucketindex - yearout*12 + 1;
+                if (ndays > 0) {
+                    output.Printf("%ld-%ld %3.1lf %3.1lf avg %3.1lf absminmax %3.1lf  %3.1lf  %ld ~% ",
+                       yearout, monthout, tminsum/ndays,tmaxsum/ndays,
+                       tavgsum/ndays, mmin, mmax, ndays);
+
+                    // compare average to gisstemp record if found
+                    if (byearval != gissyear.year) {
+                        gissyear.loadByStation(sdb, gissloc.id_, byearval, TAVG);
+                    }
+
+                    if (gisstemp.loadByMonth(sdb, gissyear.dataid, bmonthval)) {
+                        output  << wxString::Format("%3.1lf \n", gisstemp.value);
+                        // ensure mmax year and month records exist
+                        if (mmaxyear.year != gissyear.year) {
+                            if (!mmaxyear.loadByStation(sdb, gissloc.id_, byearval, MMAX)){
+                                mmaxyear.dataid = 0;
+                                mmaxyear.sid = gissloc.id_;
+                                mmaxyear.year = byearval;
+                                mmaxyear.measure = MMAX;
+                                mmaxyear.valuesct = ndays;
+                                mmaxyear.create(sdb);
+                            }
+                        }
+                        mmaxtemp.dataid = mmaxyear.dataid;
+                        mmaxtemp.monthid = bmonthval;
+                        mmaxtemp.value = mmax;
+                        mmaxtemp.dmflag = 0;
+                        mmaxtemp.dsflag = 0;
+                        mmaxtemp.qcflag = 0;
+                        mmaxtemp.save(sdb);
+
+                        if (tmaxyear.year != gissyear.year) {
+                            if (!tmaxyear.loadByStation(sdb, gissloc.id_, byearval, TMAX)){
+                                tmaxyear.dataid = 0;
+                                tmaxyear.sid = gissloc.id_;
+                                tmaxyear.year = byearval;
+                                tmaxyear.measure = TMAX;
+                                tmaxyear.valuesct = ndays;
+                                tmaxyear.create(sdb);
+                            }
+                        }
+                        tmaxtemp.dataid = tmaxyear.dataid;
+                        tmaxtemp.monthid = bmonthval;
+                        tmaxtemp.value = tmaxsum/ndays;
+                        tmaxtemp.dmflag = 0;
+                        tmaxtemp.dsflag = 0;
+                        tmaxtemp.qcflag = 0;
+                        tmaxtemp.save(sdb);
+                    }
+                    else {
+                        output << "XXXX\n";
+                    }
+
+                }
+                else {
+                    output = "****\n";
+                }
+                txtDailyData->AppendText(output);
+                // save mmax
+
+                // reset count
+                bucketindex = dateindex;
+                byearval = yearval;
+                bmonthval = monthval;
+                tavgsum = tavgsqsum = tmaxsum = tminsum = tmaxsqsum = tminsqsum = 0.0;
+                mmin = 99.9;
+                mmax = -99.9;
+                ndays = 0;
+            }
+            tmax_str.ToDouble(&tmax_d);
+            tmax_d /= 10.0;
+            if (ndays == 0 || tmax_d > mmax) {
+                mmax = tmax_d;
+            }
+            tmin_str.ToDouble(&tmin_d);
+            tmin_d /= 10.0;
+            if (ndays == 0 || tmin_d < mmin) {
+                mmin = tmin_d;
+            }
+            tavg_d = (tmax_d + tmin_d)/2.0;
+            tmaxsum += tmax_d;
+            tmaxsqsum += tmax_d * tmax_d;
+            tminsum += tmin_d;
+            tminsqsum += tmin_d * tmin_d;
+            tavgsum += tavg_d;
+            tavgsqsum += tavg_d*tavg_d;
+            ndays += 1;
         }
     }
 
