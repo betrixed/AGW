@@ -1455,14 +1455,13 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
     MTEMP measure = (MTEMP) choice;
     auto useReal = radboxReal->GetSelection();
 
-    bool isgood = true;
     std::vector<float> months = {1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.};
     std::vector<PlotLayer_sptr>  years;
     std::string sql;
     std::string dropcommand;
 
     SeriesPtr xdata = std::make_shared<FloatSeries>(months,SeriesUnit::DATE_MONTH_NUM, "Month");
-    SeriesPtr ydata;
+    SeriesPtr ydata, yerror;
 
     if (useReal != AVG_REAL_TEMP) {
 
@@ -1509,32 +1508,28 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
             q_base.bind(baseYearTo,3);
             q_base.bind((long)measure, 4);
 
-            isgood = q_base.execute();
+            q_base.execute();
         }
         sql =
-             "SELECT AVG(T.value-A.base) as TMEAN, COUNT(*) as NT, "
-             " SUM(T.value-A.base) as SVAL, SUM((T.value-A.base)*(T.value-A.base)) as SSVAL, "
-            "  MIN(Y.year) as FROMYEAR, MAX(Y.year) as TOYEAR, T.monthid as month"
-            "   FROM gissyear Y, gisstemp T,"
+             "SELECT  T.value-A.base as value, T.monthid as month, Y.year"
+            " FROM gissyear Y, gisstemp T,"
                 + base_name + " A "
             " WHERE Y.sid = A.sid and A.monthid = T.monthid"
             " and Y.measure = ?"
             " and Y.dataid = T.dataid"
             " and Y.year >= ? and Y.year <= ?"
-             " GROUP BY T.monthid ORDER BY  month";
+             "  ORDER BY  year, month";
     } //
     else {
         // use Real temperatures , not difference from baseline
         sql =
-             "SELECT AVG(T.value) as TMEAN, COUNT(*) as NT, "
-             " SUM(T.value) as SVAL, SUM(T.value * T.value) as SSVAL, "
-            " MIN(Y.year) as FROMYEAR, MAX(Y.year) as TOYEAR, T.monthid as month"
+             "SELECT T.value, T.monthid as month, Y.year"
             " FROM gisstemp T,"
             " gissyear Y join memberstation S on S.sid = Y.sid and S.ss_id = ?"
             " WHERE Y.measure = ?"
             " and Y.dataid = T.dataid"
             " and Y.year >= ? and Y.year <= ?"
-             " GROUP BY T.monthid ORDER BY  month";
+             " ORDER BY  year, month";
     }
 
     // For each year range, get the average difference, and standard deviation to base
@@ -1564,32 +1559,57 @@ void StationSets::OnPlotYearsClick( wxCommandEvent& event )
         DataLayer* play = static_cast<DataLayer*>(yearplot.get());
 
         ydata = std::make_shared<FloatSeries>();
+        yerror = std::make_shared<FloatSeries>();
+
         std::string yearStr = range.ToStdString();
         ydata->setLabel(yearStr);
         ydata->setSize(12);
+        yerror->setSize(12);
+        yerror->setLabel(yearStr + " error");
         for (int i = 0; i < 12; i++)
             ydata->set(i, nanFloat);
+
+        /* matrix of 12 columns * years */
+        /* each column a vector */
+        typedef  std::vector<double> YearRow;
+        std::vector<YearRow> results ;
+        unsigned long nyears = toYear - fromYear + 1;
+        results.resize(nyears);
+        for (unsigned long ix = 0 ; ix < nyears; ix++)
+        {
+            results[ix].resize(12,nanFloat);
+        }
+
         while (q2.next())
         {
-            int n, miny, maxy;
-            double tavg,tsum, tsum2, monthid;
+            double tvalue;
+            int32_t tyear, tmonth;
 
-            q2.get(0, tavg);
-            q2.get(1, n);
-            q2.get(2, tsum);
-            q2.get(3, tsum2);
-            q2.get(4, miny);
-            q2.get(5, maxy);
-            q2.get(6, monthid);
-            //if (n > 0) {
-            //    double check_avg = tsum / n;
-            //}
-            ydata->set(monthid-1, tavg);
+            q2.get(0, tvalue);
+            q2.get(1, tmonth);
+            q2.get(2, tyear);
 
+            results[tyear - fromYear][tmonth-1] = tvalue;
         }
+        RunningStat rstat;
+        for(unsigned long mid = 0; mid < 12; mid++) {
+
+            rstat.Clear();
+            for(unsigned long yid = 0; yid < nyears; yid++)
+            {
+                double X = results[yid][mid];
+                if (!std::isnan(X))
+                    rstat.Push(X);
+            }
+            ydata->set(mid, rstat.Mean());
+            yerror->set(mid, rstat.StandardDeviation());
+        }
+
 
         play->ydata_ = ydata;
         play->xdata_ = xdata;
+        play->errorbar_ = yerror;
+        play->xNudge_ = (i % 5 - 2);
         play->label_ = yearStr;
         play->legendText_  = yearStr;
         years.push_back(yearplot);
@@ -1664,6 +1684,8 @@ void StationSets::OnTimeSeriesClick( wxCommandEvent& event )
     uint maxMonth = 0;
 
     try {
+        std::stringstream allss;
+
         for(uint i = 0; i < rows.GetCount(); i++)
         {
             Station4* loc = base->getRecord(rows[i]);
@@ -1681,6 +1703,7 @@ void StationSets::OnTimeSeriesClick( wxCommandEvent& event )
                 std::stringstream ss;
                 ss << GissYear::measureStr(MTEMP(theMeasure)) << " " << loc->name_;
                 data->setLabel(ss.str());
+                allss << ss.str() << " ";
                 uint zeroMonthIndex = 0;
                 uint lastGoodIndex = 0;
                 uint currentIndex = 0;
@@ -1721,10 +1744,12 @@ void StationSets::OnTimeSeriesClick( wxCommandEvent& event )
                 // finished query rows, reset for new bindings
                 qtemp.reset();
             }
-        }
-        if (zeroMonth.size() == 0)
+        } // end loop measures
+        if (zeroMonth.size() == 0) {
+            wxLogMessage("No data records found for any %s", allss.str());
             return;
-    }
+        }
+    } // end try
     catch(DBException &ex)
     {
         wxLogMessage("Error: %s", ex.msg());
@@ -1833,7 +1858,7 @@ void StationSets::OnSetMapClick( wxCommandEvent& event )
 
 void StationSets::OnSelBaseSelected( wxCommandEvent& event )
 {
-    auto value = radboxReal->GetSelection();
+    //auto value = radboxReal->GetSelection();
     event.Skip();
 }
 
@@ -1853,7 +1878,12 @@ void StationSets::OnStationDataClick( wxCommandEvent& event )
         Station4* loc = base->getRecord(rows[0]);
 
         wxString fullpath = StationDailyData::FullPath(loc->stationid);
+
         if (!fullpath.IsEmpty()) {
+            if (!wxFileExists(fullpath)) {
+                wxLogMessage(wxString::Format("File not found %s", fullpath));
+                return;
+            }
             auto mf = ap_->mainFrame();
             auto setview = new StationDailyData(mf);
             setview->ap_ = ap_;
@@ -1861,9 +1891,7 @@ void StationSets::OnStationDataClick( wxCommandEvent& event )
             setview->SetStationId(loc->stationid, fullpath);
             setview->Show();
         }
-        else {
-            wxLogMessage(wxString::Format("File path not found %s", loc->stationid));
-        }
+
 
     }
 

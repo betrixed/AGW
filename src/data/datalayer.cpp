@@ -46,7 +46,8 @@ void DataLayer::randomStyle()
     lineStyle_ = penStyleToIndex(rand_line());
     lineWidth_ = 1;
 }
-DataLayer::DataLayer() : PlotLayer(), xdata_(nullptr), ydata_(nullptr), errorbar_(nullptr)
+DataLayer::DataLayer() : PlotLayer(),
+    xdata_(nullptr), ydata_(nullptr), errorbar_(nullptr), errorMax_(nanFloat), xNudge_(0)
 {
     jype_ = "data_layer";
 
@@ -366,5 +367,13 @@ void DataLayer::calcStats()
         ystats_.maxval_ = xp.dataMax();
         ystats_.valid_ = true;
 
+    }
+
+    if (errorbar_ != nullptr) {
+        Series& ep = *errorbar_;
+        auto ct = ep.calcDataLimits();
+        if (ct > 0) {
+            errorMax_ = ep.dataMax();
+        }
     }
 }

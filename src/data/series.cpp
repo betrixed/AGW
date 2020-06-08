@@ -6,6 +6,8 @@
 
 #include "json/json.h"
 #include "series_helper.h"
+#include "helper.h"
+
 #ifdef WIN32
     #ifndef NAN
         static const unsigned long __nan[2] = {0xffffffff, 0x7fffffff};
@@ -245,6 +247,8 @@ void NormalStats::calc(const Series& x)
     double value;
     auto nlimit = x.size();
     size_t ct = 0;
+    RunningStat rstat;
+
     for (size_t i = 0 ; i < nlimit ; i++)
 	{
         value = x[i];
@@ -252,47 +256,30 @@ void NormalStats::calc(const Series& x)
         {
             continue;
         }
+        else {
+            rstat.Push(value);
+        }
         if (ct==0)
         {
             minval_ =  value;
-            maxval_ =   value;
+            maxval_ =  value;
         }
         else if (value < minval_)
             minval_ = value;
         else if (value > maxval_)
             maxval_ = value;
         ct++;
-        sum1 += value;
 	}
 	if (ct > 0)
 	{
-        n_ = ct;
-		this->mean_ = sum1 / n_ ;
-
-		if (n_  > 1)
-		{
-			double sum2 = 0;
-			double sum3 = 0;
-			for(size_t i = 0 ; i < nlimit ; i++)
-			{
-                value = x[i];
-                if (std::isnan(value))
-                    continue;
-				const double temp = (value - this->mean_);
-				sum2 += temp*temp;
-				sum3 += temp;
-			}
-			this->stddev_ = sqrt((sum2 - sum3*sum3/n_ )/(n_ -1));
-		}
-		else {
-			this->stddev_ = 0;
-		}
+		this->mean_ = rstat.Mean() ;
+        this->stddev_ = rstat.StandardDeviation();
 	}
 	else {
 		this->mean_ = 0.0;
 		this->stddev_ = 0.0;
 	}
-    valid_ = (n_ > 0);
+    valid_ = (ct > 0);
 }
 
 void RCorrelate::calc(const Series& x, const Series& y)

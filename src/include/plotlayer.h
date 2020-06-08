@@ -137,7 +137,7 @@ namespace agw {
 		SeriesPtr    ydata_;
 
 		SeriesPtr errorbar_;
-
+        double    errorMax_;
 		// render properties
 		int         symbolShape_;
 		int         symbolSize_;
@@ -147,6 +147,7 @@ namespace agw {
 		int         lineStyle_;  // index into a penstyle
 		int         lineWidth_;
 		wxColour    lineColor_;
+		int         xNudge_; // a pixel nudge or two for distinguishing error bars.
 		std::string label_;
 		std::string legendText_;
 		// lua

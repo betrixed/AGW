@@ -85,6 +85,10 @@ bool AxisDlg::Create( wxWindow* parent, wxWindowID id, const wxString& caption, 
     wxDialog::Create( parent, id, caption, pos, size, style );
 
     CreateControls();
+    if (GetSizer())
+    {
+        GetSizer()->SetSizeHints(this);
+    }
     Centre();
 ////@end AxisDlg creation
     return true;
@@ -288,7 +292,7 @@ void AxisDlg::CreateControls()
 
     wxGridBagSizer* itemGridBagSizer43 = new wxGridBagSizer(0, 0);
     itemGridBagSizer43->SetEmptyCellSize(wxSize(10, 20));
-    itemBoxSizer41->Add(itemGridBagSizer43, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemBoxSizer41->Add(itemGridBagSizer43, 0, wxALIGN_CENTER_VERTICAL|wxALL, 3);
     wxStaticText* itemStaticText44 = new wxStaticText( mPageNumber, wxID_STATIC, _("Major"), wxDefaultPosition, wxDefaultSize, 0 );
     itemGridBagSizer43->Add(itemStaticText44, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 

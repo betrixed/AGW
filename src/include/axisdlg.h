@@ -48,7 +48,7 @@ class wxDatePickerCtrl;
 #define SYMBOL_AXISDLG_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX|wxTAB_TRAVERSAL
 #define SYMBOL_AXISDLG_TITLE _("Axis Dialog")
 #define SYMBOL_AXISDLG_IDNAME ID_AXISDLG
-#define SYMBOL_AXISDLG_SIZE wxSize(500, 400)
+#define SYMBOL_AXISDLG_SIZE wxSize(500, 500)
 #define SYMBOL_AXISDLG_POSITION wxDefaultPosition
 ////@end control identifiers
 

@@ -19,7 +19,7 @@ public:
     LocTable();
     virtual ~LocTable();
 
-    static std::string displayColumn(Station4* loc, int col);
+    static wxString displayColumn(Station4* loc, int col);
 
 
     virtual int 	GetNumberRows ()

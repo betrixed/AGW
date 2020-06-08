@@ -321,9 +321,9 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
 
     Station4 gissloc;
     std::string stationid(name.utf8_str());
+    wxString firstdate;
 
     gissloc.loadByCode(sdb,stationid);
-
     while (rdr.next(row)) {
         tmax_str = row[tmax_column];
 
@@ -336,6 +336,7 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
                 day_str = dexp.GetMatch(date_str,3);
                 year_str.ToCLong(&yearval,10);
                 month_str.ToCLong(&monthval,10);
+
                 //yearval = std::strtol(year_str.utf8_str(),nullptr,10);
                 //monthval = std::strtol(month_str.utf8_str(),nullptr,10);
                 dateindex = yearval*12 + (monthval-1);
@@ -343,6 +344,10 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
             else {
                 continue;
             }
+            if (firstdate.IsEmpty()) {
+                firstdate = date_str;
+            }
+
             tmin_str = row[tmin_column];
             prcp_str = row[prcp_column];
             //line_str = year_str << "/" << month_str << "/" << day_str;
@@ -352,6 +357,7 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
                 // output averaged values
                 yearout = bucketindex / 12;
                 monthout = bucketindex - yearout*12 + 1;
+
                 if (ndays > 0) {
                     output.Printf("%ld-%ld %3.1lf %3.1lf avg %3.1lf absminmax %3.1lf  %3.1lf  %ld ~% ",
                        yearout, monthout, tminsum/ndays,tmaxsum/ndays,
@@ -440,6 +446,11 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
             tavgsqsum += tavg_d*tavg_d;
             ndays += 1;
         }
+    }
+    if ( !gissloc.startDate_.IsValid() && !firstdate.IsEmpty()) {
+        gissloc.startDate_.ParseDate(firstdate);
+        gissloc.endDate_.ParseDate(date_str);
+        gissloc.save(sdb);
     }
 
 }

@@ -726,9 +726,12 @@ void PixelWorld::autoYDataLimits(std::vector<PlotLayer_sptr>& layers, double& yM
         }
         if (layer->errorbar_ != nullptr)
         {
-            double maxError = layer->errorbar_->dataMax();
-            yMin -= maxError;
-            yMax += maxError;
+
+            double maxError = layer->errorMax_;
+            if (!isnan(maxError)) {
+                yMin -= maxError;
+                yMax += maxError;
+            }
         }
     }
 

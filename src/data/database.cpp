@@ -434,7 +434,7 @@ StationSet::loadByName(SqliteDB& sdb, const std::string& name)
     */
 bool
 Station4::loadByCode(SqliteDB& sdb, const std::string& qstationid) {
-    Statement query(sdb, "select id, latit, longt, elevt "
+    Statement query(sdb, "select id, latit, longt, elevt, "
             " name, startdate, enddate from gissloc where stationid = ?");
     query.bind(qstationid,1);
     if (query.next()) {
@@ -484,7 +484,8 @@ bool Station4::save(SqliteDB &sdb)
 
     ss << "update gissloc set stationid = ? , latit = ?, longt = ?, elevt = ?,"
         " name = ?, startdate = ?, enddate = ?,";
-    ss << " Geometry = GeomFromText('POINT(" << this->long_ << "," << this->lat_ << ")',4326)";
+    //ss << " Geometry = MakePoint(" << this->long_ << "," << this->lat_ << ",4326)";
+    ss << " Geometry = MakePoint(?,?,4326)";
     ss << " where id = ? ";
 
 //		") values (?,?,?,?,?,"
@@ -499,7 +500,10 @@ bool Station4::save(SqliteDB &sdb)
 	query.bind(this->name_,5);
 	query.bind(this->startDate_,6);
 	query.bind(this->endDate_,7);
-	query.bindRowId(this->id_,8);
+	query.bind(this->long_,8);
+	query.bind(this->lat_,9);
+	query.bindRowId(this->id_,10);
+
     return query.execute();
 }
 

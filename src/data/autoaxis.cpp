@@ -34,7 +34,7 @@ void DataLayer::renderDC(wxDC& dc, PixelWorld& px)
     wxRect clip(px.left_,px.top_, px.xspan_, px.yspan_);
 
     {
-
+        int xsep = symbolSize_ * xNudge_;
 
         if ((lineWidth_ > 0) && (linepen != wxPENSTYLE_TRANSPARENT))
         {
@@ -52,7 +52,7 @@ void DataLayer::renderDC(wxDC& dc, PixelWorld& px)
                 auto y = ydata[i];
                 if (std::isnan(x) || std::isnan(y))
                     continue;
-                auto xpt = (int)( (x-xoffset)* xscale ) + px.left_;
+                auto xpt = (int)( (x-xoffset)* xscale ) + px.left_ + xsep;
                 auto ypt = (int)( (y-yoffset)* yscale ) + px.top_;
 
                 if (i > 0)
@@ -78,10 +78,8 @@ void DataLayer::renderDC(wxDC& dc, PixelWorld& px)
             auto y = ydata[i];
             if (std::isnan(x) || std::isnan(y))
                 continue;
-            auto xpt = (int)( (x-xoffset)* xscale ) + px.left_;
+            auto xpt = (int)( (x-xoffset)* xscale ) + px.left_ + xsep;
             auto ypt = (int)( (y-yoffset)* yscale ) + px.top_;
-
-            sdraw->draw(xpt,ypt);
 
             if (errors != nullptr)
             {
@@ -91,6 +89,8 @@ void DataLayer::renderDC(wxDC& dc, PixelWorld& px)
                 dc.DrawLine(xpt-radius,ypt-ept,xpt+radius, ypt-ept);
                 dc.DrawLine(xpt-radius,ypt+ept,xpt+radius, ypt+ept);
             }
+
+            sdraw->draw(xpt,ypt);
         }
     }
     dc.SetBrush(savefill);
