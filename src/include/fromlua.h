@@ -3,8 +3,8 @@
 
 //#include <lua.hpp>
 extern "C" {
-#include "src/lua/lua.h"
-#include "src/lua/lauxlib.h"
+#include "lua.h"
+#include "lauxlib.h"
 }
 #include <string>
 

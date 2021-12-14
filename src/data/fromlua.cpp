@@ -11,7 +11,7 @@
 
 #include "fromlua.h"
 extern "C" {
-#include "src/lua/lualib.h"
+#include "lualib.h"
 }
 #include "wx/log.h"
 #include "lua_series.h"

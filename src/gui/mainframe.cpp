@@ -124,7 +124,11 @@ WorkThread::~WorkThread()
 void WorkThread::UpdateProgress(int value)
 {
     wxThreadEvent event( wxEVT_THREAD, WORKER_EVENT );
-    event.SetInt(value); // reached maximum
+    if (value >= 0)
+        event.SetInt(value);
+    else {
+        event.SetInt(100);
+    }
     wxQueueEvent( m_pHandler, event.Clone() );
 }
 
@@ -302,7 +306,7 @@ wxThread::ExitCode ImportGissThread::Entry()
         wxLogMessage("Sqlite3 Exception %s", ex.msg());
     }
 
-    UpdateProgress(-1);
+    //UpdateProgress(-1);
 
     wxLogMessage("Updated %d records", updateCt);
     return (wxThread::ExitCode)0;
@@ -480,7 +484,7 @@ void MainFrame::CreateControls()
     itemDocParentFrame1->Connect(ID_MAINFRAME, wxEVT_DESTROY, wxWindowDestroyEventHandler(MainFrame::OnDestroy), NULL, this);
 ////@end MainFrame content construction
 
-    log_ = new wxLogWindow(nullptr, "Log Window", true,false);
+    log_ = new wxLogWindow(nullptr, "Log Window", false, false);
     auto frame = log_->GetFrame();
     frame->SetClientSize(wxSize(400,500));
 
@@ -888,7 +892,7 @@ void  MainFrame::EndDBProgress()
 */
     sdb_.close();
 
-    UpdateProgress(-1);
+    //UpdateProgress(-1);
 
 	wxLogMessage("Updated %d records", updateCt);
 
