@@ -2,6 +2,7 @@ src/jsoncpp-*/**
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
+push_command.sh
 
 # Folder config file
 Desktop.ini

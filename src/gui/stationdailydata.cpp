@@ -248,6 +248,129 @@ static wxString unquote(const wxString& value) {
     return result;
 }
 
+class MonthStat {
+public:
+    int32_t byearval;
+    int32_t bmonthval;
+    double tmax_d, tmin_d, tavg_d;
+    double mmax, mmin;
+    long ndays;
+    long bucketindex;
+    double tmaxsum, tminsum, tavgsum;
+
+    // station id
+    sqlite3_int64   sid;
+
+
+    sqlite3_int64 tmax_year_id;
+    sqlite3_int64 tmin_year_id;
+    sqlite3_int64 mmax_year_id;
+    sqlite3_int64 mmin_year_id;
+    int32_t       rec_year;
+
+    MonthStat() : ndays(0), bucketindex(0), rec_year(0)
+    {
+    }
+
+    void sid(sqlite3_int64 id) {
+        this->sid = id;
+    }
+
+    bool dirty() {
+        return (ndays > 0);
+    }
+
+    void setmonth(int32_t year, int32_t month) {
+        byearval = year;
+        bmonthval = month;
+
+        bucketindex = year*12 + (month-1);
+        ndays = 0;
+        tmaxsum = 0.0;
+        tminsum = 0.0;
+        tavgsum = 0.0;
+
+        if (byearval != rec_year) {
+            rec_year = 0;
+        }
+
+    }
+
+
+    long index() {
+        return bucketindex;
+    }
+
+
+    sqlite3_int64 get_year(SqliteDB& sdb, int code) {
+        GissYear year;
+
+        if (!year.loadByStation(sdb, sid, byearval, code)){
+            year.dataid = 0;
+            year.sid = sid;
+            year.year = byearval;
+            year.measure = code;
+            year.valuesct = 0;
+            year.create(sdb);
+        }
+        return year.dataid;
+    }
+
+    void save_stat(SqliteDB& sdb, sqlite3_int64 yid, double value) 
+    {
+        MonthTemp temp;
+
+        temp.dataid = yid;
+        temp.monthid = bmonthval;
+        temp.value = value;
+        temp.dmflag = 0;
+        temp.dsflag = 0;
+        temp.qcflag = 0;
+        temp.save(sdb);
+    }
+
+    void save(SqliteDB& sdb) {
+        tmax_year_id = get_year(sdb, TMAX);
+        tmin_year_id = get_year(sdb, TMIN);
+        mmax_year_id = get_year(sdb, MMAX);
+        mmin_year_id = get_year(sdb, MMIN);
+        rec_year = byearval;
+
+        save_stat(sdb, tmin_year_id, tmin_d);
+        save_stat(sdb, tmax_year_id, tmax_d);
+        save_stat(sdb, mmin_year_id, mmin);
+        save_stat(sdb, mmax_year_id, mmax);
+
+        ndays = 0;
+    }
+
+    void add(const wxString& smin, const wxString& smax)
+    {
+        smax.ToDouble(&tmax_d);
+        tmax_d /= 10.0;
+
+        if (ndays == 0 || tmax_d > mmax) {
+            mmax = tmax_d;
+        }
+
+        smin.ToDouble(&tmin_d);
+        tmin_d /= 10.0;
+        if (ndays == 0 || tmin_d < mmin) {
+            mmin = tmin_d;
+        }
+        tavg_d = (tmax_d + tmin_d)/2.0;
+        tmaxsum += tmax_d;
+
+        tminsum += tmin_d;
+
+        tavgsum += tavg_d;
+
+        ndays += 1;
+
+    }
+
+};
+
 //Feed some extra statistics into the GissYear, GissTemp sections in a
 //single pass through a daily station text file
 void StationDailyData::SetStationId(const wxString& name, const wxString& filepath)
@@ -297,37 +420,24 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
     long yearval;
     long monthval;
     long dateindex;
-    long bucketindex = 0;
-    int32_t byearval;
-    int32_t bmonthval;
+
+    MonthStat   mstat;
 
     wxLogMessage("Columns %d %d %d %d",date_column,prcp_column, tmax_column,tmin_column );
     wxString line_str;
     SqliteDB& sdb = ap_->getDB();
 
-    double tmaxsum,tminsum,tmaxsqsum,tminsqsum, tavgsum, tavgsqsum;
-    double tmax_d, tmin_d, tavg_d;
-    double mmax, mmin;
-    long ndays = 0;
     long yearout, monthout;
     wxString output;
-    GissYear gissyear;
-    GissYear mmaxyear;
-    GissYear tmaxyear;
-
-    MonthTemp gisstemp;
-    MonthTemp mmaxtemp;
-    MonthTemp tmaxtemp;
 
     Station4 gissloc;
     std::string stationid(name.utf8_str());
     wxString firstdate;
 
     gissloc.loadByCode(sdb,stationid);
+
     while (rdr.next(row)) {
         tmax_str = row[tmax_column];
-
-
         if (tmax_str.size() > 0) {
             date_str = row[date_column];
             if (dexp.Matches(date_str) && dexp.GetMatchCount() == 4) {
@@ -336,9 +446,6 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
                 day_str = dexp.GetMatch(date_str,3);
                 year_str.ToCLong(&yearval,10);
                 month_str.ToCLong(&monthval,10);
-
-                //yearval = std::strtol(year_str.utf8_str(),nullptr,10);
-                //monthval = std::strtol(month_str.utf8_str(),nullptr,10);
                 dateindex = yearval*12 + (monthval-1);
             }
             else {
@@ -353,99 +460,18 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
             //line_str = year_str << "/" << month_str << "/" << day_str;
             //line_str << " " << tmin_str << " " << tmax_str << " " << prcp_str << "\n";
             txtDailyData->AppendText(line_str);
-            if (bucketindex != dateindex) {
-                // output averaged values
-                yearout = bucketindex / 12;
-                monthout = bucketindex - yearout*12 + 1;
-
-                if (ndays > 0) {
-                    output.Printf("%ld-%ld %3.1lf %3.1lf avg %3.1lf absminmax %3.1lf  %3.1lf  %ld ~% ",
-                       yearout, monthout, tminsum/ndays,tmaxsum/ndays,
-                       tavgsum/ndays, mmin, mmax, ndays);
-
-                    // compare average to gisstemp record if found
-                    if (byearval != gissyear.year) {
-                        gissyear.loadByStation(sdb, gissloc.id_, byearval, TAVG);
-                    }
-
-                    if (gisstemp.loadByMonth(sdb, gissyear.dataid, bmonthval)) {
-                        output  << wxString::Format("%3.1lf \n", gisstemp.value);
-                        // ensure mmax year and month records exist
-                        if (mmaxyear.year != gissyear.year) {
-                            if (!mmaxyear.loadByStation(sdb, gissloc.id_, byearval, MMAX)){
-                                mmaxyear.dataid = 0;
-                                mmaxyear.sid = gissloc.id_;
-                                mmaxyear.year = byearval;
-                                mmaxyear.measure = MMAX;
-                                mmaxyear.valuesct = ndays;
-                                mmaxyear.create(sdb);
-                            }
-                        }
-                        mmaxtemp.dataid = mmaxyear.dataid;
-                        mmaxtemp.monthid = bmonthval;
-                        mmaxtemp.value = mmax;
-                        mmaxtemp.dmflag = 0;
-                        mmaxtemp.dsflag = 0;
-                        mmaxtemp.qcflag = 0;
-                        mmaxtemp.save(sdb);
-
-                        if (tmaxyear.year != gissyear.year) {
-                            if (!tmaxyear.loadByStation(sdb, gissloc.id_, byearval, TMAX)){
-                                tmaxyear.dataid = 0;
-                                tmaxyear.sid = gissloc.id_;
-                                tmaxyear.year = byearval;
-                                tmaxyear.measure = TMAX;
-                                tmaxyear.valuesct = ndays;
-                                tmaxyear.create(sdb);
-                            }
-                        }
-                        tmaxtemp.dataid = tmaxyear.dataid;
-                        tmaxtemp.monthid = bmonthval;
-                        tmaxtemp.value = tmaxsum/ndays;
-                        tmaxtemp.dmflag = 0;
-                        tmaxtemp.dsflag = 0;
-                        tmaxtemp.qcflag = 0;
-                        tmaxtemp.save(sdb);
-                    }
-                    else {
-                        output << "XXXX\n";
-                    }
-
+            if (mstat.index() != dateindex) {
+                if (mstat.dirty()) {
+                    mstat.save(sdb);
                 }
-                else {
-                    output = "****\n";
-                }
-                txtDailyData->AppendText(output);
-                // save mmax
-
-                // reset count
-                bucketindex = dateindex;
-                byearval = yearval;
-                bmonthval = monthval;
-                tavgsum = tavgsqsum = tmaxsum = tminsum = tmaxsqsum = tminsqsum = 0.0;
-                mmin = 99.9;
-                mmax = -99.9;
-                ndays = 0;
+                mstat.init(yearval, monthval);
             }
-            tmax_str.ToDouble(&tmax_d);
-            tmax_d /= 10.0;
-            if (ndays == 0 || tmax_d > mmax) {
-                mmax = tmax_d;
-            }
-            tmin_str.ToDouble(&tmin_d);
-            tmin_d /= 10.0;
-            if (ndays == 0 || tmin_d < mmin) {
-                mmin = tmin_d;
-            }
-            tavg_d = (tmax_d + tmin_d)/2.0;
-            tmaxsum += tmax_d;
-            tmaxsqsum += tmax_d * tmax_d;
-            tminsum += tmin_d;
-            tminsqsum += tmin_d * tmin_d;
-            tavgsum += tavg_d;
-            tavgsqsum += tavg_d*tavg_d;
-            ndays += 1;
+            
+            mstat.add(tmin_str, tmax_str);
         }
+    }
+    if (mstat.dirty()) {
+        mstat.save(sdb);
     }
     if ( !gissloc.startDate_.IsValid() && !firstdate.IsEmpty()) {
         gissloc.startDate_.ParseDate(firstdate);

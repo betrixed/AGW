@@ -125,8 +125,8 @@ public:
     int    monthid;
     double value;
     char   dmflag;
-    char    qcflag;
-    char    dsflag;
+    char   qcflag;
+    char   dsflag;
 
 
     MonthTemp() : dataid(0), monthid(0), value(0.0), dmflag(0), qcflag(0), dsflag(0)
