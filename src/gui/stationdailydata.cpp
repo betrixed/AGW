@@ -48,6 +48,8 @@ IMPLEMENT_CLASS( StationDailyData, wxFrame )
 BEGIN_EVENT_TABLE( StationDailyData, wxFrame )
 
 ////@begin StationDailyData event table entries
+    EVT_BUTTON( ID_SHOW_NOW, StationDailyData::OnShowNowClick )
+    EVT_BUTTON( ID_CALCULATE, StationDailyData::OnCalculateClick )
 ////@end StationDailyData event table entries
 
 END_EVENT_TABLE()
@@ -103,7 +105,8 @@ StationDailyData::~StationDailyData()
 void StationDailyData::Init()
 {
 ////@begin StationDailyData member initialisation
-    btnSpinShow = NULL;
+    txShowYear = NULL;
+    txShowMonth = NULL;
     txtDailyData = NULL;
 ////@end StationDailyData member initialisation
 }
@@ -127,36 +130,35 @@ void StationDailyData::CreateControls()
     wxStaticText* itemStaticText3 = new wxStaticText( itemFrame1, wxID_STATIC, _("Year"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer2->Add(itemStaticText3, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxTextCtrl* itemTextCtrl4 = new wxTextCtrl( itemFrame1, ID_SHOW_YEAR, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer2->Add(itemTextCtrl4, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    txShowYear = new wxTextCtrl( itemFrame1, ID_SHOW_YEAR, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer2->Add(txShowYear, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxStaticText* itemStaticText5 = new wxStaticText( itemFrame1, wxID_STATIC, _("Month"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer2->Add(itemStaticText5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxArrayString itemChoice6Strings;
-    itemChoice6Strings.Add(_("1"));
-    itemChoice6Strings.Add(_("2"));
-    itemChoice6Strings.Add(_("3"));
-    itemChoice6Strings.Add(_("4"));
-    itemChoice6Strings.Add(_("5"));
-    itemChoice6Strings.Add(_("6"));
-    itemChoice6Strings.Add(_("7"));
-    itemChoice6Strings.Add(_("8"));
-    itemChoice6Strings.Add(_("9"));
-    itemChoice6Strings.Add(_("10"));
-    itemChoice6Strings.Add(_("11"));
-    itemChoice6Strings.Add(_("12"));
-    wxChoice* itemChoice6 = new wxChoice( itemFrame1, ID_SHOW_MONTH, wxDefaultPosition, wxDefaultSize, itemChoice6Strings, 0 );
-    itemChoice6->SetStringSelection(_("1"));
-    itemBoxSizer2->Add(itemChoice6, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxArrayString txShowMonthStrings;
+    txShowMonthStrings.Add(_("1"));
+    txShowMonthStrings.Add(_("2"));
+    txShowMonthStrings.Add(_("3"));
+    txShowMonthStrings.Add(_("4"));
+    txShowMonthStrings.Add(_("5"));
+    txShowMonthStrings.Add(_("6"));
+    txShowMonthStrings.Add(_("7"));
+    txShowMonthStrings.Add(_("8"));
+    txShowMonthStrings.Add(_("9"));
+    txShowMonthStrings.Add(_("10"));
+    txShowMonthStrings.Add(_("11"));
+    txShowMonthStrings.Add(_("12"));
+    txShowMonth = new wxChoice( itemFrame1, ID_SHOW_MONTH, wxDefaultPosition, wxDefaultSize, txShowMonthStrings, 0 );
+    txShowMonth->SetStringSelection(_("1"));
+    itemBoxSizer2->Add(txShowMonth, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxButton* itemButton7 = new wxButton( itemFrame1, ID_SHOW_NOW, _("Show"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer2->Add(itemButton7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    btnSpinShow = new wxSpinButton( itemFrame1, ID_SPINSHOW, wxDefaultPosition, wxDefaultSize, wxSP_VERTICAL );
-    btnSpinShow->SetRange(0, 100);
-    btnSpinShow->SetValue(0);
-    itemBoxSizer2->Add(btnSpinShow, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton1 = new wxButton( itemFrame1, ID_CALCULATE, _("Calculate"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemButton1->SetName(wxT("btnCalculate"));
+    itemBoxSizer2->Add(itemButton1, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     txtDailyData = new wxTextCtrl( itemFrame1, ID_TEXTCTRL, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxHSCROLL|wxSUNKEN_BORDER );
     itemBoxSizer1->Add(txtDailyData, 1, wxGROW|wxALL, 5);
@@ -227,7 +229,7 @@ StationDailyData::FullPath(const wxString& stationid) {
 }
 
 // return unquoted character if required
-static wxString unquote(const wxString& value) {
+/* static wxString unquote(const wxString& value) {
     wxString result;
     wxString::const_iterator it = value.begin();;
     wxString::const_iterator eit = value.end();
@@ -247,6 +249,7 @@ static wxString unquote(const wxString& value) {
     }
     return result;
 }
+*/
 
 class MonthStat {
 public:
@@ -272,7 +275,7 @@ public:
     {
     }
 
-    void sid(sqlite3_int64 id) {
+    void set_sid(sqlite3_int64 id) {
         this->sid = id;
     }
 
@@ -316,7 +319,15 @@ public:
         return year.dataid;
     }
 
-    void save_stat(SqliteDB& sdb, sqlite3_int64 yid, double value) 
+    void text_stat(wxString& data) {
+        if (ndays > 0) {
+            data.Printf("%4d-%02d:  %4.1f %4.1f %4.1f\n", byearval, bmonthval, tminsum/ndays, tmaxsum/ndays, tavgsum/ndays);
+        }
+        else {
+            data.Printf("*** no data ***");
+        }
+    }
+    void save_stat(SqliteDB& sdb, sqlite3_int64 yid, double value)
     {
         MonthTemp temp;
 
@@ -330,14 +341,17 @@ public:
     }
 
     void save(SqliteDB& sdb) {
+        if (ndays == 0) {
+            return;
+        }
         tmax_year_id = get_year(sdb, TMAX);
         tmin_year_id = get_year(sdb, TMIN);
         mmax_year_id = get_year(sdb, MMAX);
         mmin_year_id = get_year(sdb, MMIN);
         rec_year = byearval;
 
-        save_stat(sdb, tmin_year_id, tmin_d);
-        save_stat(sdb, tmax_year_id, tmax_d);
+        save_stat(sdb, tmin_year_id, tminsum / ndays);
+        save_stat(sdb, tmax_year_id, tmaxsum / ndays);
         save_stat(sdb, mmin_year_id, mmin);
         save_stat(sdb, mmax_year_id, mmax);
 
@@ -346,15 +360,19 @@ public:
 
     void add(const wxString& smin, const wxString& smax)
     {
+        if (smin.size()==0 || smax.size()==0) {
+            return; // need both
+        }
         smax.ToDouble(&tmax_d);
         tmax_d /= 10.0;
+        smin.ToDouble(&tmin_d);
+        tmin_d /= 10.0;
 
         if (ndays == 0 || tmax_d > mmax) {
             mmax = tmax_d;
         }
 
-        smin.ToDouble(&tmin_d);
-        tmin_d /= 10.0;
+
         if (ndays == 0 || tmin_d < mmin) {
             mmin = tmin_d;
         }
@@ -371,14 +389,13 @@ public:
 
 };
 
-//Feed some extra statistics into the GissYear, GissTemp sections in a
-//single pass through a daily station text file
-void StationDailyData::SetStationId(const wxString& name, const wxString& filepath)
+void StationDailyData::Calculate()
 {
-    stationId = name;
+    wxString filepath = StationDailyData::FullPath(stationId);
+
 
     wxFileInputStream input_stream(filepath);
-    double fileLength = input_stream.GetLength();
+    //double fileLength = input_stream.GetLength();
     if (!input_stream.IsOk())
     {
         wxLogError("Cannot open file '%s'.", filepath.utf8_str());
@@ -392,6 +409,7 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
     int tmin_column  = -1;
     int prcp_column = -1;
     std::unordered_map<std::string, int> col_names;
+    wxString output;
 
     if(rdr.next(row))
     {
@@ -424,17 +442,15 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
     MonthStat   mstat;
 
     wxLogMessage("Columns %d %d %d %d",date_column,prcp_column, tmax_column,tmin_column );
-    wxString line_str;
     SqliteDB& sdb = ap_->getDB();
 
-    long yearout, monthout;
-    wxString output;
-
     Station4 gissloc;
-    std::string stationid(name.utf8_str());
+    std::string stationid(stationId.utf8_str());
     wxString firstdate;
 
     gissloc.loadByCode(sdb,stationid);
+
+    mstat.set_sid(gissloc.id_);
 
     while (rdr.next(row)) {
         tmax_str = row[tmax_column];
@@ -459,18 +475,24 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
             prcp_str = row[prcp_column];
             //line_str = year_str << "/" << month_str << "/" << day_str;
             //line_str << " " << tmin_str << " " << tmax_str << " " << prcp_str << "\n";
-            txtDailyData->AppendText(line_str);
+
             if (mstat.index() != dateindex) {
                 if (mstat.dirty()) {
+                    mstat.text_stat(output);
+                    txtDailyData->AppendText(output);
                     mstat.save(sdb);
+                    wxYieldIfNeeded();
                 }
-                mstat.init(yearval, monthval);
+                mstat.setmonth(yearval, monthval);
             }
-            
+
             mstat.add(tmin_str, tmax_str);
         }
     }
     if (mstat.dirty()) {
+        mstat.text_stat(output);
+        txtDailyData->AppendText(output);
+        txtDailyData->AppendText("*** end ***");
         mstat.save(sdb);
     }
     if ( !gissloc.startDate_.IsValid() && !firstdate.IsEmpty()) {
@@ -478,5 +500,132 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
         gissloc.endDate_.ParseDate(date_str);
         gissloc.save(sdb);
     }
-
 }
+//Feed some extra statistics into the GissYear, GissTemp sections in a
+//single pass through a daily station text file
+void StationDailyData::SetStationId(const wxString& name, const wxString& filepath)
+{
+    stationId = name;
+    wxString title;
+    title << name << " TMIN TMAX MMIN MMAX from daily data";
+    SetTitle(title);
+}
+
+
+/*
+ * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_SHOW_NOW
+ */
+
+void StationDailyData::OnShowNowClick( wxCommandEvent& event )
+{
+
+    // Read the year, month,
+    wxString year = txShowYear->GetValue();
+    long     byear;
+    year.ToCLong(&byear);
+    int bmonth = txShowMonth->GetSelection()+1;
+    int bindex = byear*12 + bmonth-1;
+
+    // Before editing this code, remove the block markers.
+    event.Skip();
+    wxString msg;
+
+    msg << "Year " << byear << " Month " << bmonth << "\n";
+    txtDailyData->AppendText(msg);
+
+    wxString filepath = StationDailyData::FullPath(stationId);
+
+
+    wxFileInputStream input_stream(filepath);
+    //double fileLength = input_stream.GetLength();
+    if (!input_stream.IsOk())
+    {
+        wxLogError("Cannot open file '%s'.", filepath.utf8_str());
+        return;
+    }
+    wxTextInputStream   text(input_stream, ',');
+    wxCSV rdr(&text, ',');
+    wxArrayString row;
+
+
+    int tmax_column = -1;
+    int date_column = -1;
+    int tmin_column  = -1;
+    int prcp_column = -1;
+    std::unordered_map<std::string, int> col_names;
+    wxString output;
+
+    if(rdr.next(row))
+    {
+        // check headers
+        for(int ix = 0; ix < (int)row.GetCount(); ix++) {
+            auto check = row[ix];
+            std::string key(check.utf8_str());
+            col_names.insert({key, ix});
+        }
+    }
+    tmax_column = col_names["TMAX"];
+    tmin_column = col_names["TMIN"];
+    prcp_column = col_names["PRCP"];
+    date_column = col_names["DATE"];
+
+    wxString tmax_str;
+    wxString tmin_str;
+    wxString prcp_str;
+    wxString date_str;
+    wxString day_str;
+    wxString month_str;
+    wxString year_str;
+
+    wxRegEx  dexp;
+    dexp.Compile("(\\d\\d\\d\\d)\\-(\\d\\d)\\-(\\d\\d)",wxRE_ADVANCED);
+    long yearval;
+    long monthval;
+    long dateindex;
+
+    while (rdr.next(row)) {
+        tmax_str = row[tmax_column];
+        tmin_str = row[tmin_column];
+        if (tmax_str.size() > 0) {
+            date_str = row[date_column];
+            if (dexp.Matches(date_str) && dexp.GetMatchCount() == 4) {
+                year_str = dexp.GetMatch(date_str,1);
+                month_str = dexp.GetMatch(date_str,2);
+                day_str = dexp.GetMatch(date_str,3);
+                year_str.ToCLong(&yearval,10);
+                month_str.ToCLong(&monthval,10);
+                dateindex = yearval*12 + (monthval-1);
+            }
+            else {
+                continue;
+            }
+
+
+            prcp_str = row[prcp_column];
+
+
+            if (bindex == dateindex) {
+                output = year_str << "/" << month_str << "/" << day_str;
+                output << " " << tmin_str << " " << tmax_str << " " << prcp_str << "\n";
+                txtDailyData->AppendText(output);
+            }
+            else if (bindex < dateindex) {
+                output = "*** end *** \n";
+                txtDailyData->AppendText(output);
+                break;
+            }
+        }
+    }
+}
+
+
+/*
+ * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CALCULATE
+ */
+
+void StationDailyData::OnCalculateClick( wxCommandEvent& event )
+{
+    event.Skip();
+    Calculate();
+}
+

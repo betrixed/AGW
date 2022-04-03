@@ -19,7 +19,6 @@
 
 ////@begin includes
 #include "wx/frame.h"
-#include "wx/spinbutt.h"
 ////@end includes
 
 /*!
@@ -27,7 +26,6 @@
  */
 
 ////@begin forward declarations
-class wxSpinButton;
 ////@end forward declarations
 
 class AppData;
@@ -39,7 +37,7 @@ class AppData;
 #define SYMBOL_STATIONDAILYDATA_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
 #define SYMBOL_STATIONDAILYDATA_TITLE _("Station Daily Data")
 #define SYMBOL_STATIONDAILYDATA_IDNAME ID_STATIONDAILYDATA
-#define SYMBOL_STATIONDAILYDATA_SIZE wxSize(400, 300)
+#define SYMBOL_STATIONDAILYDATA_SIZE wxSize(500, 300)
 #define SYMBOL_STATIONDAILYDATA_POSITION wxDefaultPosition
 ////@end control identifiers
 
@@ -72,6 +70,12 @@ public:
 
 ////@begin StationDailyData event handler declarations
 
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_SHOW_NOW
+    void OnShowNowClick( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CALCULATE
+    void OnCalculateClick( wxCommandEvent& event );
+
 ////@end StationDailyData event handler declarations
 
 ////@begin StationDailyData member function declarations
@@ -87,7 +91,8 @@ public:
     static bool ShowToolTips();
 
 ////@begin StationDailyData member variables
-    wxSpinButton* btnSpinShow;
+    wxTextCtrl* txShowYear;
+    wxChoice* txShowMonth;
     wxTextCtrl* txtDailyData;
     /// Control identifiers
     enum {
@@ -95,7 +100,7 @@ public:
         ID_SHOW_YEAR = 10001,
         ID_SHOW_MONTH = 10002,
         ID_SHOW_NOW = 10003,
-        ID_SPINSHOW = 10004,
+        ID_CALCULATE = 10004,
         ID_TEXTCTRL = 10005
     };
 ////@end StationDailyData member variables
@@ -105,7 +110,8 @@ public:
 
     void SetStationId(const wxString& name, const wxString& fullpath);
     static wxString FullPath(const wxString& stationid);
-
+    void Calculate();
+    
 };
 
 #endif
