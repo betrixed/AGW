@@ -41,7 +41,7 @@ class wxBoxSizer;
 #define SYMBOL_STATIONQUERY_POSITION wxDefaultPosition
 ////@end control identifiers
 
-#include <json/forwards.h>
+#include <jsoncpp/json/forwards.h>
 
 /*!
  * StationQuery class declaration

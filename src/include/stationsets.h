@@ -49,7 +49,7 @@ class wxGrid;
 ////@end control identifiers
 
 #include "database.hpp"
-#include <json/forwards.h>
+#include <jsoncpp/json/forwards.h>
 /*!
  * StationSets class declaration
  */
