@@ -124,11 +124,9 @@ WorkThread::~WorkThread()
 void WorkThread::UpdateProgress(int value)
 {
     wxThreadEvent event( wxEVT_THREAD, WORKER_EVENT );
-    if (value >= 0)
-        event.SetInt(value);
-    else {
-        event.SetInt(100);
-    }
+
+    event.SetInt(value);
+
     wxQueueEvent( m_pHandler, event.Clone() );
 }
 
@@ -306,7 +304,7 @@ wxThread::ExitCode ImportGissThread::Entry()
         wxLogMessage("Sqlite3 Exception %s", ex.msg());
     }
 
-    //UpdateProgress(-1);
+    UpdateProgress(-1);
 
     wxLogMessage("Updated %d records", updateCt);
     return (wxThread::ExitCode)0;
@@ -781,12 +779,15 @@ void  MainFrame::EndDBProgress()
     }
     else
     {
-        if ( !dlgProgress_->Update(n) )
-        {
+        if (n >= 0 && n <= 100) {
+            if ( !dlgProgress_->Update(n) )
+            {
             /*wxCriticalSectionLocker lock(m_csCancelled);
 
             m_cancelled = true*/
+            }       
         }
+
     }
 }
 
@@ -892,7 +893,7 @@ void  MainFrame::EndDBProgress()
 */
     sdb_.close();
 
-    //UpdateProgress(-1);
+    UpdateProgress(-1);
 
 	wxLogMessage("Updated %d records", updateCt);
 

@@ -71,6 +71,7 @@ BEGIN_EVENT_TABLE( StationSets, wxFrame )
     EVT_LISTBOX( SET_LIST, StationSets::OnSetListSelected )
     EVT_BUTTON( ID_RUN_QUERY, StationSets::OnRunQueryClick )
     EVT_BUTTON( ID_ADD_QUERY, StationSets::OnAddQueryClick )
+    EVT_RADIOBOX( ID_RADIOBOX, StationSets::OnRadioboxSelected )
     EVT_BUTTON( ID_GO_DERIVE, StationSets::OnGoDeriveClick )
     EVT_RADIOBOX( ID_SEL_BASE, StationSets::OnSelBaseSelected )
     EVT_BUTTON( ID_PLUS_YEAR, StationSets::OnPlusYearClick )
@@ -146,6 +147,7 @@ void StationSets::Init()
     mVSizer = NULL;
     pageDerive = NULL;
     mMeasure = NULL;
+    radboxAnomaly = NULL;
     mBaseStart = NULL;
     mBaseEnd = NULL;
     mBoxFit = NULL;
@@ -261,6 +263,14 @@ void StationSets::CreateControls()
     mMeasure = new wxChoice( itemStaticBoxSizer27->GetStaticBox(), ID_MEASURE, wxDefaultPosition, wxDefaultSize, mMeasureStrings, 0 );
     mMeasure->SetStringSelection(_("TAVG"));
     itemStaticBoxSizer27->Add(mMeasure, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    wxArrayString radboxAnomalyStrings;
+    radboxAnomalyStrings.Add(_("&Anomoly"));
+    radboxAnomalyStrings.Add(_("&Real"));
+    radboxAnomaly = new wxRadioBox( itemStaticBoxSizer27->GetStaticBox(), ID_RADIOBOX, _("Anomoly"), wxDefaultPosition, wxDefaultSize, radboxAnomalyStrings, 1, wxRA_SPECIFY_ROWS );
+    radboxAnomaly->SetSelection(0);
+    radboxAnomaly->SetName(wxT("AnomalySub"));
+    itemStaticBoxSizer27->Add(radboxAnomaly, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxStaticBox* itemStaticBoxSizer30Static = new wxStaticBox(pageDerive, wxID_ANY, _("Anomaly baseline year range (essential)"));
     wxStaticBoxSizer* itemStaticBoxSizer30 = new wxStaticBoxSizer(itemStaticBoxSizer30Static, wxHORIZONTAL);
@@ -1164,6 +1174,28 @@ int GetYearRange(const wxString& txt, long& start, long& end)
  * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_GO_DERIVE
  */
 
+const std::string AvgMonthTempAnomaly =
+" SELECT AVG(T.value - A.base) as anomoly, Y.year as year"
+        "   FROM gissyear Y, gisstemp T,"
+            " ( SELECT B.sid, R.monthid, AVG(R.value) as base"
+                " FROM gisstemp R, "
+                 "gissyear B join memberstation S on S.sid = B.sid and S.ss_id = ?"
+                " WHERE B.year >= ? and B.year <= ? "
+                " and R.dataid = B.dataid and B.measure = ?"
+                " group by B.sid, R.monthid ) A"
+        " WHERE Y.sid = A.sid and A.monthid = T.monthid"
+        " and Y.measure = ?"
+        " and Y.dataid = T.dataid";
+
+
+
+const std::string AvgMonthReal =
+" SELECT AVG(T.value) as anomoly, Y.year as year"
+        "   FROM gissyear Y, gisstemp T, memberstation S "
+        " WHERE Y.sid = S.sid and S.ss_id = ?"
+        " and Y.measure = ?"
+        " and Y.dataid = T.dataid";
+
 void StationSets::OnGoDeriveClick( wxCommandEvent& event )
 {
     std::string setName;
@@ -1182,31 +1214,19 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
         wxLogMessage("Missing station set name %s", setName.c_str());
         return;
     }
-    std::string sql =
-    " SELECT AVG(T.value - A.base) as anomoly, Y.year as year"
-    "   FROM gissyear Y, gisstemp T,"
-        " ( SELECT B.sid, R.monthid, AVG(R.value) as base"
-            " FROM gisstemp R, "
-             "gissyear B join memberstation S on S.sid = B.sid and S.ss_id = ?"
-            " WHERE B.year >= ? and B.year <= ? "
-            " and R.dataid = B.dataid and B.measure = ?"
-            " group by B.sid, R.monthid ) A"
-    " WHERE Y.sid = A.sid and A.monthid = T.monthid"
-    " and Y.measure = ?"
-    " and Y.dataid = T.dataid";
 
-    std::string groupBy =  " GROUP by Y.year ORDER BY year";
+    auto useReal = radboxAnomaly->GetSelection();
+    std::string sql;
 
-    long baseYearFrom = GetLongValue(this->mBaseStart);
-    long baseYearTo = GetLongValue(this->mBaseEnd);
+    if (!useReal) {
+        sql = AvgMonthTempAnomaly;
 
-    if ((baseYearFrom <= 0) || (baseYearTo <= 0) || (baseYearTo - baseYearFrom < 1))
-    {
-        wxLogMessage("Invalid Base Year Range");
-        return;
+
     }
-
-
+    else {
+        sql = AvgMonthReal;
+    }
+    std::string groupBy =  " GROUP by Y.year ORDER BY year";
 
     bool wantRegression = this->mBoxFit->GetValue();
 
@@ -1269,10 +1289,26 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
     try {
         Statement qy(db_, sql);
         qy.bindRowId(sset.getRowId(), 1);
-        qy.bind(baseYearFrom,2);
-        qy.bind(baseYearTo,3);
-        qy.bind((long)measure, 4);
-        qy.bind((long) measure, 5);
+
+        if (!useReal) {
+            long baseYearFrom = GetLongValue(this->mBaseStart);
+            long baseYearTo = GetLongValue(this->mBaseEnd);
+
+            if ((baseYearFrom <= 0) || (baseYearTo <= 0) || (baseYearTo - baseYearFrom < 1))
+            {
+                wxLogMessage("Invalid Base Year Range");
+                return;
+            }
+            qy.bind(baseYearFrom,2);
+            qy.bind(baseYearTo,3);
+            qy.bind((long)measure, 4);
+            qy.bind((long) measure, 5);
+        }
+        else {
+            qy.bind((long) measure, 2);
+        }
+
+
 
         while (qy.next())
         {
@@ -1382,7 +1418,13 @@ void StationSets::OnGoDeriveClick( wxCommandEvent& event )
         plua->addLegend();
         plua->ylabel("Deg. C");
         plua->xlabel("Year");
-        plua->title("Year average anomaly");
+
+        if (!useReal) {
+            plua->title("Year average anomaly");
+        }
+        else {
+            plua->title("Year average of months");
+        }
         plua->showPlot(plua,true);
     }
     wxLogMessage("Plot Created");
@@ -1895,5 +1937,18 @@ void StationSets::OnStationDataClick( wxCommandEvent& event )
 
     }
 
+}
+
+
+/*
+ * wxEVT_COMMAND_RADIOBOX_SELECTED event handler for ID_RADIOBOX
+ */
+
+void StationSets::OnRadioboxSelected( wxCommandEvent& event )
+{
+////@begin wxEVT_COMMAND_RADIOBOX_SELECTED event handler for ID_RADIOBOX in StationSets.
+    // Before editing this code, remove the block markers.
+    event.Skip();
+////@end wxEVT_COMMAND_RADIOBOX_SELECTED event handler for ID_RADIOBOX in StationSets.
 }
 

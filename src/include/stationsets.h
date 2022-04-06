@@ -101,6 +101,9 @@ public:
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_ADD_QUERY
     void OnAddQueryClick( wxCommandEvent& event );
 
+    /// wxEVT_COMMAND_RADIOBOX_SELECTED event handler for ID_RADIOBOX
+    void OnRadioboxSelected( wxCommandEvent& event );
+
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_GO_DERIVE
     void OnGoDeriveClick( wxCommandEvent& event );
 
@@ -147,6 +150,7 @@ public:
     wxBoxSizer* mVSizer;
     wxPanel* pageDerive;
     wxChoice* mMeasure;
+    wxRadioBox* radboxAnomaly;
     wxTextCtrl* mBaseStart;
     wxTextCtrl* mBaseEnd;
     wxCheckBox* mBoxFit;
@@ -187,6 +191,7 @@ public:
         ID_QUERY_LIST = 10008,
         ID_DERIVE_TREND = 10011,
         ID_MEASURE = 10021,
+        ID_RADIOBOX = 10045,
         ID_BASE_START = 10019,
         ID_BASE_END = 10020,
         ID_BOX_LINEFIT = 10015,

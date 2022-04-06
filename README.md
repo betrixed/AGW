@@ -29,7 +29,7 @@ Source code resources to compile on debian 11.
 Currently uses wxWidgets-3.1.5.  Built as static libraries, unicode enabled.
 Build scripts call wx-config.
 
-Lua source code 5.4.4 from lua.org,  source distribution src folder symbol linked to src/lua in AGW source tree
+Lua source code 5.4.4 from lua.org,  from AGW/src symbol link:  ln -s lua-5.4.4/src lua
 
 apt install libspatialite-dev
 
@@ -40,6 +40,8 @@ apt install libjsoncpp-dev
 apt install libsqlite3-mod-spatialite
 
 apt install spatialite-bin
+
+apt install libboost-dev
 
 ### Data sources:
 
