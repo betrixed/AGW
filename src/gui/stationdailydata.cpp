@@ -225,7 +225,7 @@ StationDailyData::FullPath(const wxString& stationid) {
         wxLogError("Configure directly path for ghcn-daily");
         return wxEmptyString;
     }
-    return wxString::Format("%s/%s.csv", path.c_str(), stationid);
+    return wxString::Format("%s/%s.dly", path.c_str(), stationid);
 }
 
 // return unquoted character if required
@@ -358,21 +358,11 @@ public:
         ndays = 0;
     }
 
-    void add(const wxString& smin, const wxString& smax)
+    void addTemp(double tmin_d, double tmax_d)
     {
-        if (smin.size()==0 || smax.size()==0) {
-            return; // need both
-        }
-        smax.ToDouble(&tmax_d);
-        tmax_d /= 10.0;
-        smin.ToDouble(&tmin_d);
-        tmin_d /= 10.0;
-
         if (ndays == 0 || tmax_d > mmax) {
             mmax = tmax_d;
         }
-
-
         if (ndays == 0 || tmin_d < mmin) {
             mmin = tmin_d;
         }
@@ -384,121 +374,213 @@ public:
         tavgsum += tavg_d;
 
         ndays += 1;
+    }
+    void add(const wxString& smin, const wxString& smax)
+    {
+        if (smin.size()==0 || smax.size()==0) {
+            return; // need both
+        }
+        smax.ToDouble(&tmax_d);
+        tmax_d /= 10.0;
+        smin.ToDouble(&tmin_d);
+        tmin_d /= 10.0;
+
+        addTemp(tmin_d, tmax_d);
 
     }
 
 };
 
+
+
+bool skipNChar(wxFileInputStream& rdr, int ct) {
+    for(int i = 0; i < ct; i++) {
+        rdr.GetC();
+        if (rdr.Eof()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool readText(wxFileInputStream& rdr, wxString& data, int len)
+{
+   data.Truncate(0);
+
+   for(int i = 0; i < len; i++) {
+        wxUniChar val(rdr.GetC());
+        if (rdr.Eof()) {
+            return false;
+        }
+        data.Append(val);
+    }
+    return true;
+
+}
+bool readYear(wxFileInputStream& rdr, long& year) {
+    wxString data;
+
+    for(int i = 0; i < 4; i++) {
+        wxUniChar val(rdr.GetC());
+        if (rdr.Eof()) {
+            return false;
+        }
+        data.Append(val);
+    }
+    data.ToCLong(&year);
+    return true;
+}
+
+bool readMonth(wxFileInputStream& rdr, long& month) {
+    wxString data;
+
+    for(int i = 0; i < 2; i++) {
+        wxUniChar val(rdr.GetC());
+        if (rdr.Eof()) {
+            return false;
+        }
+        data.Append(val);
+    }
+    data.ToCLong(&month);
+    return true;
+}
+
+bool readValue(wxFileInputStream& rdr, long& value) {
+    wxString data;
+
+    for(int i = 0; i < 5; i++) {
+        wxUniChar val(rdr.GetC());
+        if (rdr.Eof()) {
+            return false;
+        }
+        data.Append(val);
+    }
+    data.ToCLong(&value);
+    return true;
+}
+
 void StationDailyData::Calculate()
 {
     wxString filepath = StationDailyData::FullPath(stationId);
+    const wxString StrTMAX = "TMAX";
+    const wxString StrTMIN = "TMIN";
+    const int fixed_len = 270; // include LF
 
+    long year, month;
+    wxString measure;
+    long     tmax[32];
+    long     tmin[32];
 
-    wxFileInputStream input_stream(filepath);
+    tmax[0] = 0;
+    tmin[0] = 0;
+
+    int firstDay, lastDay;
+    int firstMonth, firstYear;
+    int lastMonth, lastYear;
+
+    MonthStat   mstat;
+
+    firstMonth = 0;
+    firstYear = 0;
+
+    wxFileInputStream rdr(filepath);
     //double fileLength = input_stream.GetLength();
-    if (!input_stream.IsOk())
+    if (!rdr.IsOk())
     {
         wxLogError("Cannot open file '%s'.", filepath.utf8_str());
         return;
     }
-    wxTextInputStream   text(input_stream, ',');
-    wxCSV rdr(&text, ',');
-    wxArrayString row;
-    int tmax_column = -1;
-    int date_column = -1;
-    int tmin_column  = -1;
-    int prcp_column = -1;
-    std::unordered_map<std::string, int> col_names;
-    wxString output;
 
-    if(rdr.next(row))
-    {
-        // check headers
-        for(int ix = 0; ix < (int)row.GetCount(); ix++) {
-            auto check = row[ix];
-            std::string key(check.utf8_str());
-            col_names.insert({key, ix});
-        }
-    }
-    tmax_column = col_names["TMAX"];
-    tmin_column = col_names["TMIN"];
-    prcp_column = col_names["PRCP"];
-    date_column = col_names["DATE"];
+    // at beginning of fixed format text file.
+    // read the station id 3+8 = 11
+    // year4 and month2  4+2
+    // read the measurement type - TMAX, TMIN, PRCP - 4
+    // read the value# (5) - flags# (3) for each day of the month
+    // 270 characters each line.
 
-    wxString tmax_str;
-    wxString tmin_str;
-    wxString prcp_str;
-    wxString date_str;
-    wxString day_str;
-    wxString month_str;
-    wxString year_str;
+    std::string stationid(stationId.utf8_str());
 
-    wxRegEx  dexp;
-    dexp.Compile("(\\d\\d\\d\\d)\\-(\\d\\d)\\-(\\d\\d)",wxRE_ADVANCED);
-    long yearval;
-    long monthval;
-    long dateindex;
-
-    MonthStat   mstat;
-
-    wxLogMessage("Columns %d %d %d %d",date_column,prcp_column, tmax_column,tmin_column );
     SqliteDB& sdb = ap_->getDB();
 
     Station4 gissloc;
-    std::string stationid(stationId.utf8_str());
-    wxString firstdate;
-
     gissloc.loadByCode(sdb,stationid);
-
     mstat.set_sid(gissloc.id_);
 
-    while (rdr.next(row)) {
-        tmax_str = row[tmax_column];
-        if (tmax_str.size() > 0) {
-            date_str = row[date_column];
-            if (dexp.Matches(date_str) && dexp.GetMatchCount() == 4) {
-                year_str = dexp.GetMatch(date_str,1);
-                month_str = dexp.GetMatch(date_str,2);
-                day_str = dexp.GetMatch(date_str,3);
-                year_str.ToCLong(&yearval,10);
-                month_str.ToCLong(&monthval,10);
-                dateindex = yearval*12 + (monthval-1);
+    while (!rdr.Eof()) {
+        if(skipNChar(rdr,11)) {
+
+            readYear(rdr,year); // 15
+            readMonth(rdr,month); // 17
+            readText(rdr,measure,4); // 21
+
+            if (measure.IsSameAs(StrTMAX)) {
+                tmax[0] = year*12+month-1;
+
+                for(int day = 1; day <= 31; day++)
+                {
+                    readValue(rdr, tmax[day]);
+                    skipNChar(rdr,3);
+                }
+                skipNChar(rdr,1);
+            }
+            else if  (measure.IsSameAs(StrTMIN)) {
+                tmin[0] = year*12+month-1;
+
+                for(int day = 1; day <= 31; day++) //31*8 = 248 + 21 = 269
+                {
+                    readValue(rdr, tmin[day]);
+                    skipNChar(rdr,3);
+                }
+                skipNChar(rdr,1);
             }
             else {
-                continue;
+                skipNChar(rdr,fixed_len - 21);
             }
-            if (firstdate.IsEmpty()) {
-                firstdate = date_str;
-            }
+            if (tmax[0] && tmin[0] && (tmax[0] == tmin[0])) {
+                mstat.setmonth(year,month);
 
-            tmin_str = row[tmin_column];
-            prcp_str = row[prcp_column];
-            //line_str = year_str << "/" << month_str << "/" << day_str;
-            //line_str << " " << tmin_str << " " << tmax_str << " " << prcp_str << "\n";
+                tmax[0] = 0;
+                tmin[0] = 0;
+                firstDay = 0;
+                lastDay = 0;
 
-            if (mstat.index() != dateindex) {
-                if (mstat.dirty()) {
-                    mstat.text_stat(output);
-                    txtDailyData->AppendText(output);
-                    mstat.save(sdb);
-                    wxYieldIfNeeded();
+                for(int day = 1; day <= 31; day++)
+                {
+
+                    if (tmax[day] != -9999 && tmin[day] != -9999 )
+                    {
+                        if (!firstDay) {
+                            firstDay = day;
+                        }
+                        lastDay = day;
+                        mstat.addTemp(tmin[day]/10.0, tmax[day]/10.0);
+                    }
                 }
-                mstat.setmonth(yearval, monthval);
+                if (firstDay && lastDay)
+                {
+                    if (!firstYear) {
+                        firstYear = year;
+                        firstMonth = month;
+                    }
+                    lastYear = year;
+                    lastMonth = month;
+                }
+                mstat.save(sdb);
+
             }
 
-            mstat.add(tmin_str, tmax_str);
         }
     }
-    if (mstat.dirty()) {
-        mstat.text_stat(output);
-        txtDailyData->AppendText(output);
-        txtDailyData->AppendText("*** end ***");
-        mstat.save(sdb);
-    }
-    if ( !gissloc.startDate_.IsValid() && !firstdate.IsEmpty()) {
-        gissloc.startDate_.ParseDate(firstdate);
-        gissloc.endDate_.ParseDate(date_str);
+
+    if ( firstYear ) {
+
+        gissloc.startDate_ = wxDateTime(firstDay, wxDateTime::Month(firstMonth-1), firstYear);
+        gissloc.endDate_ = wxDateTime(lastDay, wxDateTime::Month(lastMonth-1), lastYear);
         gissloc.save(sdb);
+        wxString msg;
+
+        msg << "From " << gissloc.startDate_.FormatDate() << " to " <<  gissloc.endDate_.FormatDate() << "\n";
+        txtDailyData->AppendText(msg);
     }
 }
 //Feed some extra statistics into the GissYear, GissTemp sections in a
@@ -518,104 +600,8 @@ void StationDailyData::SetStationId(const wxString& name, const wxString& filepa
 
 void StationDailyData::OnShowNowClick( wxCommandEvent& event )
 {
+    // read from database, not dly
 
-    // Read the year, month,
-    wxString year = txShowYear->GetValue();
-    long     byear;
-    year.ToCLong(&byear);
-    int bmonth = txShowMonth->GetSelection()+1;
-    int bindex = byear*12 + bmonth-1;
-
-    // Before editing this code, remove the block markers.
-    event.Skip();
-    wxString msg;
-
-    msg << "Year " << byear << " Month " << bmonth << "\n";
-    txtDailyData->AppendText(msg);
-
-    wxString filepath = StationDailyData::FullPath(stationId);
-
-
-    wxFileInputStream input_stream(filepath);
-    //double fileLength = input_stream.GetLength();
-    if (!input_stream.IsOk())
-    {
-        wxLogError("Cannot open file '%s'.", filepath.utf8_str());
-        return;
-    }
-    wxTextInputStream   text(input_stream, ',');
-    wxCSV rdr(&text, ',');
-    wxArrayString row;
-
-
-    int tmax_column = -1;
-    int date_column = -1;
-    int tmin_column  = -1;
-    int prcp_column = -1;
-    std::unordered_map<std::string, int> col_names;
-    wxString output;
-
-    if(rdr.next(row))
-    {
-        // check headers
-        for(int ix = 0; ix < (int)row.GetCount(); ix++) {
-            auto check = row[ix];
-            std::string key(check.utf8_str());
-            col_names.insert({key, ix});
-        }
-    }
-    tmax_column = col_names["TMAX"];
-    tmin_column = col_names["TMIN"];
-    prcp_column = col_names["PRCP"];
-    date_column = col_names["DATE"];
-
-    wxString tmax_str;
-    wxString tmin_str;
-    wxString prcp_str;
-    wxString date_str;
-    wxString day_str;
-    wxString month_str;
-    wxString year_str;
-
-    wxRegEx  dexp;
-    dexp.Compile("(\\d\\d\\d\\d)\\-(\\d\\d)\\-(\\d\\d)",wxRE_ADVANCED);
-    long yearval;
-    long monthval;
-    long dateindex;
-
-    while (rdr.next(row)) {
-        tmax_str = row[tmax_column];
-        tmin_str = row[tmin_column];
-        if (tmax_str.size() > 0) {
-            date_str = row[date_column];
-            if (dexp.Matches(date_str) && dexp.GetMatchCount() == 4) {
-                year_str = dexp.GetMatch(date_str,1);
-                month_str = dexp.GetMatch(date_str,2);
-                day_str = dexp.GetMatch(date_str,3);
-                year_str.ToCLong(&yearval,10);
-                month_str.ToCLong(&monthval,10);
-                dateindex = yearval*12 + (monthval-1);
-            }
-            else {
-                continue;
-            }
-
-
-            prcp_str = row[prcp_column];
-
-
-            if (bindex == dateindex) {
-                output = year_str << "/" << month_str << "/" << day_str;
-                output << " " << tmin_str << " " << tmax_str << " " << prcp_str << "\n";
-                txtDailyData->AppendText(output);
-            }
-            else if (bindex < dateindex) {
-                output = "*** end *** \n";
-                txtDailyData->AppendText(output);
-                break;
-            }
-        }
-    }
 }
 
 
