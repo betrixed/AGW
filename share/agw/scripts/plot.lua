@@ -1,17 +1,25 @@
+-- My Test Script
+
+print("Hello!\n")
+local sqlite3=require "sqlite3"
+print("Lua lsqite3 version is  " .. sqlite3.lversion())
+sqlite3.open(app.dbpath())
+
+
 local ray=require "ray"
 local s = ray.float(10)
 s:set(0,1.0)
-print("size ", s:size(), "value", s:get(0))
+print("size ", s:size(), " value ", s:get(0))
 
-local ray=require "ray"
+
 local s = ray.year_month(1960,0,1969,11)
-print("size ", s:size(), "value", s:get(0))
+print("size ", s:size(), " value ", s:get(0))
 
 local date=require "date"
 d = date.new(2015,2,26)
 print(d)
 
-local ray=require "ray"
+
 local math=require "math"
 
 local x = ray.range(201,-10.0, 10.0)
@@ -35,8 +43,12 @@ p:exportCSV("plot-1.csv")
 local p2 = plot.load("plot-1.plot")
 p2:show(true)
 
-sqlite3=require('sqlite3')
-print(sqlite3.lversion())
-sqlite3.opendb(app.dbpath())
+
+
+
+
+
+
+
 
 

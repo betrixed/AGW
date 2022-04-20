@@ -25,6 +25,8 @@ int luaopen_lsqlite3(lua_State * L);
 
 };
 
+#define SQLITE_LIB "sqlite3"
+
 using namespace agw;
 
 /**
@@ -214,6 +216,46 @@ LuaEngine::flua_panic(lua_State *FPUNUSED(lua))
 {
 }
 
+
+void sqlite_require(lua_State* L)
+{
+    luaL_requiref(L, SQLITE_LIB, luaopen_lsqlite3, 1);
+    lua_pop(L, 1);  /* remove lib */
+}
+
+int l_my_print(lua_State* L) {
+    int nargs = lua_gettop(L);
+    wxString buffer;
+
+    for (int i=1; i <= nargs; i++) {
+        if (lua_isstring(L, i)) {;
+            const char *msg = lua_tostring (L, i);
+            buffer << msg;
+
+        }
+        else {
+        /* Do something with non-strings if you like */
+        }
+    }
+    if (buffer.size() > 0) {
+        std::cout << buffer << "\n";
+    }
+    return 0;
+}
+
+static const struct luaL_Reg printlib [] = {
+  {"print", l_my_print},
+  {NULL, NULL} /* end of array */
+};
+
+static int luaopen_setup_print(lua_State *L)
+{
+  lua_getglobal(L, "_G");
+
+  luaL_setfuncs(L, printlib, 0);  // for Lua versions 5.2 or greater
+  lua_pop(L, 1);
+}
+
 bool
 LuaEngine::Init()
 {
@@ -224,6 +266,9 @@ LuaEngine::Init()
 	{
 	// Load util libs into lua
 		luaL_openlibs(state_);
+
+    // setup "print"
+        luaopen_setup_print(state_);
 
         luaL_requiref(state_, "sqlite3", luaopen_lsqlite3, 1);
         lua_pop(state_, 1);
@@ -237,6 +282,7 @@ LuaEngine::Init()
 	    //luaL_requiref(state_, CJSON_LIB, luaopen_cjson, 1);
         //lua_pop(state_, 1);  /* remove lib */
 
+        sqlite_require(state_);
 
 		// setup global printing (trace)
 		lua_pushcclosure (state_, LuaEngine::flua_logMessage, 0);

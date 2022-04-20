@@ -71,10 +71,10 @@ void AppData::runLuaScript(const std::string& script)
             engine_.Init();
         }
 
-        fprintf(stdout,"%s",script.c_str());
-        fflush(stdout);
+        //fprintf(stdout,"%s",script.c_str());
+        //fflush(stdout);
 
-        std::cout << ">>" << script << std::endl;
+        //std::cout << ">>" << script << std::endl;
 
         engine_.Run(script.c_str(), script.size(), "chunk");
     }
@@ -239,7 +239,7 @@ void AppData::readScript(const std::string& path)
 
     wxString wpath = path;
     fn.Assign(wpath);
-    std::string tabname = fn.GetName().ToStdString();
+    std::string tabname = fn.GetFullName().ToStdString();
 
     LuaEdit* led = this->mainFrame()->createLuaEdit(tabname);
     auto ctrl = led->luaEdit_;

@@ -926,7 +926,7 @@
               <bool name="proxy-Separate files">0</bool>
               <long name="proxy-Stretch factor">0</long>
               <string name="proxy-Tab icon">""</string>
-              <string name="proxy-Tab label">"Lua"</string>
+              <string name="proxy-Tab label">"Lua Output"</string>
               <string name="proxy-Texture">""</string>
               <string name="proxy-Texture style">"Tiled"</string>
               <string name="proxy-Tooltip text">""</string>

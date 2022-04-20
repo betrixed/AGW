@@ -3,6 +3,7 @@ src/jsoncpp-*/**
 Thumbs.db
 ehthumbs.db
 push_command.sh
+push.sh
 
 # Folder config file
 Desktop.ini
@@ -18,7 +19,10 @@ $RECYCLE.BIN/
 *.gz
 # Windows shortcuts
 *.lnk
-
+# Output data
+*.plot
+*.png
+*.csv
 # =========================
 # Operating System Files
 # =========================
@@ -48,6 +52,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 src/lua
+src/lua-*
 bin/**
 obj/**
 *.pdf

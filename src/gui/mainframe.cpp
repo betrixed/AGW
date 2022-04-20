@@ -472,7 +472,7 @@ void MainFrame::CreateControls()
     btnRun = new wxButton( mLuaRun, ID_RUN, _("Run"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
     itemBoxSizer6->Add(btnRun, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    book_->AddPage(mLuaRun, _("Lua"), false);
+    book_->AddPage(mLuaRun, _("Lua Output"), false);
 
     LuaEdit* itemPanel9 = new LuaEdit( book_, LuaEdit::ID_NEW_LUA_EDIT, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     itemPanel9->SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
